@@ -1,0 +1,40 @@
+#ifndef LE_CORE_HPP
+#define LE_CORE_HPP
+
+#include "le_camera.hpp"
+#include "le_window.hpp"
+#include "le_device.hpp"
+#include "le_actor.hpp"
+#include "le_renderer.hpp"
+
+// std
+#include <memory>
+#include <vector>
+
+namespace le {
+	class LeCore {
+		// when core is created a window is created -> when core is destroyed, any window will be destroyed too.
+	public:
+		static constexpr int WIDTH = 800;
+		static constexpr int HEIGHT = 800;
+
+		LeCore();
+		~LeCore();
+
+		LeCore(const LeCore&) = delete;
+		LeCore& operator=(const LeCore&) = delete;
+
+		void run();
+	private:
+		void loadActors();
+
+		LeWindow leWindow{ WIDTH, HEIGHT, "Le_Core_Window" };
+		LeDevice leDevice{ leWindow };
+		LeRenderer leRenderer{ leWindow, leDevice };
+
+		std::vector<LeActor> actors;
+
+	};
+}
+
+#endif
