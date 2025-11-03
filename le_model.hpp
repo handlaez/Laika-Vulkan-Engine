@@ -12,12 +12,12 @@
 
 namespace le {
 	class LeModel {
-
 	public:
 
 		struct Vertex {
 			glm::vec3 position;
 			glm::vec3 color;
+			glm::vec2 texCoord;
 
 			static std::vector<VkVertexInputBindingDescription> getBindingDescriptions();
 			static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
@@ -26,6 +26,7 @@ namespace le {
 		struct Builder {
 			std::vector<Vertex> vertices{};
 			std::vector<uint32_t> indices{};
+			std::vector<float> texCoords{};
 		};
 
 		LeModel(LeDevice &device, const LeModel::Builder &builder);

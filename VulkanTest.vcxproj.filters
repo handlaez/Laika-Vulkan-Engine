@@ -54,6 +54,12 @@
     <ClCompile Include="keyboard_movement_controller.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="stb.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="le_texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="le_window.hpp">
@@ -84,6 +90,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="le_camera.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="le_texture.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

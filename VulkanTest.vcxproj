@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.4.321.1\Include;C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\glm;C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\stb_image;C:\VulkanSDK\1.4.321.1\Include;C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\glm;C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -122,7 +122,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.4.321.1\Include;C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\glm;C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\stb_image;C:\VulkanSDK\1.4.321.1\Include;C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\glm;C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -148,8 +148,10 @@
     <ClCompile Include="le_pipeline.cpp" />
     <ClCompile Include="le_renderer.cpp" />
     <ClCompile Include="le_swapchain.cpp" />
+    <ClCompile Include="le_texture.cpp" />
     <ClCompile Include="le_window.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="stb.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="basic_render_system.hpp" />
@@ -161,6 +163,7 @@
     <ClInclude Include="le_pipeline.hpp" />
     <ClInclude Include="le_renderer.hpp" />
     <ClInclude Include="le_swapchain.hpp" />
+    <ClInclude Include="le_texture.hpp" />
     <ClInclude Include="le_window.hpp" />
   </ItemGroup>
   <ItemGroup>

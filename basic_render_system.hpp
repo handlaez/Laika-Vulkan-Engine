@@ -20,7 +20,7 @@ namespace le {
 	class BasicRenderSystem {
 	public:
 
-		BasicRenderSystem(LeDevice &device, VkRenderPass renderPass);
+		BasicRenderSystem(LeDevice &device, VkRenderPass renderPass, VkImageView imageView);
 		~BasicRenderSystem();
 
 		BasicRenderSystem(const BasicRenderSystem&) = delete;
@@ -33,7 +33,8 @@ namespace le {
 		void createUniformBuffers();
 		void createDescriptorSetLayout(LeDevice& device);
 		void createDescriptorPool();
-		void createDescriptorSets();
+		void createDescriptorSets(VkImageView imageView);
+		void createTextureSampler();
 
 		LeDevice& leDevice;
 
@@ -47,6 +48,8 @@ namespace le {
 
 		std::unique_ptr<LePipeline> lePipeline;
 		VkPipelineLayout pipelineLayout;
+
+		VkSampler textureSampler;
 	};
 }
 

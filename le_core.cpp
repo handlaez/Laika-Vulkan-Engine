@@ -1,6 +1,7 @@
 #include "le_core.hpp"
 #include "basic_render_system.hpp"
 #include "keyboard_movement_controller.hpp"
+#include "le_texture.hpp"
 
 // glm
 #define GLM_FORCE_RADIANS
@@ -23,7 +24,8 @@ namespace le {
 	LeCore::~LeCore() {}
 
 	void LeCore::run() {
-		BasicRenderSystem basicRenderSystem{ leDevice, leRenderer.getSwapchainRenderPass() };
+        LeTexture tex{ leDevice, "textures/texture.jpg" };
+		BasicRenderSystem basicRenderSystem{ leDevice, leRenderer.getSwapchainRenderPass(), tex.getImageView() };
         LeCamera camera{};
 
         auto cameraObject = LeActor::createGameObject();
@@ -66,40 +68,40 @@ namespace le {
         LeModel::Builder modelBuilder{};
         modelBuilder.vertices = {
             // left face (white)
-            {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}},
-            {{-.5f, .5f, .5f}, {.9f, .9f, .9f}},
-            {{-.5f, -.5f, .5f}, {.9f, .9f, .9f}},
-            {{-.5f, .5f, -.5f}, {.9f, .9f, .9f}},
+            {{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}, {1.f, 0.f}},
+            {{-.5f,  .5f,  .5f}, {.9f, .9f, .9f}, {0.f, 1.f}},
+            {{-.5f, -.5f,  .5f}, {.9f, .9f, .9f}, {0.f, 0.f}},
+            {{-.5f,  .5f, -.5f}, {.9f, .9f, .9f}, {1.f, 1.f}},
 
             // right face (yellow)
-            {{.5f, -.5f, -.5f}, {.8f, .8f, .1f}},
-            {{.5f, .5f, .5f}, {.8f, .8f, .1f}},
-            {{.5f, -.5f, .5f}, {.8f, .8f, .1f}},
-            {{.5f, .5f, -.5f}, {.8f, .8f, .1f}},
+            {{.5f, -.5f, -.5f}, {.8f, .8f, .1f}, {0.f, 0.f}},
+            {{.5f,  .5f,  .5f}, {.8f, .8f, .1f}, {1.f, 1.f}},
+            {{.5f, -.5f,  .5f}, {.8f, .8f, .1f}, {1.f, 0.f}},
+            {{.5f,  .5f, -.5f}, {.8f, .8f, .1f}, {0.f, 1.f}},
 
             // top face (violet)
-            {{-.5f, -.5f, -.5f}, {.4f, .1f, .8f}},
-            {{.5f, -.5f, .5f}, {.4f, .1f, .8f}},
-            {{-.5f, -.5f, .5f}, {.4f, .1f, .8f}},
-            {{.5f, -.5f, -.5f}, {.4f, .1f, .8f}},
+            {{-.5f, -.5f, -.5f}, {.4f, .1f, .8f}, {0.f, 1.f}},
+            {{ .5f, -.5f,  .5f}, {.4f, .1f, .8f}, {1.f, 0.f}},
+            {{-.5f, -.5f,  .5f}, {.4f, .1f, .8f}, {0.f, 0.f}},
+            {{ .5f, -.5f, -.5f}, {.4f, .1f, .8f}, {1.f, 1.f}},
 
             // bottom face (red)
-            {{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
-            {{.5f, .5f, .5f}, {.8f, .1f, .1f}},
-            {{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
-            {{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+            {{-.5f, .5f, -.5f}, {.8f, .1f, .1f}, {1.f, 0.f}},
+            {{ .5f, .5f,  .5f}, {.8f, .1f, .1f}, {0.f, 1.f}},
+            {{-.5f, .5f,  .5f}, {.8f, .1f, .1f}, {1.f, 1.f}},
+            {{ .5f, .5f, -.5f}, {.8f, .1f, .1f}, {0.f, 0.f}},
 
-            // nose face (blue)
-            {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-            {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-            {{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-            {{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+            // back face (blue)
+            {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}, {1.f, 0.f}},
+            {{ .5f,  .5f, 0.5f}, {.1f, .1f, .8f}, {0.f, 1.f}},
+            {{-.5f,  .5f, 0.5f}, {.1f, .1f, .8f}, {1.f, 1.f}},
+            {{ .5f, -.5f, 0.5f}, {.1f, .1f, .8f}, {0.f, 0.f}},
 
-            // tail face (green)
-            {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
-            {{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-            {{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
-            {{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+            // front face (green)
+            {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}, {0.f, 0.f}},
+            {{ .5f,  .5f, -0.5f}, {.1f, .8f, .1f}, {1.f, 1.f}},
+            {{-.5f,  .5f, -0.5f}, {.1f, .8f, .1f}, {0.f, 1.f}},
+            {{ .5f, -.5f, -0.5f}, {.1f, .8f, .1f}, {1.f, 0.f}},
         };
         for (auto& v : modelBuilder.vertices) {
             v.position += offset;
