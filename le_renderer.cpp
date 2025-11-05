@@ -12,7 +12,7 @@ namespace le {
 		createCommandBuffers();
 	}
 
-	LeRenderer::~LeRenderer() {	freeCommandBuffers(); }
+	LeRenderer::~LeRenderer() { vkDeviceWaitIdle(leDevice.device()); freeCommandBuffers(); }
 
 	void LeRenderer::recreateSwapchain()
 	{

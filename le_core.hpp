@@ -1,15 +1,18 @@
 #ifndef LE_CORE_HPP
 #define LE_CORE_HPP
 
-#include "le_camera.hpp"
 #include "le_window.hpp"
+#include "le_camera.hpp"
 #include "le_device.hpp"
 #include "le_actor.hpp"
 #include "le_renderer.hpp"
+#include "le_scene.hpp"
+#include "le_render_system_manager.hpp"
+#include "i_laika_engine_app.hpp"
 
 // std
 #include <memory>
-#include <vector>
+#include <chrono>
 
 namespace le {
 	class LeCore {
@@ -24,16 +27,16 @@ namespace le {
 		LeCore(const LeCore&) = delete;
 		LeCore& operator=(const LeCore&) = delete;
 
-		void run();
+		void run(ILaikaEngineApp& gameApp);
+
 	private:
-		void loadActors();
+		void updateFrameInfo(FrameInfo& fi);
 
 		LeWindow leWindow{ WIDTH, HEIGHT, "Le_Core_Window" };
 		LeDevice leDevice{ leWindow };
 		LeRenderer leRenderer{ leWindow, leDevice };
 
-		std::vector<LeActor> actors;
-
+		std::chrono::time_point<std::chrono::high_resolution_clock> currentTime;
 	};
 }
 

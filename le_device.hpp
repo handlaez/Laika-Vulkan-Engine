@@ -73,6 +73,7 @@ namespace le {
             VkDeviceMemory& imageMemory);
 
         VkPhysicalDevice getPhysicalDevice() { return physicalDevice; }
+        LeWindow& getWindow() { return window; }
         VkPhysicalDeviceProperties properties;
 
     private:

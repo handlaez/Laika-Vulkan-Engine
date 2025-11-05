@@ -1,4 +1,5 @@
 #include "le_core.hpp"
+#include "demo_app.cpp"
 
 // std
 #include <cstdlib>
@@ -6,16 +7,18 @@
 #include <stdexcept>
 
 int main() {
-	le::LeCore app{};
+	le::LeCore engine{};
+	DemoApp demoApp;
 
 	try 
 	{
-		app.run();
+		engine.run(demoApp);
 	}
 	catch (const std::exception &e) 
 	{
 		std::cerr << e.what() << "\n";
 		return EXIT_FAILURE;
 	}
+
 	return EXIT_SUCCESS;
 }

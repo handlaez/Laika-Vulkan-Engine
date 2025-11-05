@@ -60,6 +60,15 @@
     <ClCompile Include="le_texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="le_render_system_manager.hpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="le_render_system_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="demo_app.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="le_window.hpp">
@@ -93,6 +102,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="le_texture.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="i_laika_engine_app.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="le_scene.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
