@@ -160,4 +160,12 @@ namespace le {
 
 		leDevice.endSingleTimeCommands(commandBuffer);
 	}
+	
+	VkDescriptorImageInfo LeTexture::getDescriptorInfo(VkSampler sampler) const {
+		VkDescriptorImageInfo info{};
+		info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		info.imageView = getImageView();
+		info.sampler = sampler;
+		return info;
+	}
 }

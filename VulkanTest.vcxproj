@@ -144,6 +144,8 @@
     <ClCompile Include="keyboard_movement_controller.hpp" />
     <ClCompile Include="le_camera.cpp" />
     <ClCompile Include="le_core.cpp" />
+    <ClCompile Include="le_descriptor_pool.cpp" />
+    <ClCompile Include="le_descriptor_set_layout.cpp" />
     <ClCompile Include="le_device.cpp" />
     <ClCompile Include="le_model.cpp" />
     <ClCompile Include="le_pipeline.cpp" />
@@ -153,6 +155,8 @@
     <ClCompile Include="le_scene.cpp" />
     <ClCompile Include="le_swapchain.cpp" />
     <ClCompile Include="le_texture.cpp" />
+    <ClCompile Include="le_uniform_buffer.cpp" />
+    <ClCompile Include="le_uniform_buffer_pool.cpp" />
     <ClCompile Include="le_window.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="stb.cpp" />
@@ -163,6 +167,8 @@
     <ClInclude Include="le_actor.hpp" />
     <ClInclude Include="le_camera.hpp" />
     <ClInclude Include="le_core.hpp" />
+    <ClInclude Include="le_descriptor_pool.hpp" />
+    <ClInclude Include="le_descriptor_set_layout.hpp" />
     <ClInclude Include="le_device.hpp" />
     <ClInclude Include="le_frame_info.hpp" />
     <ClInclude Include="le_model.hpp" />
@@ -171,30 +177,36 @@
     <ClInclude Include="le_scene.hpp" />
     <ClInclude Include="le_swapchain.hpp" />
     <ClInclude Include="le_texture.hpp" />
+    <ClInclude Include="le_uniform_buffer.hpp" />
+    <ClInclude Include="le_uniform_buffer_pool.hpp" />
     <ClInclude Include="le_window.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="compile.bat" />
-    <CustomBuild Include="frag_shader.frag">
+    <CustomBuild Include="shaders\frag_shader.frag">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">glslc.exe $(projectDir)frag_shader.frag -o frag_shader.frag.spv</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">glslc.exe $(projectDir)frag_shader.frag -o frag_shader.frag.spv</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">frag_shader.frag.spv;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\KOMP_JOUT8\source\repos\VulkanTest\frag_shader.frag</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">frag_shader.frag.spv;%(Outputs)</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\KOMP_JOUT8\source\repos\VulkanTest\frag_shader.frag</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">glslc.exe "$(ProjectDir)shaders\\%(Filename)%(Extension)" -o "$(ProjectDir)shaders\\%(Filename).spv"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)shaders\\%(Filename).spv</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)shaders\\%(Filename)%(Extension)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">glslc.exe "$(ProjectDir)shaders\\%(Filename)%(Extension)" -o "$(ProjectDir)shaders\\%(Filename).spv"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)shaders\\%(Filename).spv</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)shaders\\%(Filename)%(Extension)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling shader: %(Filename)%(Extension)</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compiling shader: %(Filename)%(Extension)</Message>
     </CustomBuild>
-    <None Include="frag_shader.frag.spv" />
-    <CustomBuild Include="vert_shader.vert">
+    <None Include="shaders\frag_shader.spv" />
+    <None Include="shaders\vert_shader.spv" />
+    <CustomBuild Include="shaders\vert_shader.vert">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">glslc.exe $(projectDir)vert_shader.vert -o vert_shader.vert.spv</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">glslc.exe $(projectDir)vert_shader.vert -o vert_shader.vert.spv</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">vert_shader.vert.spv</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">vert_shader.vert.spv</Outputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\KOMP_JOUT8\source\repos\VulkanTest\vert_shader.vert</AdditionalInputs>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\KOMP_JOUT8\source\repos\VulkanTest\vert_shader.vert</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">glslc.exe "$(ProjectDir)shaders\\%(Filename)%(Extension)" -o "$(ProjectDir)shaders\\%(Filename).spv"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">glslc.exe "$(ProjectDir)shaders\\%(Filename)%(Extension)" -o "$(ProjectDir)shaders\\%(Filename).spv"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling shader: %(Filename)%(Extension)</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compiling shader: %(Filename)%(Extension)</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)shaders\\%(Filename).spv</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)shaders\\%(Filename).spv</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)shaders\\%(Filename)%(Extension)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)shaders\\%(Filename)%(Extension)</AdditionalInputs>
     </CustomBuild>
-    <None Include="vert_shader.vert.spv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

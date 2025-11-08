@@ -16,58 +16,85 @@
     <Filter Include="Resource Files\Shaders">
       <UniqueIdentifier>{5baaef8f-d445-4edf-9b65-7955de4fcac7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Le_Core">
+      <UniqueIdentifier>{294a42f6-5aec-492a-aa45-4cc6741c139f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Systems">
+      <UniqueIdentifier>{934e6149-37b1-4609-9b2a-1009ae5b32ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Third Party">
+      <UniqueIdentifier>{e9dfcb3b-8eae-49a0-8528-bc9817930812}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shaders\Compiled">
+      <UniqueIdentifier>{3aa3ccad-a9af-40c7-9619-b0264a53c964}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="le_window.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="le_core.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="le_pipeline.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="le_device.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="le_swapchain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="le_model.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="le_renderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="basic_render_system.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="le_camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="keyboard_movement_controller.hpp">
       <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="keyboard_movement_controller.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="stb.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="le_texture.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="le_render_system_manager.hpp">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="le_render_system_manager.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="le_camera.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="le_core.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="le_descriptor_pool.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="le_descriptor_set_layout.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="le_device.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="le_model.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="le_pipeline.cpp">
+      <Filter>Source Files\Le_Core</Filter>
     </ClCompile>
     <ClCompile Include="demo_app.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="le_render_system_manager.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="le_renderer.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="le_scene.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="le_swapchain.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="le_texture.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="le_uniform_buffer.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="le_uniform_buffer_pool.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="le_window.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="basic_render_system.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="keyboard_movement_controller.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="stb.cpp">
+      <Filter>Source Files\Third Party</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files\Le_Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -110,21 +137,36 @@
     <ClInclude Include="le_scene.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="le_descriptor_pool.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="le_descriptor_set_layout.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="le_frame_info.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="le_uniform_buffer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="le_uniform_buffer_pool.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="compile.bat" />
-    <None Include="vert_shader.vert.spv">
-      <Filter>Resource Files\Shaders</Filter>
+    <None Include="shaders\vert_shader.spv">
+      <Filter>Resource Files\Shaders\Compiled</Filter>
     </None>
-    <None Include="frag_shader.frag.spv">
-      <Filter>Resource Files\Shaders</Filter>
+    <None Include="shaders\frag_shader.spv">
+      <Filter>Resource Files\Shaders\Compiled</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="frag_shader.frag">
+    <CustomBuild Include="shaders\frag_shader.frag">
       <Filter>Resource Files\Shaders</Filter>
     </CustomBuild>
-    <CustomBuild Include="vert_shader.vert">
+    <CustomBuild Include="shaders\vert_shader.vert">
       <Filter>Resource Files\Shaders</Filter>
     </CustomBuild>
   </ItemGroup>

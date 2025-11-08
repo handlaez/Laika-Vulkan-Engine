@@ -1,56 +1,71 @@
 #ifndef BASIC_RENDER_SYSTEM_HPP
 #define BASIC_RENDER_SYSTEM_HPP
 
-#include "le_camera.hpp"
-#include "le_pipeline.hpp"
 #include "le_device.hpp"
+#include "le_pipeline.hpp"
 #include "le_actor.hpp"
+#include "le_camera.hpp"
+#include "le_texture.hpp"
+#include "le_swapchain.hpp"
 
-// std
 #include <memory>
 #include <vector>
+#include <vulkan/vulkan.h>
+#include <glm/glm.hpp>
 
 namespace le {
 
-	struct UniformBufferObject {
-		glm::mat4 view;
-		glm::mat4 proj;
-	};
+    struct UniformBufferObject {
+        glm::mat4 view{ 1.f };
+        glm::mat4 proj{ 1.f };
+    };
 
-	class BasicRenderSystem {
-	public:
+    struct SimplePushConstantData {
+        glm::mat4 transform{ 1.f };
+        alignas(16) glm::vec3 color;
+    };
 
-		BasicRenderSystem(LeDevice &device, VkRenderPass renderPass, VkImageView imageView);
-		~BasicRenderSystem();
+    class BasicRenderSystem {
+    public:
+        BasicRenderSystem(LeDevice& device, VkRenderPass renderPass, VkImageView textureImageView);
+        ~BasicRenderSystem();
 
-		BasicRenderSystem(const BasicRenderSystem&) = delete;
-		BasicRenderSystem& operator=(const BasicRenderSystem&) = delete;
+        // Non-copyable
+        BasicRenderSystem(const BasicRenderSystem&) = delete;
+        BasicRenderSystem& operator=(const BasicRenderSystem&) = delete;
 
-		void renderActors(VkCommandBuffer commandBuffer, std::vector<LeActor>& actors, const LeCamera& camera, size_t currentFrame);
-	private:
-		void createPipelineLayout();
-		void createPipeline(VkRenderPass renderPass);
-		void createUniformBuffers();
-		void createDescriptorSetLayout(LeDevice& device);
-		void createDescriptorPool();
-		void createDescriptorSets(VkImageView imageView);
-		void createTextureSampler();
+        void renderActors(
+            VkCommandBuffer commandBuffer,
+            std::vector<LeActor>& actors,
+            const LeCamera& camera,
+            size_t currentFrame
+        );
 
-		LeDevice& leDevice;
+    private:
+        void createDescriptorSetLayout();
+        void createPipelineLayout();
+        void createPipeline(VkRenderPass renderPass);
+        void createUniformBuffers();
+        void createDescriptorPool();
+        void createDescriptorSets(VkImageView textureImageView);
+        void createTextureSampler();
 
-		VkDescriptorSetLayout descriptorSetLayout{};
-		VkDescriptorPool descriptorPool;
-		std::vector<VkDescriptorSet> descriptorSets;
+        LeDevice& device_;
 
-		std::vector<VkBuffer> uniformBuffers; // one per swapchain image
-		std::vector<VkDeviceMemory> uniformBuffersMemory;
-		std::vector<void*> uniformBuffersMapped;
+        std::unique_ptr<LePipeline> pipeline_;
+        VkPipelineLayout pipelineLayout_{ VK_NULL_HANDLE };
 
-		std::unique_ptr<LePipeline> lePipeline;
-		VkPipelineLayout pipelineLayout;
+        std::vector<VkBuffer> uniformBuffers_;
+        std::vector<VkDeviceMemory> uniformBuffersMemory_;
+        std::vector<void*> uniformBuffersMapped_;
 
-		VkSampler textureSampler;
-	};
+        VkDescriptorPool descriptorPool_{ VK_NULL_HANDLE };
+        VkDescriptorSetLayout descriptorSetLayout_{ VK_NULL_HANDLE };
+        std::vector<VkDescriptorSet> descriptorSets_;
+
+        VkSampler textureSampler_{ VK_NULL_HANDLE };
+    };
+
 }
 
 #endif
