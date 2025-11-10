@@ -57,9 +57,6 @@
     <ClCompile Include="le_pipeline.cpp">
       <Filter>Source Files\Le_Core</Filter>
     </ClCompile>
-    <ClCompile Include="demo_app.cpp">
-      <Filter>Source Files\Le_Core</Filter>
-    </ClCompile>
     <ClCompile Include="le_render_system_manager.cpp">
       <Filter>Source Files\Le_Core</Filter>
     </ClCompile>
@@ -95,6 +92,12 @@
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="demo_app.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="tiny_obj_loader.cpp">
+      <Filter>Source Files\Third Party</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -150,6 +153,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="le_uniform_buffer_pool.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="le_utils.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

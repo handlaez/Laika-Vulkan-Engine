@@ -10,16 +10,17 @@ using namespace le;
 class DemoApp : public ILaikaEngineApp {
 public:
     void onStart(le::LeScene& scene) override {
-        auto cubeModel = le::LeModel::createCube(scene.getDevice());
-        le::LeActor cube = LeActor::createGameObject();
-        cube.model = cubeModel;
-        cube.transform.translation = { 0.f, 0.f, 5.f };
-        cube.transform.scale = { 1.f, 1.f, 1.f };
-        scene.addActor(std::move(cube));
-
         auto& device = scene.getDevice();
         auto& window = device.getWindow();
         GLFWwindow = window.getGLFWwindow();
+
+        // auto cubeModel = le::LeModel::createCube(scene.getDevice());
+        auto cubeModel = le::LeModel::createModelFromFile(scene.getDevice(), "models/cottage_obj.obj", "textures/cottage_diffuse.png");
+        le::LeActor cube = LeActor::createGameObject();
+        cube.model = std::move(cubeModel);
+        cube.transform.translation = { 0.f, 0.f, 5.f };
+        cube.transform.scale = { 1.f, 1.f, 1.f };
+        scene.addActor(std::move(cube));
     }
 
     void onUpdate(le::LeScene& scene, FrameInfo fi) override {

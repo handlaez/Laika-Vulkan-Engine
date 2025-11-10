@@ -26,11 +26,13 @@ namespace le {
         currentTime = std::chrono::high_resolution_clock::now();
 
         while (!leWindow.shouldClose()) {
+
             glfwPollEvents();
 
             updateFrameInfo(fi);
 
             application.onUpdate(scene, fi);
+
             renderManager.render(scene);
         }
 
