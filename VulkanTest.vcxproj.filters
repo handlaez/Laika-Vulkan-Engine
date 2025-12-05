@@ -96,6 +96,9 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files\Le_Core</Filter>
     </ClCompile>
+    <ClCompile Include="le_resource_manager.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="le_window.hpp">
@@ -150,6 +153,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="le_uniform_buffer_pool.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="le_resource_manager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

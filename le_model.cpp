@@ -94,6 +94,56 @@ namespace le {
 		return std::make_shared<LeModel>(device, modelBuilder);
 	}
 
+	LeModel LeModel::createCubeModel(LeDevice& device, glm::vec3 offset)
+	{
+		LeModel::Builder modelBuilder{};
+		modelBuilder.vertices = {
+			// left face (white)
+			{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}, {1.f, 0.f}},
+			{{-.5f,  .5f,  .5f}, {.9f, .9f, .9f}, {0.f, 1.f}},
+			{{-.5f, -.5f,  .5f}, {.9f, .9f, .9f}, {0.f, 0.f}},
+			{{-.5f,  .5f, -.5f}, {.9f, .9f, .9f}, {1.f, 1.f}},
+
+			// right face (yellow)
+			{{.5f, -.5f, -.5f}, {.8f, .8f, .1f}, {0.f, 0.f}},
+			{{.5f,  .5f,  .5f}, {.8f, .8f, .1f}, {1.f, 1.f}},
+			{{.5f, -.5f,  .5f}, {.8f, .8f, .1f}, {1.f, 0.f}},
+			{{.5f,  .5f, -.5f}, {.8f, .8f, .1f}, {0.f, 1.f}},
+
+			// top face (violet)
+			{{-.5f, -.5f, -.5f}, {.4f, .1f, .8f}, {0.f, 1.f}},
+			{{ .5f, -.5f,  .5f}, {.4f, .1f, .8f}, {1.f, 0.f}},
+			{{-.5f, -.5f,  .5f}, {.4f, .1f, .8f}, {0.f, 0.f}},
+			{{ .5f, -.5f, -.5f}, {.4f, .1f, .8f}, {1.f, 1.f}},
+
+			// bottom face (red)
+			{{-.5f, .5f, -.5f}, {.8f, .1f, .1f}, {1.f, 0.f}},
+			{{ .5f, .5f,  .5f}, {.8f, .1f, .1f}, {0.f, 1.f}},
+			{{-.5f, .5f,  .5f}, {.8f, .1f, .1f}, {1.f, 1.f}},
+			{{ .5f, .5f, -.5f}, {.8f, .1f, .1f}, {0.f, 0.f}},
+
+			// back face (blue)
+			{{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}, {1.f, 0.f}},
+			{{ .5f,  .5f, 0.5f}, {.1f, .1f, .8f}, {0.f, 1.f}},
+			{{-.5f,  .5f, 0.5f}, {.1f, .1f, .8f}, {1.f, 1.f}},
+			{{ .5f, -.5f, 0.5f}, {.1f, .1f, .8f}, {0.f, 0.f}},
+
+			// front face (green)
+			{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}, {0.f, 0.f}},
+			{{ .5f,  .5f, -0.5f}, {.1f, .8f, .1f}, {1.f, 1.f}},
+			{{-.5f,  .5f, -0.5f}, {.1f, .8f, .1f}, {0.f, 1.f}},
+			{{ .5f, -.5f, -0.5f}, {.1f, .8f, .1f}, {1.f, 0.f}},
+		};
+		for (auto& v : modelBuilder.vertices) {
+			v.position += offset;
+		}
+
+		modelBuilder.indices = { 0,  1,  2,  0,  3,  1,  4,  5,  6,  4,  7,  5,  8,  9,  10, 8,  11, 9,
+								12, 13, 14, 12, 15, 13, 16, 17, 18, 16, 19, 17, 20, 21, 22, 20, 23, 21 };
+
+		return LeModel(device, modelBuilder);
+	}
+
 	void LeModel::createVertexBuffers(const std::vector<Vertex>& vertices)
 	{
 		vertexCount = static_cast<uint32_t>(vertices.size());

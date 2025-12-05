@@ -9,11 +9,17 @@ namespace le {
 
 	LeTexture::~LeTexture()
 	{
-		vkDestroyImageView(leDevice.device(), imageView, nullptr);
+		if (imageView != VK_NULL_HANDLE) {
+			vkDestroyImageView(leDevice.device(), imageView, nullptr);
+		}
 
-		vkDestroyImageView(leDevice.device(), imageView, nullptr);
-		vkDestroyImage(leDevice.device(), textureImage, nullptr);
-		vkFreeMemory(leDevice.device(), textureImageMemory, nullptr);
+		if (textureImage != VK_NULL_HANDLE) {
+			vkDestroyImage(leDevice.device(), textureImage, nullptr);
+		}
+
+		if (textureImageMemory != VK_NULL_HANDLE) {
+			vkFreeMemory(leDevice.device(), textureImageMemory, nullptr);
+		}
 	}
 
 	void LeTexture::createTextureImage(std::string path)

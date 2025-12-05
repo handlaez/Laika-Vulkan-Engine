@@ -18,6 +18,7 @@ namespace le {
     void LeCore::run(ILaikaEngineApp& application) {
 
         LeScene scene{ leDevice };
+        LeResourceManager resourceManager;
         LeRenderSystemManager renderManager{ leDevice, leRenderer };
         FrameInfo fi{};
 

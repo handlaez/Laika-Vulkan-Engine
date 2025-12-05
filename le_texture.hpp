@@ -17,6 +17,8 @@ namespace le {
 		~LeTexture();
 
 		VkImageView getImageView() const { return imageView; }
+
+		VkDescriptorImageInfo getDescriptorInfo(VkSampler sampler) const;
 	private:
 		void createTextureImage(std::string path);
 		void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
@@ -24,8 +26,6 @@ namespace le {
 		void createTextureImageView();
 		void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout,
 			VkImageLayout newLayout);
-
-		VkDescriptorImageInfo getDescriptorInfo(VkSampler sampler) const;
 
 		LeDevice& leDevice;
 

@@ -152,6 +152,7 @@
     <ClCompile Include="le_renderer.cpp" />
     <ClCompile Include="le_render_system_manager.cpp" />
     <ClCompile Include="le_render_system_manager.hpp" />
+    <ClCompile Include="le_resource_manager.cpp" />
     <ClCompile Include="le_scene.cpp" />
     <ClCompile Include="le_swapchain.cpp" />
     <ClCompile Include="le_texture.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="le_model.hpp" />
     <ClInclude Include="le_pipeline.hpp" />
     <ClInclude Include="le_renderer.hpp" />
+    <ClInclude Include="le_resource_manager.hpp" />
     <ClInclude Include="le_scene.hpp" />
     <ClInclude Include="le_swapchain.hpp" />
     <ClInclude Include="le_texture.hpp" />
