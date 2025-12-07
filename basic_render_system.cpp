@@ -1,7 +1,6 @@
 #include "basic_render_system.hpp"
 #include <array>
 #include <stdexcept>
-#include <iostream>
 
 namespace le {
 

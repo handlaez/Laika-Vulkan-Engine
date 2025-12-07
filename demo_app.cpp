@@ -14,6 +14,10 @@ public:
         auto texture1 = scene.leResourceManager.loadTexture("textures/texture.jpg");
         scene.addActor(0, 0); // missing texture cube
         scene.addActor(model1, texture1); // obama cube
+        scene.getActors()[0].transform.translation.x += 0.75f;
+        scene.getActors()[1].transform.translation.x -= 0.75f;
+        scene.getActors()[0].transform.translation.z += 5.f;
+        scene.getActors()[1].transform.translation.z += 5.f;
     }
 
     void onUpdate(le::LeScene& scene, FrameInfo fi) override {
@@ -28,7 +32,6 @@ public:
         if (!scene.getActors().empty()) {
             scene.getActors()[0].transform.rotation.y += 1.1f * fi.deltaTime;
             scene.getActors()[0].transform.rotation.x += 0.6f * fi.deltaTime;
-            scene.getActors()[0].transform.translation.x += 0.6f * fi.deltaTime;
         }
     }
 

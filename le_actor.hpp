@@ -10,7 +10,7 @@
 namespace le {
 
 	struct TransformComponent {
-		glm::vec3 translation;
+		glm::vec3 translation{};
 		glm::vec3 scale{ 1.f, 1.f, 1.f };
 		glm::vec3 rotation{};
 		
