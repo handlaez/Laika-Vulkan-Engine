@@ -23,8 +23,8 @@ namespace le {
 		uint32_t   loadModel(const std::string& path);
 
 		// accessors
-		LeTexture& getTexture(uint32_t id);
-		LeModel&     getModel(uint32_t id);
+		std::shared_ptr<LeTexture> getTexture(uint32_t id);
+		std::shared_ptr<LeModel>     getModel(uint32_t id);
 
 		// descriptors 
 		VkDescriptorSetLayout getTextureDescriptorSetLayout() const { return textureSetLayout; }
@@ -32,15 +32,23 @@ namespace le {
 		VkDescriptorSet getTextureDescriptorSet(uint32_t id) const { return textureDescriptorSets.at(id); }
 
 	private:
+		// fallback texture
+		const std::string FALLBACK_TEXTURE = "textures/missing_texture.jpg";
+		// fallback model will be a cube for now.
+
 		// atomic id counters
 		uint32_t nextTextureID = 0;
 		uint32_t nextModelID = 0;
 
 		// resource storage
-		std::unordered_map<uint32_t, LeTexture> textures;
-		std::unordered_map<uint32_t, LeModel>     models;
+		std::unordered_map<uint32_t, std::shared_ptr<LeTexture>> textures;
+		std::unordered_map<uint32_t, std::shared_ptr<LeModel>>     models;
 		// descriptorSet get their ids from textures
 		std::unordered_map<uint32_t, VkDescriptorSet> textureDescriptorSets;
+
+		// fallback texture and model (id = 0)
+		void loadFallbackTexture();
+		void loadFallbackModel();
 
 		LeDevice& device;
 

@@ -7,6 +7,7 @@
 #include "le_camera.hpp"
 #include "le_texture.hpp"
 #include "le_swapchain.hpp"
+#include "le_resource_manager.hpp"
 
 #include <memory>
 #include <vector>
@@ -27,7 +28,7 @@ namespace le {
 
     class BasicRenderSystem {
     public:
-        BasicRenderSystem(LeDevice& device, VkRenderPass renderPass, VkImageView textureImageView);
+        BasicRenderSystem(LeDevice& device, VkRenderPass renderPass, LeResourceManager& resourceManager);
         ~BasicRenderSystem();
 
         // Non-copyable
@@ -47,10 +48,10 @@ namespace le {
         void createPipeline(VkRenderPass renderPass);
         void createUniformBuffers();
         void createDescriptorPool();
-        void createDescriptorSets(VkImageView textureImageView);
-        void createTextureSampler();
+        void createDescriptorSets();
 
         LeDevice& device_;
+        LeResourceManager& resourceManager_;
 
         std::unique_ptr<LePipeline> pipeline_;
         VkPipelineLayout pipelineLayout_{ VK_NULL_HANDLE };
@@ -60,10 +61,9 @@ namespace le {
         std::vector<void*> uniformBuffersMapped_;
 
         VkDescriptorPool descriptorPool_{ VK_NULL_HANDLE };
-        VkDescriptorSetLayout descriptorSetLayout_{ VK_NULL_HANDLE };
+        VkDescriptorSetLayout frameSetLayout_{ VK_NULL_HANDLE };    // UBO
+        VkDescriptorSetLayout materialSetLayout_{ VK_NULL_HANDLE }; // Textures from le_resource_manager
         std::vector<VkDescriptorSet> descriptorSets_;
-
-        VkSampler textureSampler_{ VK_NULL_HANDLE };
     };
 
 }

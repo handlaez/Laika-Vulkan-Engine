@@ -5,28 +5,30 @@
 
 namespace le {
 
-    BasicRenderSystem::BasicRenderSystem(LeDevice& device, VkRenderPass renderPass, VkImageView textureImageView)
-        : device_(device) {
+    BasicRenderSystem::BasicRenderSystem(LeDevice& device, VkRenderPass renderPass, LeResourceManager& resourceManager)
+        : device_(device), resourceManager_(resourceManager) {
 
-        createDescriptorSetLayout();
-        createPipelineLayout();
+        createDescriptorSetLayout();   // UBO only
+        createPipelineLayout();        // uses 2 set layouts
         createPipeline(renderPass);
+
         createUniformBuffers();
-        createDescriptorPool();
-        createTextureSampler();
-        createDescriptorSets(textureImageView);
+        createDescriptorPool();        // UBO pool only!
+        createDescriptorSets();        // only UBO sets
     }
 
     BasicRenderSystem::~BasicRenderSystem() {
-        vkDestroySampler(device_.device(), textureSampler_, nullptr);
-
         for (size_t i = 0; i < LeSwapchain::MAX_FRAMES_IN_FLIGHT; i++) {
+            if (uniformBuffersMapped_[i]) {
+                vkUnmapMemory(device_.device(), uniformBuffersMemory_[i]);
+                uniformBuffersMapped_[i] = nullptr;
+            }
             vkDestroyBuffer(device_.device(), uniformBuffers_[i], nullptr);
             vkFreeMemory(device_.device(), uniformBuffersMemory_[i], nullptr);
         }
 
         vkDestroyDescriptorPool(device_.device(), descriptorPool_, nullptr);
-        vkDestroyDescriptorSetLayout(device_.device(), descriptorSetLayout_, nullptr);
+        vkDestroyDescriptorSetLayout(device_.device(), frameSetLayout_, nullptr);
         vkDestroyPipelineLayout(device_.device(), pipelineLayout_, nullptr);
     }
 
@@ -38,26 +40,28 @@ namespace le {
         uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
         uboLayoutBinding.pImmutableSamplers = nullptr;
 
-        VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-        samplerLayoutBinding.binding = 1;
-        samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        samplerLayoutBinding.descriptorCount = 1;
-        samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        samplerLayoutBinding.pImmutableSamplers = nullptr;
-
-        std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
-
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-        layoutInfo.pBindings = bindings.data();
+        layoutInfo.bindingCount = 1;              // only the UBO
+        layoutInfo.pBindings = &uboLayoutBinding;
 
-        if (vkCreateDescriptorSetLayout(device_.device(), &layoutInfo, nullptr, &descriptorSetLayout_) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create descriptor set layout!");
+        if (vkCreateDescriptorSetLayout(
+            device_.device(),
+            &layoutInfo,
+            nullptr,
+            &frameSetLayout_
+        ) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create frame descriptor set layout!");
         }
     }
 
     void BasicRenderSystem::createPipelineLayout() {
+        std::array<VkDescriptorSetLayout, 2> setLayouts = {
+        frameSetLayout_,                                    // set = 0
+        resourceManager_.getTextureDescriptorSetLayout()    // set = 1
+        };
+
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstantRange.offset = 0;
@@ -65,8 +69,8 @@ namespace le {
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = 1;
-        pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout_;
+        pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
+        pipelineLayoutInfo.pSetLayouts = setLayouts.data();
         pipelineLayoutInfo.pushConstantRangeCount = 1;
         pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
@@ -113,11 +117,9 @@ namespace le {
     }
 
     void BasicRenderSystem::createDescriptorPool() {
-        std::array<VkDescriptorPoolSize, 2> poolSizes{};
+        std::array<VkDescriptorPoolSize, 1> poolSizes{};
         poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         poolSizes[0].descriptorCount = static_cast<uint32_t>(LeSwapchain::MAX_FRAMES_IN_FLIGHT);
-        poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        poolSizes[1].descriptorCount = static_cast<uint32_t>(LeSwapchain::MAX_FRAMES_IN_FLIGHT);
 
         VkDescriptorPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -130,31 +132,8 @@ namespace le {
         }
     }
 
-    void BasicRenderSystem::createTextureSampler() {
-        VkSamplerCreateInfo samplerInfo{};
-        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-        samplerInfo.magFilter = VK_FILTER_LINEAR;
-        samplerInfo.minFilter = VK_FILTER_LINEAR;
-        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        samplerInfo.mipLodBias = 0.0f;
-        samplerInfo.minLod = 0.0f;
-        samplerInfo.maxLod = 0.0f;
-        samplerInfo.anisotropyEnable = VK_TRUE;
-
-        VkPhysicalDeviceProperties properties{};
-        vkGetPhysicalDeviceProperties(device_.getPhysicalDevice(), &properties);
-        samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
-
-        if (vkCreateSampler(device_.device(), &samplerInfo, nullptr, &textureSampler_) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create texture sampler!");
-        }
-    }
-
-    void BasicRenderSystem::createDescriptorSets(VkImageView textureImageView) {
-        std::vector<VkDescriptorSetLayout> layouts(LeSwapchain::MAX_FRAMES_IN_FLIGHT, descriptorSetLayout_);
+    void BasicRenderSystem::createDescriptorSets() {
+        std::vector<VkDescriptorSetLayout> layouts(LeSwapchain::MAX_FRAMES_IN_FLIGHT, frameSetLayout_);
 
         VkDescriptorSetAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -173,28 +152,15 @@ namespace le {
             bufferInfo.offset = 0;
             bufferInfo.range = sizeof(UniformBufferObject);
 
-            VkDescriptorImageInfo imageInfo{};
-            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = textureImageView;
-            imageInfo.sampler = textureSampler_;
+            VkWriteDescriptorSet write{};
+            write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            write.dstSet = descriptorSets_[i];
+            write.dstBinding = 0;
+            write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            write.descriptorCount = 1;
+            write.pBufferInfo = &bufferInfo;
 
-            std::array<VkWriteDescriptorSet, 2> writes{};
-
-            writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            writes[0].dstSet = descriptorSets_[i];
-            writes[0].dstBinding = 0;
-            writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            writes[0].descriptorCount = 1;
-            writes[0].pBufferInfo = &bufferInfo;
-
-            writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            writes[1].dstSet = descriptorSets_[i];
-            writes[1].dstBinding = 1;
-            writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            writes[1].descriptorCount = 1;
-            writes[1].pImageInfo = &imageInfo;
-
-            vkUpdateDescriptorSets(device_.device(), static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
+            vkUpdateDescriptorSets(device_.device(), 1, &write, 0, nullptr);
         }
     }
 
@@ -221,6 +187,20 @@ namespace le {
         );
 
         for (auto& actor : actors) {
+            // actor's texture descriptor set
+            VkDescriptorSet textureSet = resourceManager_.getTextureDescriptorSet(actor.textureID);
+            vkCmdBindDescriptorSets(
+                commandBuffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                pipelineLayout_,
+                1, 1,
+                &textureSet,
+                0, nullptr
+            );
+
+            auto model = resourceManager_.getModel(actor.modelID);
+            model->bind(commandBuffer);
+
             SimplePushConstantData push{};
             push.color = actor.color;
             push.transform = actor.transform.mat4();
@@ -234,8 +214,7 @@ namespace le {
                 &push
             );
 
-            actor.model->bind(commandBuffer);
-            actor.model->draw(commandBuffer);
+            model->draw(commandBuffer);
         }
     }
 

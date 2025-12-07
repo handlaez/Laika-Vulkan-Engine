@@ -10,21 +10,15 @@ using namespace le;
 class DemoApp : public ILaikaEngineApp {
 public:
     void onStart(le::LeScene& scene) override {
-        auto cubeModel = le::LeModel::createCube(scene.getDevice());
-        le::LeActor cube = LeActor::createGameObject();
-        cube.model = cubeModel;
-        cube.transform.translation = { 0.f, 0.f, 5.f };
-        cube.transform.scale = { 1.f, 1.f, 1.f };
-        scene.addActor(std::move(cube));
-
-        auto& device = scene.getDevice();
-        auto& window = device.getWindow();
-        GLFWwindow = window.getGLFWwindow();
+        auto model1 = scene.leResourceManager.loadModel("");
+        auto texture1 = scene.leResourceManager.loadTexture("textures/texture.jpg");
+        scene.addActor(0, 0); // missing texture cube
+        scene.addActor(model1, texture1); // obama cube
     }
 
     void onUpdate(le::LeScene& scene, FrameInfo fi) override {
         // movement
-        controller.moveInPlaneXZ(GLFWwindow, fi.deltaTime, scene.getCameraObject());
+        controller.moveInPlaneXZ(fi.window, fi.deltaTime, scene.getCameraObject());
 
         // camera update
         scene.getCamera().setPerspectiveProjection(glm::radians(50.f), fi.aspect, 0.1f, 100.f);
@@ -34,6 +28,7 @@ public:
         if (!scene.getActors().empty()) {
             scene.getActors()[0].transform.rotation.y += 1.1f * fi.deltaTime;
             scene.getActors()[0].transform.rotation.x += 0.6f * fi.deltaTime;
+            scene.getActors()[0].transform.translation.x += 0.6f * fi.deltaTime;
         }
     }
 
@@ -42,5 +37,4 @@ public:
 
 private:
     le::KeyboardMovementController controller{};
-    GLFWwindow* GLFWwindow;
 };

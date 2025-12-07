@@ -1,8 +1,13 @@
 #include "keyboard_movement_controller.hpp"
+#include <iostream>
 
 namespace le {
 	void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, float timestep, LeActor& actor)
 	{
+		if (!window) {
+			std::cerr << "Window is NULL\n";
+		}
+
 		glm::vec3 rotation{ 0 };
 		if (glfwGetKey(window, keys.lookRight) == GLFW_PRESS) rotation.y += 1.f;
 		if (glfwGetKey(window, keys.lookLeft) == GLFW_PRESS) rotation.y -= 1.f;

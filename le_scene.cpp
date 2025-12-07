@@ -4,8 +4,8 @@
 
 namespace le {
 
-    LeScene::LeScene(LeDevice& device)
-        : leDevice(device) {
+    LeScene::LeScene(LeDevice& device, LeResourceManager& resourceManager)
+        : leDevice(device), leResourceManager(resourceManager) {
         createDefaultCamera();
     }
 
@@ -15,6 +15,11 @@ namespace le {
 
     void LeScene::addActor(LeActor actor) {
         actors.push_back(std::move(actor));
+    }
+
+    void LeScene::addActor(int32_t model, int32_t texture)
+    {
+        actors.emplace_back(model, texture);
     }
 
     std::vector<LeActor>& LeScene::getActors() {

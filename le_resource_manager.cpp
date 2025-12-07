@@ -1,4 +1,5 @@
 #include "le_resource_manager.hpp"
+#include <iostream>
 
 namespace le {
 	LeResourceManager::LeResourceManager(LeDevice& device) : device{ device }
@@ -17,6 +18,8 @@ namespace le {
 		createTextureDescriptorPool();
 		createSharedSampler();
 
+		loadFallbackTexture();
+		loadFallbackModel();
 	}
 
 	void LeResourceManager::shutDown()
@@ -33,11 +36,11 @@ namespace le {
 	{
 		uint32_t id = nextTextureID++;
 
-		textures.emplace(id, LeTexture(device, path));
-		LeTexture& tex = textures.at(id);
+		auto tex = std::make_shared<LeTexture>(device, path);
+		textures[id] = tex;
 
 		allocateTextureDescriptor(id);
-		writeTextureDescriptor(id, tex);
+		writeTextureDescriptor(id, *tex);
 
 		return id;
 	}
@@ -47,20 +50,33 @@ namespace le {
 		uint32_t id = nextModelID++;
 
 		//TODO: replace createCubeModel() with loadFromPath()
-		models.emplace(id, LeModel::createCubeModel(device));
+		auto model = LeModel::createCube(device);
+		models[id] = model;
+
 		return id;
 	}
 
-	LeTexture& LeResourceManager::getTexture(uint32_t id)
+	std::shared_ptr<LeTexture> LeResourceManager::getTexture(uint32_t id)
 	{
 		return textures.at(id);
 	}
 
-	LeModel& LeResourceManager::getModel(uint32_t id)
+	std::shared_ptr<LeModel> LeResourceManager::getModel(uint32_t id)
 	{
 		return models.at(id);
 	}
 	
+	void LeResourceManager::loadFallbackTexture()
+	{
+		loadTexture(FALLBACK_TEXTURE);
+	}
+
+	void LeResourceManager::loadFallbackModel()
+	{
+		uint32_t id = nextModelID++;
+		models[id] = LeModel::createCube(device);
+	}
+
 	// assuming here that texture and model class' destructors will handle the rest (as they should)
 	void LeResourceManager::removeTexture(uint32_t id)
 	{
@@ -141,7 +157,7 @@ namespace le {
 		allocInfo.descriptorSetCount = 1;
 		allocInfo.pSetLayouts = &textureSetLayout;
 
-		VkDescriptorSet descriptorSet;
+		VkDescriptorSet descriptorSet{};
 
 		if (vkAllocateDescriptorSets(device.device(), &allocInfo, &descriptorSet) != VK_SUCCESS) {
 			throw std::runtime_error("Failed to allocate texture descriptor set!");
@@ -153,8 +169,7 @@ namespace le {
 	void LeResourceManager::writeTextureDescriptor(uint32_t id, LeTexture& tex)
 	{
 		VkDescriptorSet descriptorSet = textureDescriptorSets.at(id);
-
-		// This calls your function that returns VkDescriptorImageInfo
+		
 		VkDescriptorImageInfo imageInfo = tex.getDescriptorInfo(sharedSampler);
 
 		VkWriteDescriptorSet write{};

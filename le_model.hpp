@@ -33,14 +33,40 @@ namespace le {
 		LeModel(LeDevice &device, const LeModel::Builder &builder);
 		~LeModel();
 
-		LeModel(const LeModel&) = delete;
-		LeModel& operator=(const LeModel&) = delete;
-
 		void bind(VkCommandBuffer commandBuffer);
 		void draw(VkCommandBuffer commandBuffer);
 
 		static std::shared_ptr<LeModel> createCube(LeDevice& device, glm::vec3 offset = {});
-		static LeModel createCubeModel(LeDevice& device, glm::vec3 offset = {});
+
+		// copying is forbidden
+		LeModel(const LeModel&) = delete;
+		LeModel& operator=(const LeModel&) = delete;
+
+		// moving is okay (constructor only)
+		LeModel(LeModel&& other) noexcept
+			: leDevice(other.leDevice),
+			vertexBuffer(other.vertexBuffer),
+			vertexBufferMemory(other.vertexBufferMemory),
+			vertexCount(other.vertexCount),
+			hasIndexBuffer(other.hasIndexBuffer),
+			indexBuffer(other.indexBuffer),
+			indexBufferMemory(other.indexBufferMemory),
+			indexCount(other.indexCount)
+		{
+			// Null out other's resources
+			other.vertexBuffer = VK_NULL_HANDLE;
+			other.vertexBufferMemory = VK_NULL_HANDLE;
+			other.indexBuffer = VK_NULL_HANDLE;
+			other.indexBufferMemory = VK_NULL_HANDLE;
+			other.hasIndexBuffer = false;
+			other.vertexCount = 0;
+			other.indexCount = 0;
+		}
+
+		// disabling move assignment (because leDevice& cannot be reassigned)
+		LeModel& operator=(LeModel&&) = delete;
+
+
 	private: 
 		void createVertexBuffers(const std::vector<Vertex>& vertices);
 		void createIndexBuffers(const std::vector<uint32_t>& indices);

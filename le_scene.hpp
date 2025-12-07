@@ -4,6 +4,7 @@
 #include "le_actor.hpp"
 #include "le_camera.hpp"
 #include "le_device.hpp"
+#include "le_resource_manager.hpp"
 
 // std
 #include <vector>
@@ -13,11 +14,13 @@ namespace le {
 
     class LeScene {
     public:
-        explicit LeScene(LeDevice& device);
+        explicit LeScene(LeDevice& device, LeResourceManager& resourceManager);
 
         LeDevice& getDevice();
+        LeResourceManager& leResourceManager;
 
         void addActor(LeActor actor);
+        void addActor(int32_t model, int32_t texture);
 
         std::vector<LeActor>& getActors();
         const std::vector<LeActor>& getActors() const;
@@ -30,7 +33,6 @@ namespace le {
     private:
         void createDefaultCamera();
 
-    private:
         LeDevice& leDevice;
         std::vector<LeActor> actors;
 

@@ -3,7 +3,6 @@
 
 #include "le_model.hpp"
 
-
 #include <glm/gtc/matrix_transform.hpp>
 // std
 #include <memory>
@@ -15,7 +14,8 @@ namespace le {
 		glm::vec3 scale{ 1.f, 1.f, 1.f };
 		glm::vec3 rotation{};
 		
-		// Matrix corresponds to translate * Ry * Rx * Rz * scale; TODO: Remove euler angles, and implement Quaternions!;
+		// Matrix corresponds to translate * Ry * Rx * Rz * scale; 
+		// TODO: Remove euler angles, and implement Quaternions!;
 		glm::mat4 mat4() {
 			const float c3 = glm::cos(rotation.z);
 			const float s3 = glm::sin(rotation.z);
@@ -42,7 +42,12 @@ namespace le {
 					scale.z * (c1 * c2),
 					0.0f,
 				},
-				{translation.x, translation.y, translation.z, 1.0f} };
+				{
+					translation.x,
+					translation.y,
+					translation.z,
+					1.0f}
+			};
 		}
 	};
 
@@ -52,8 +57,14 @@ namespace le {
 
 		static LeActor createGameObject() {
 			static id_t currentId = 0;
-			return LeActor{ currentId };
+			return LeActor{ currentId++ };
 		}
+
+		LeActor(uint32_t modelID, uint32_t textureID, const glm::vec3& color = { 1.0f,1.0f,1.0f },
+			const TransformComponent& transform = TransformComponent{})
+			: id(nextId++), modelID(modelID), textureID(textureID), color(color), transform(transform) {
+		}
+
 
 		LeActor(const LeActor&) = delete;
 		LeActor& operator=(const LeActor&) = delete;
@@ -62,7 +73,8 @@ namespace le {
 
 		const id_t getId() { return id; }
 
-		std::shared_ptr<LeModel> model{};
+		uint32_t modelID = 0;        // assuming that model 0 is the "missing model" model
+		uint32_t textureID = 0;    // assuming that texture 0 is the "missing texture" texture
 		glm::vec3 color{};
 		TransformComponent transform{};
 
@@ -70,6 +82,7 @@ namespace le {
 		LeActor(id_t objId) : id{ objId } {}
 
 		id_t id;
+		inline static id_t nextId = 1;
 	};
 
 }

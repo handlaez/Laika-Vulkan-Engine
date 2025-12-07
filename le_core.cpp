@@ -17,10 +17,12 @@ namespace le {
 
     void LeCore::run(ILaikaEngineApp& application) {
 
-        LeScene scene{ leDevice };
-        LeResourceManager resourceManager;
-        LeRenderSystemManager renderManager{ leDevice, leRenderer };
+        LeResourceManager resourceManager{ leDevice }; // holds all the textures and models
+        resourceManager.startUp();
+        LeRenderSystemManager renderManager{ leDevice, leRenderer, resourceManager }; // actualy renders all the textures and models
+        LeScene scene{ leDevice, resourceManager }; // is an environment where models can be rendered
         FrameInfo fi{};
+        fi.window = leWindow.getGLFWwindow();
 
         application.onStart(scene);
 
@@ -36,5 +38,6 @@ namespace le {
         }
 
         application.onShutdown();
+        resourceManager.shutDown();
     }
 } // le

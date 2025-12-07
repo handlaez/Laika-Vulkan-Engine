@@ -9,16 +9,13 @@
 namespace le {
 	class LeRenderSystemManager {
 	public:
-		LeRenderSystemManager(LeDevice& device, LeRenderer& renderer);
+		LeRenderSystemManager(LeDevice& device, LeRenderer& renderer, LeResourceManager& resourceManager);
 		void render(LeScene& scene);
 
 	private:
 		LeDevice& leDevice;
 		LeRenderer& leRenderer;
 		std::unique_ptr<BasicRenderSystem> basicRenderSystem;
-
-		std::unique_ptr<LeTexture> texture; //temporary (or not) fallback texture
-		VkImageView textureImageView{}; // just to pass to the render system
 	};
 }
 
