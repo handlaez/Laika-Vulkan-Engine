@@ -1,8 +1,29 @@
 #include "le_model.hpp"
 
+#include "le_utils.hpp"
+
+#include <tiny_obj_loader.h>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
+
 //std
 #include <cassert>
 #include <cstring>
+#include <unordered_map>
+
+//temp
+#include <iostream>
+
+namespace std {
+	template <>
+	struct hash<le::LeModel::Vertex> {
+		size_t operator()(le::LeModel::Vertex const& vertex) const {
+			size_t seed = 0;
+			le::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.texCoord);
+			return seed;
+		}
+	};
+}
 
 namespace le {
 	LeModel::LeModel(LeDevice& device, const LeModel::Builder& builder)
@@ -31,6 +52,24 @@ namespace le {
 		}
 	}
 
+	std::unique_ptr<LeModel> LeModel::createModelFromFile(LeDevice& device, const std::string& filepath, const std::string& texFilepath)
+	{
+		Builder builder{};
+		builder.loadModel(filepath, texFilepath);
+
+		std::cout << "Model: " << filepath << "\nVertex count: " << builder.vertices.size() << "\n";
+		auto model = std::make_unique<LeModel>(device, builder);
+
+		if (!texFilepath.empty()) {
+			model->texture = std::make_shared<LeTexture>(device, texFilepath);
+		}
+		else {
+			model->texture = std::make_shared<LeTexture>(device, "textures/texture.jpg"); //fallback obama
+		}
+
+		return model;
+	}
+
 	void LeModel::bind(VkCommandBuffer commandBuffer)
 	{
 		VkBuffer buffers[] = { vertexBuffer };
@@ -56,41 +95,41 @@ namespace le {
 	{
 		LeModel::Builder modelBuilder{};
 		modelBuilder.vertices = {
-			// left face (white)
-			{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}, {1.f, 0.f}},
-			{{-.5f,  .5f,  .5f}, {.9f, .9f, .9f}, {0.f, 1.f}},
-			{{-.5f, -.5f,  .5f}, {.9f, .9f, .9f}, {0.f, 0.f}},
-			{{-.5f,  .5f, -.5f}, {.9f, .9f, .9f}, {1.f, 1.f}},
+			// left face (white) — normal (-1, 0, 0)
+			{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}, {-1.f,  0.f,  0.f}, {1.f, 0.f}},
+			{{-.5f,  .5f,  .5f}, {.9f, .9f, .9f}, {-1.f,  0.f,  0.f}, {0.f, 1.f}},
+			{{-.5f, -.5f,  .5f}, {.9f, .9f, .9f}, {-1.f,  0.f,  0.f}, {0.f, 0.f}},
+			{{-.5f,  .5f, -.5f}, {.9f, .9f, .9f}, {-1.f,  0.f,  0.f}, {1.f, 1.f}},
 
-			// right face (yellow)
-			{{.5f, -.5f, -.5f}, {.8f, .8f, .1f}, {0.f, 0.f}},
-			{{.5f,  .5f,  .5f}, {.8f, .8f, .1f}, {1.f, 1.f}},
-			{{.5f, -.5f,  .5f}, {.8f, .8f, .1f}, {1.f, 0.f}},
-			{{.5f,  .5f, -.5f}, {.8f, .8f, .1f}, {0.f, 1.f}},
+			// right face (yellow) — normal (1, 0, 0)
+			{{ .5f, -.5f, -.5f}, {.8f, .8f, .1f}, { 1.f,  0.f,  0.f}, {0.f, 0.f}},
+			{{ .5f,  .5f,  .5f}, {.8f, .8f, .1f}, { 1.f,  0.f,  0.f}, {1.f, 1.f}},
+			{{ .5f, -.5f,  .5f}, {.8f, .8f, .1f}, { 1.f,  0.f,  0.f}, {1.f, 0.f}},
+			{{ .5f,  .5f, -.5f}, {.8f, .8f, .1f}, { 1.f,  0.f,  0.f}, {0.f, 1.f}},
 
-			// top face (violet)
-			{{-.5f, -.5f, -.5f}, {.4f, .1f, .8f}, {0.f, 1.f}},
-			{{ .5f, -.5f,  .5f}, {.4f, .1f, .8f}, {1.f, 0.f}},
-			{{-.5f, -.5f,  .5f}, {.4f, .1f, .8f}, {0.f, 0.f}},
-			{{ .5f, -.5f, -.5f}, {.4f, .1f, .8f}, {1.f, 1.f}},
+			// top face (violet) — normal (0, -1, 0)
+			{{-.5f, -.5f, -.5f}, {.4f, .1f, .8f}, { 0.f, -1.f,  0.f}, {0.f, 1.f}},
+			{{ .5f, -.5f,  .5f}, {.4f, .1f, .8f}, { 0.f, -1.f,  0.f}, {1.f, 0.f}},
+			{{-.5f, -.5f,  .5f}, {.4f, .1f, .8f}, { 0.f, -1.f,  0.f}, {0.f, 0.f}},
+			{{ .5f, -.5f, -.5f}, {.4f, .1f, .8f}, { 0.f, -1.f,  0.f}, {1.f, 1.f}},
 
-			// bottom face (red)
-			{{-.5f, .5f, -.5f}, {.8f, .1f, .1f}, {1.f, 0.f}},
-			{{ .5f, .5f,  .5f}, {.8f, .1f, .1f}, {0.f, 1.f}},
-			{{-.5f, .5f,  .5f}, {.8f, .1f, .1f}, {1.f, 1.f}},
-			{{ .5f, .5f, -.5f}, {.8f, .1f, .1f}, {0.f, 0.f}},
+			// bottom face (red) — normal (0, 1, 0)
+			{{-.5f,  .5f, -.5f}, {.8f, .1f, .1f}, { 0.f,  1.f,  0.f}, {1.f, 0.f}},
+			{{ .5f,  .5f,  .5f}, {.8f, .1f, .1f}, { 0.f,  1.f,  0.f}, {0.f, 1.f}},
+			{{-.5f,  .5f,  .5f}, {.8f, .1f, .1f}, { 0.f,  1.f,  0.f}, {1.f, 1.f}},
+			{{ .5f,  .5f, -.5f}, {.8f, .1f, .1f}, { 0.f,  1.f,  0.f}, {0.f, 0.f}},
 
-			// back face (blue)
-			{{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}, {1.f, 0.f}},
-			{{ .5f,  .5f, 0.5f}, {.1f, .1f, .8f}, {0.f, 1.f}},
-			{{-.5f,  .5f, 0.5f}, {.1f, .1f, .8f}, {1.f, 1.f}},
-			{{ .5f, -.5f, 0.5f}, {.1f, .1f, .8f}, {0.f, 0.f}},
+			// back face (blue) — normal (0, 0, 1)
+			{{-.5f, -.5f,  0.5f}, {.1f, .1f, .8f}, { 0.f,  0.f,  1.f}, {1.f, 0.f}},
+			{{ .5f,  .5f,  0.5f}, {.1f, .1f, .8f}, { 0.f,  0.f,  1.f}, {0.f, 1.f}},
+			{{-.5f,  .5f,  0.5f}, {.1f, .1f, .8f}, { 0.f,  0.f,  1.f}, {1.f, 1.f}},
+			{{ .5f, -.5f,  0.5f}, {.1f, .1f, .8f}, { 0.f,  0.f,  1.f}, {0.f, 0.f}},
 
-			// front face (green)
-			{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}, {0.f, 0.f}},
-			{{ .5f,  .5f, -0.5f}, {.1f, .8f, .1f}, {1.f, 1.f}},
-			{{-.5f,  .5f, -0.5f}, {.1f, .8f, .1f}, {0.f, 1.f}},
-			{{ .5f, -.5f, -0.5f}, {.1f, .8f, .1f}, {1.f, 0.f}},
+			// front face (green) — normal (0, 0, -1)
+			{{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}, { 0.f,  0.f, -1.f}, {0.f, 0.f}},
+			{{ .5f,  .5f, -0.5f}, {.1f, .8f, .1f}, { 0.f,  0.f, -1.f}, {1.f, 1.f}},
+			{{-.5f,  .5f, -0.5f}, {.1f, .8f, .1f}, { 0.f,  0.f, -1.f}, {0.f, 1.f}},
+			{{ .5f, -.5f, -0.5f}, {.1f, .8f, .1f}, { 0.f,  0.f, -1.f}, {1.f, 0.f}},
 		};
 		for (auto& v : modelBuilder.vertices) {
 			v.position += offset;
@@ -184,7 +223,7 @@ namespace le {
 
 	std::vector<VkVertexInputAttributeDescription> LeModel::Vertex::getAttributeDescriptions()
 	{
-		std::vector<VkVertexInputAttributeDescription> attributeDescriptions(3);
+		std::vector<VkVertexInputAttributeDescription> attributeDescriptions(4);
 		// position
 		attributeDescriptions[0].binding = 0;
 		attributeDescriptions[0].location = 0;
@@ -197,12 +236,83 @@ namespace le {
 		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
 		attributeDescriptions[1].offset = offsetof(Vertex, color);
 
-		//texCoords
+		//normals
 		attributeDescriptions[2].binding = 0;
 		attributeDescriptions[2].location = 2;
-		attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-		attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
+		attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[2].offset = offsetof(Vertex, normal);
+
+		//texCoords
+		attributeDescriptions[3].binding = 0;
+		attributeDescriptions[3].location = 3;
+		attributeDescriptions[3].format = VK_FORMAT_R32G32_SFLOAT;
+		attributeDescriptions[3].offset = offsetof(Vertex, texCoord);
 
 		return attributeDescriptions;
+	}
+
+	void LeModel::Builder::loadModel(const std::string& filepath, const std::string& texFilepath)
+	{
+		tinyobj::attrib_t attrib;
+		std::vector<tinyobj::shape_t> shapes;
+		std::vector<tinyobj::material_t> materials;
+		std::string warn, err;
+
+		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filepath.c_str())) {
+			throw std::runtime_error(warn + err);
+		}
+
+		vertices.clear();
+		indices.clear();
+
+		std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+		for (const auto& shape : shapes) {
+			for (const auto& index : shape.mesh.indices) {
+				Vertex vertex{};
+
+				if (index.vertex_index >= 0) {
+					vertex.position = {
+						attrib.vertices[3 * index.vertex_index + 0],
+						attrib.vertices[3 * index.vertex_index + 1],
+						attrib.vertices[3 * index.vertex_index + 2],
+					};
+
+					//colorIndexes (optional)
+					auto colorIndex = 3 * index.vertex_index + 2;
+					if (colorIndex < attrib.colors.size()) {
+						vertex.color = {
+							attrib.colors[colorIndex - 2],
+							attrib.colors[colorIndex - 1],
+							attrib.colors[colorIndex - 0],
+						};
+					}
+					else {
+						vertex.color = { 1.f, 1.f, 1.f };
+					}
+				}
+				
+				if (index.normal_index >= 0) {
+					vertex.normal = {
+						attrib.normals[3 * index.normal_index + 0],
+						attrib.normals[3 * index.normal_index + 1],
+						attrib.normals[3 * index.normal_index + 2],
+					};
+				}
+
+				if (index.texcoord_index >= 0) {
+					vertex.texCoord = {
+						attrib.texcoords[2 * index.texcoord_index + 0],
+						attrib.texcoords[2 * index.texcoord_index + 1],
+					};
+				}
+
+				if (uniqueVertices.count(vertex) == 0) {
+					uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
+					vertices.push_back(vertex);
+				}
+				indices.push_back(uniqueVertices[vertex]);
+			}
+		}
+		texturePath = texFilepath;
 	}
 }
