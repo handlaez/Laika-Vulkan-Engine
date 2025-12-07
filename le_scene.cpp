@@ -30,6 +30,10 @@ namespace le {
         return actors;
     }
 
+    LeActor& LeScene::getActor(int index) {
+        return actors.at(index);
+    }
+
     LeCamera& LeScene::getCamera() {
         return camera;
     }

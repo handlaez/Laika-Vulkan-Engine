@@ -49,8 +49,7 @@ namespace le {
 	{
 		uint32_t id = nextModelID++;
 
-		//TODO: replace createCubeModel() with loadFromPath()
-		auto model = LeModel::createCube(device);
+		auto model = LeModel::createModelFromFile(device, path);
 		models[id] = model;
 
 		return id;

@@ -52,20 +52,13 @@ namespace le {
 		}
 	}
 
-	std::unique_ptr<LeModel> LeModel::createModelFromFile(LeDevice& device, const std::string& filepath, const std::string& texFilepath)
+	std::shared_ptr<LeModel> LeModel::createModelFromFile(LeDevice& device, const std::string& filepath, glm::vec3 offset)
 	{
 		Builder builder{};
-		builder.loadModel(filepath, texFilepath);
+		builder.loadModel(filepath);
 
 		std::cout << "Model: " << filepath << "\nVertex count: " << builder.vertices.size() << "\n";
 		auto model = std::make_unique<LeModel>(device, builder);
-
-		if (!texFilepath.empty()) {
-			model->texture = std::make_shared<LeTexture>(device, texFilepath);
-		}
-		else {
-			model->texture = std::make_shared<LeTexture>(device, "textures/texture.jpg"); //fallback obama
-		}
 
 		return model;
 	}
@@ -251,7 +244,7 @@ namespace le {
 		return attributeDescriptions;
 	}
 
-	void LeModel::Builder::loadModel(const std::string& filepath, const std::string& texFilepath)
+	void LeModel::Builder::loadModel(const std::string& filepath)
 	{
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
@@ -273,7 +266,7 @@ namespace le {
 				if (index.vertex_index >= 0) {
 					vertex.position = {
 						attrib.vertices[3 * index.vertex_index + 0],
-						attrib.vertices[3 * index.vertex_index + 1],
+						-attrib.vertices[3 * index.vertex_index + 1],
 						attrib.vertices[3 * index.vertex_index + 2],
 					};
 
@@ -302,7 +295,7 @@ namespace le {
 				if (index.texcoord_index >= 0) {
 					vertex.texCoord = {
 						attrib.texcoords[2 * index.texcoord_index + 0],
-						attrib.texcoords[2 * index.texcoord_index + 1],
+						-attrib.texcoords[2 * index.texcoord_index + 1],
 					};
 				}
 
@@ -313,6 +306,5 @@ namespace le {
 				indices.push_back(uniqueVertices[vertex]);
 			}
 		}
-		texturePath = texFilepath;
 	}
 }

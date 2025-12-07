@@ -24,6 +24,7 @@ namespace le {
 
         std::vector<LeActor>& getActors();
         const std::vector<LeActor>& getActors() const;
+        LeActor& getActor(int index);
 
         LeCamera& getCamera();
         const LeCamera& getCamera() const;

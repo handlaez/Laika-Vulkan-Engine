@@ -32,9 +32,8 @@ namespace le {
 		struct Builder {
 			std::vector<Vertex> vertices{};
 			std::vector<uint32_t> indices{};
-			std::string texturePath{};
 
-			void loadModel(const std::string& filepath, const std::string& texFilepath);
+			void loadModel(const std::string& filepath);
 		};
 
 		LeModel(LeDevice &device, const LeModel::Builder &builder);
@@ -43,7 +42,7 @@ namespace le {
 		void bind(VkCommandBuffer commandBuffer);
 		void draw(VkCommandBuffer commandBuffer);
 
-		static std::unique_ptr<LeModel> createModelFromFile(LeDevice& device, const std::string& filepath, const std::string& texFilepath);
+		static std::shared_ptr<LeModel> createModelFromFile(LeDevice& device, const std::string& filepath, glm::vec3 offset = {});
 		static std::shared_ptr<LeModel> createCube(LeDevice& device, glm::vec3 offset = {});
 
 		// copying is forbidden
@@ -52,7 +51,7 @@ namespace le {
 
 		// moving is okay (constructor only)
 		LeModel(LeModel&& other) noexcept
-			: leDevice(other.leDevice),
+		  : leDevice(other.leDevice),
 			vertexBuffer(other.vertexBuffer),
 			vertexBufferMemory(other.vertexBufferMemory),
 			vertexCount(other.vertexCount),

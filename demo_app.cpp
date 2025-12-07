@@ -10,14 +10,16 @@ using namespace le;
 class DemoApp : public ILaikaEngineApp {
 public:
     void onStart(le::LeScene& scene) override {
-        auto model1 = scene.leResourceManager.loadModel("");
-        auto texture1 = scene.leResourceManager.loadTexture("textures/texture.jpg");
+        auto model1 = scene.leResourceManager.loadModel("models/viking_room.obj");
+        auto texture1 = scene.leResourceManager.loadTexture("textures/viking_room.png");
         scene.addActor(0, 0); // missing texture cube
         scene.addActor(model1, texture1); // obama cube
-        scene.getActors()[0].transform.translation.x += 0.75f;
-        scene.getActors()[1].transform.translation.x -= 0.75f;
-        scene.getActors()[0].transform.translation.z += 5.f;
-        scene.getActors()[1].transform.translation.z += 5.f;
+        scene.getActor(0).transform.translation.x += 0.75f;
+        scene.getActor(1).transform.translation.x -= 0.75f;
+        scene.getActor(0).transform.translation.z += 5.f;
+        scene.getActor(1).transform.translation.z += 5.f;
+        scene.getActor(1).transform.rotation.x = 1.5707f;
+        scene.getActor(1).transform.rotation.z = -1.5707f;
     }
 
     void onUpdate(le::LeScene& scene, FrameInfo fi) override {
