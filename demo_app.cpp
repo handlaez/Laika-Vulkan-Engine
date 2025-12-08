@@ -14,11 +14,11 @@ public:
         auto texture1 = scene.leResourceManager.loadTexture("textures/viking_room.png");
         scene.addActor(0, 0); // missing texture cube
         scene.addActor(model1, texture1); // obama cube
-        scene.getActor(0).transform.translation.x += 0.75f;
+        scene.getActor(0).transform.translation.x += 5.00f;
         scene.getActor(1).transform.translation.x -= 0.75f;
-        scene.getActor(0).transform.translation.z += 5.f;
-        scene.getActor(1).transform.translation.z += 5.f;
-        scene.getActor(1).transform.rotation.x = 1.5707f;
+        scene.getActor(0).transform.translation.z += 5.00f;
+        scene.getActor(1).transform.translation.z += 5.00f;
+        scene.getActor(1).transform.rotation.x =  1.5707f;
         scene.getActor(1).transform.rotation.z = -1.5707f;
     }
 

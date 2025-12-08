@@ -65,7 +65,6 @@ namespace le {
 			: id(nextId++), modelID(modelID), textureID(textureID), color(color), transform(transform) {
 		}
 
-
 		LeActor(const LeActor&) = delete;
 		LeActor& operator=(const LeActor&) = delete;
 		LeActor(LeActor&&) = default;

@@ -42,12 +42,6 @@
     <ClCompile Include="le_core.cpp">
       <Filter>Source Files\Le_Core</Filter>
     </ClCompile>
-    <ClCompile Include="le_descriptor_pool.cpp">
-      <Filter>Source Files\Le_Core</Filter>
-    </ClCompile>
-    <ClCompile Include="le_descriptor_set_layout.cpp">
-      <Filter>Source Files\Le_Core</Filter>
-    </ClCompile>
     <ClCompile Include="le_device.cpp">
       <Filter>Source Files\Le_Core</Filter>
     </ClCompile>
@@ -75,12 +69,6 @@
     <ClCompile Include="le_texture.cpp">
       <Filter>Source Files\Le_Core</Filter>
     </ClCompile>
-    <ClCompile Include="le_uniform_buffer.cpp">
-      <Filter>Source Files\Le_Core</Filter>
-    </ClCompile>
-    <ClCompile Include="le_uniform_buffer_pool.cpp">
-      <Filter>Source Files\Le_Core</Filter>
-    </ClCompile>
     <ClCompile Include="le_window.cpp">
       <Filter>Source Files\Le_Core</Filter>
     </ClCompile>
@@ -98,6 +86,9 @@
     </ClCompile>
     <ClCompile Include="le_resource_manager.cpp">
       <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="tiny_obj_loader.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -140,22 +131,13 @@
     <ClInclude Include="le_scene.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="le_descriptor_pool.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_descriptor_set_layout.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="le_frame_info.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="le_uniform_buffer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_uniform_buffer_pool.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="le_resource_manager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="le_utils.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
