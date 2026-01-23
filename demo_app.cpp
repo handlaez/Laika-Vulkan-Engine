@@ -10,16 +10,25 @@ using namespace le;
 class DemoApp : public ILaikaEngineApp {
 public:
     void onStart(le::LeScene& scene) override {
-        auto model1 = scene.leResourceManager.loadModel("models/viking_room.obj");
-        auto texture1 = scene.leResourceManager.loadTexture("textures/viking_room.png");
+        uint32_t model1 = scene.leResourceManager.loadModel("models/viking_room.obj");
+        uint32_t texture1 = scene.leResourceManager.loadTexture("textures/viking_room.png");
+
+        scene.addActor(model1, texture1); // loaded model
         scene.addActor(0, 0); // missing texture cube
-        scene.addActor(model1, texture1); // obama cube
-        scene.getActor(0).transform.translation.x += 5.00f;
-        scene.getActor(1).transform.translation.x -= 0.75f;
-        scene.getActor(0).transform.translation.z += 5.00f;
-        scene.getActor(1).transform.translation.z += 5.00f;
-        scene.getActor(1).transform.rotation.x =  1.5707f;
-        scene.getActor(1).transform.rotation.z = -1.5707f;
+        scene.addActor(0, 0); // missing texture cube
+
+        LeActor& modelActor = scene.getActor(0);
+        LeActor& cubeActor = scene.getActor(1);
+        LeActor& cubeActor2 = scene.getActor(2);
+        
+        cubeActor.transform.translation = glm::vec3{ -1.25f, 0.f, 5.f };
+        cubeActor.transform.rotation = glm::vec3{ 1.5707f, 0.f, -1.5707f };
+
+        modelActor.transform.translation = glm::vec3{ +0.75f, 0.f, 5.f };
+        modelActor.transform.rotation = glm::vec3{ 1.5707f, 0.f, -1.5707f };
+
+        cubeActor2.transform.translation = glm::vec3{ +2.75f, 0.f, 5.f };
+        cubeActor2.transform.rotation = glm::vec3{ 1.5707f, 0.f, -1.5707f };
     }
 
     void onUpdate(le::LeScene& scene, FrameInfo fi) override {

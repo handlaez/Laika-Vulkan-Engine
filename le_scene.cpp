@@ -13,13 +13,15 @@ namespace le {
         return leDevice;
     }
 
-    void LeScene::addActor(LeActor actor) {
+    LeActor& LeScene::addActor(LeActor actor) {
         actors.push_back(std::move(actor));
+        return actors.back();
     }
 
-    void LeScene::addActor(int32_t model, int32_t texture)
+    LeActor& LeScene::addActor(int32_t model, int32_t texture)
     {
         actors.emplace_back(model, texture);
+        return actors.back();
     }
 
     std::vector<LeActor>& LeScene::getActors() {
@@ -47,7 +49,7 @@ namespace le {
     }
 
     void LeScene::createDefaultCamera() {
-        cameraObject = std::make_unique<LeActor>(LeActor::createGameObject());
+        cameraObject = std::make_unique<LeActor>();
         cameraObject->transform.translation = { 0.f, 0.f, 0.f };
         cameraObject->transform.rotation = { 0.f, 0.f, 0.f };
 

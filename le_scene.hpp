@@ -19,8 +19,8 @@ namespace le {
         LeDevice& getDevice();
         LeResourceManager& leResourceManager;
 
-        void addActor(LeActor actor);
-        void addActor(int32_t model, int32_t texture);
+        LeActor& addActor(LeActor actor);
+        LeActor& addActor(int32_t model, int32_t texture);
 
         std::vector<LeActor>& getActors();
         const std::vector<LeActor>& getActors() const;
