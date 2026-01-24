@@ -40,4 +40,9 @@ namespace le {
 			actor.transform.translation += moveSpeed * timestep * glm::normalize(moveDir);
 		}
 	}
+
+	bool KeyboardMovementController::getToggleHitboxPressed(GLFWwindow* window) const
+	{
+		return (glfwGetKey(window, keys.toggleHitboxes) == GLFW_PRESS);
+	}
 }

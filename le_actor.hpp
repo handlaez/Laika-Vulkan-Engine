@@ -2,6 +2,7 @@
 #define LE_ACTOR_HPP
 
 #include "le_model.hpp"
+#include "le_aabbhitbox.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 // std
@@ -62,6 +63,7 @@ namespace le {
 		uint32_t textureID = 0;    // assuming that texture 0 is the "missing texture" texture
 		glm::vec3 color{};
 		TransformComponent transform{};
+		std::vector<AABBHitbox> hitboxes[1];    // most actors will have a single hitbox for now.
 	};
 
 }

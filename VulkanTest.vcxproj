@@ -145,11 +145,8 @@
   <ItemGroup>
     <ClCompile Include="basic_render_system.cpp" />
     <ClCompile Include="demo_app.cpp" />
-    <ClCompile Include="keyboard_movement_controller.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="keyboard_movement_controller.hpp" />
+    <ClCompile Include="keyboard_movement_controller.cpp" />
+    <ClCompile Include="le_aabbhitbox.cpp" />
     <ClCompile Include="le_camera.cpp" />
     <ClCompile Include="le_core.cpp" />
     <ClCompile Include="le_device.cpp" />
@@ -157,7 +154,6 @@
     <ClCompile Include="le_pipeline.cpp" />
     <ClCompile Include="le_renderer.cpp" />
     <ClCompile Include="le_render_system_manager.cpp" />
-    <ClCompile Include="le_render_system_manager.hpp" />
     <ClCompile Include="le_resource_manager.cpp" />
     <ClCompile Include="le_scene.cpp" />
     <ClCompile Include="le_swapchain.cpp" />
@@ -170,6 +166,9 @@
   <ItemGroup>
     <ClInclude Include="basic_render_system.hpp" />
     <ClInclude Include="i_laika_engine_app.hpp" />
+    <ClInclude Include="le_render_system_manager.hpp" />
+	<ClInclude Include="le_aabbhitbox.hpp" />
+    <ClInclude Include="keyboard_movement_controller.hpp" />
     <ClInclude Include="le_actor.hpp" />
     <ClInclude Include="le_camera.hpp" />
     <ClInclude Include="le_core.hpp" />

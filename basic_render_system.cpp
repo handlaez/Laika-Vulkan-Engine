@@ -92,6 +92,26 @@ namespace le {
             "shaders/frag_shader.spv",
             pipelineConfig
         );
+
+        PipelineConfigInfo wireConfig{};
+        LePipeline::defaultPipelineConfigInfo(wireConfig);
+
+        wireConfig.rasterizationInfo.polygonMode = VK_POLYGON_MODE_LINE;
+        wireConfig.rasterizationInfo.cullMode = VK_CULL_MODE_NONE;
+        wireConfig.rasterizationInfo.lineWidth = 1.0f;
+
+        wireConfig.renderPass = renderPass;
+        wireConfig.pipelineLayout = pipelineLayout_;
+
+        // optional, recommended for debug hitboxes
+        // wireConfig.depthStencilInfo.depthWriteEnable = VK_FALSE;
+
+        wireframePipeline_ = std::make_unique<LePipeline>(
+            device_,
+            "shaders/vert_shader.spv",
+            "shaders/frag_shader.spv",
+            wireConfig
+        );
     }
 
     void BasicRenderSystem::createUniformBuffers() {
@@ -166,6 +186,7 @@ namespace le {
     void BasicRenderSystem::renderActors(
         VkCommandBuffer commandBuffer,
         std::vector<LeActor>& actors,
+        bool renderHitboxes,
         const LeCamera& camera,
         size_t currentFrame
     ) {
@@ -214,6 +235,34 @@ namespace le {
             );
 
             model->draw(commandBuffer);
+        }
+
+        if (renderHitboxes)
+        {
+            wireframePipeline_->bind(commandBuffer);
+            auto model = resourceManager_.getModel(0); // uniform cube ID
+            model->bind(commandBuffer);
+
+            for (auto& actor : actors) 
+            {
+                for (const auto& hitbox : *actor.hitboxes)
+                {
+                    SimplePushConstantData push{};
+                    push.color = glm::vec3(0.0f, 1.0f, 0.6f);  // very visible hitbox color 
+                    push.transform = hitbox.mat4();
+
+                    vkCmdPushConstants(
+                        commandBuffer,
+                        pipelineLayout_,
+                        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                        0,
+                        sizeof(SimplePushConstantData),
+                        &push
+                    );
+
+                    model->draw(commandBuffer);
+                }
+            }
         }
     }
 

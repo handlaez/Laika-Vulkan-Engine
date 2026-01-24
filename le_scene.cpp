@@ -6,6 +6,7 @@ namespace le {
 
     LeScene::LeScene(LeDevice& device, LeResourceManager& resourceManager)
         : leDevice(device), leResourceManager(resourceManager) {
+        renderHitboxes_ = false;
         createDefaultCamera();
     }
 
@@ -22,6 +23,16 @@ namespace le {
     {
         actors.emplace_back(model, texture);
         return actors.back();
+    }
+
+    void LeScene::toggleRenderHitboxes()
+    {
+        renderHitboxes_ = !renderHitboxes_;
+    }
+
+    bool LeScene::getRenderHitboxes() const
+    {
+        return renderHitboxes_;
     }
 
     std::vector<LeActor>& LeScene::getActors() {

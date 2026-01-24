@@ -22,6 +22,9 @@ namespace le {
         LeActor& addActor(LeActor actor);
         LeActor& addActor(int32_t model, int32_t texture);
 
+        void toggleRenderHitboxes();
+        bool getRenderHitboxes() const;
+
         std::vector<LeActor>& getActors();
         const std::vector<LeActor>& getActors() const;
         LeActor& getActor(int index);
@@ -33,6 +36,8 @@ namespace le {
 
     private:
         void createDefaultCamera();
+
+        bool renderHitboxes_;
 
         LeDevice& leDevice;
         std::vector<LeActor> actors;

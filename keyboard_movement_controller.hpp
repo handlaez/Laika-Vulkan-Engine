@@ -18,9 +18,11 @@ namespace le {
 			int lookRight = GLFW_KEY_RIGHT;
 			int lookUp = GLFW_KEY_UP;
 			int lookDown = GLFW_KEY_DOWN;
+			int toggleHitboxes = GLFW_KEY_H;
 		};
 
 		void moveInPlaneXZ(GLFWwindow* window, float timestep, LeActor& actor);
+		bool getToggleHitboxPressed(GLFWwindow* window) const;
 
 		KeyMappings keys{};
 		float moveSpeed{ 3.f };
