@@ -37,7 +37,7 @@ namespace le {
 
         void renderActors(
             VkCommandBuffer commandBuffer,
-            std::vector<LeActor>& actors,
+            std::vector<std::shared_ptr<LeActor>>& actors,
             bool renderHitboxes,
             const LeCamera& camera,
             size_t currentFrame

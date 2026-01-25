@@ -1,4 +1,7 @@
 #include "le_aabbhitbox.hpp"
+#include "le_actor.hpp"
+
+#include <glm/gtc/quaternion.hpp>
 
 namespace le {
 	AABBHitbox::AABBHitbox() : center_(0.0f), halfExtents_(0.5f) {}
@@ -17,9 +20,24 @@ namespace le {
 		halfExtents_ = halfExtents;
 	}
 
+	void AABBHitbox::setParent(std::shared_ptr<LeActor> p)
+	{
+		parent_ = p;
+	}
+
 	const glm::vec3& AABBHitbox::getCenter() const
 	{
 		return center_;
+	}
+
+	glm::vec3 AABBHitbox::getGlobalCenter() const
+	{
+		if (auto p = parent_.lock()) {
+			return p->transform.translation + center_; // parent exists
+		}
+		else {
+			return center_; // fallback if parent destroyed
+		}
 	}
 
 	const glm::vec3& AABBHitbox::getHalfExtents() const
@@ -29,27 +47,26 @@ namespace le {
 
 	glm::mat4 AABBHitbox::mat4() const
 	{
+		glm::vec3 globalPos = getGlobalCenter();
+
 		return glm::mat4{
 			{ 2.0f * halfExtents_.x, 0.0f, 0.0f, 0.0f },
-			{ 0.0f, 2.0f * halfExtents_.y, 0.0f, 0.0f },  // uniform cube extents 0.5 in each direction,
-			{ 0.0f, 0.0f, 2.0f * halfExtents_.z, 0.0f },  // therefore it must be scaled by 2
-			{
-				center_.x,
-				center_.y,
-				center_.z,
-				1.0f
-			}
+			{ 0.0f, 2.0f * halfExtents_.y, 0.0f, 0.0f },
+			{ 0.0f, 0.0f, 2.0f * halfExtents_.z, 0.0f },
+			{ globalPos, 1.0f }
 		};
 	}
 
 	glm::vec3 AABBHitbox::getMin() const
 	{
-		return center_ - halfExtents_;
+		glm::vec3 globalCenter = getGlobalCenter();
+		return globalCenter - halfExtents_;
 	}
 
 	glm::vec3 AABBHitbox::getMax() const
 	{
-		return center_ + halfExtents_;
+		glm::vec3 globalCenter = getGlobalCenter();
+		return globalCenter + halfExtents_;
 	}
 
 	bool AABBHitbox::intersects(const AABBHitbox& other) const

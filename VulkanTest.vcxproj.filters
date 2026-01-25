@@ -51,9 +51,6 @@
     <ClCompile Include="le_pipeline.cpp">
       <Filter>Source Files\Le_Core</Filter>
     </ClCompile>
-    <ClCompile Include="demo_app.cpp">
-      <Filter>Source Files\Le_Core</Filter>
-    </ClCompile>
     <ClCompile Include="le_render_system_manager.cpp">
       <Filter>Source Files\Le_Core</Filter>
     </ClCompile>
@@ -92,6 +89,12 @@
     </ClCompile>
     <ClCompile Include="le_aabbhitbox.cpp">
       <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="le_actor.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="demo_app.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -151,6 +154,9 @@
     </ClInclude>
     <ClInclude Include="le_render_system_manager.hpp">
       <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="demo_app.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

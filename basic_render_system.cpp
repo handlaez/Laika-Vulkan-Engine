@@ -185,7 +185,7 @@ namespace le {
 
     void BasicRenderSystem::renderActors(
         VkCommandBuffer commandBuffer,
-        std::vector<LeActor>& actors,
+        std::vector<std::shared_ptr<LeActor>>& actors,
         bool renderHitboxes,
         const LeCamera& camera,
         size_t currentFrame
@@ -208,7 +208,7 @@ namespace le {
 
         for (auto& actor : actors) {
             // actor's texture descriptor set
-            VkDescriptorSet textureSet = resourceManager_.getTextureDescriptorSet(actor.textureID);
+            VkDescriptorSet textureSet = resourceManager_.getTextureDescriptorSet(actor->textureID);
             vkCmdBindDescriptorSets(
                 commandBuffer,
                 VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -218,12 +218,12 @@ namespace le {
                 0, nullptr
             );
 
-            auto model = resourceManager_.getModel(actor.modelID);
+            auto model = resourceManager_.getModel(actor->modelID);
             model->bind(commandBuffer);
 
             SimplePushConstantData push{};
-            push.color = actor.color;
-            push.transform = actor.transform.mat4();
+            push.color = actor->color;
+            push.transform = actor->transform.mat4();
 
             vkCmdPushConstants(
                 commandBuffer,
@@ -245,7 +245,7 @@ namespace le {
 
             for (auto& actor : actors) 
             {
-                for (const auto& hitbox : *actor.hitboxes)
+                for (const auto& hitbox : actor->hitboxes)
                 {
                     SimplePushConstantData push{};
                     push.color = glm::vec3(0.0f, 1.0f, 0.6f);  // very visible hitbox color 

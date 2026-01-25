@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 // std
 #include <memory>
+#include <vector>
 
 namespace le {
 
@@ -52,7 +53,7 @@ namespace le {
 		}
 	};
 
-	class LeActor {
+	class LeActor : public std::enable_shared_from_this<LeActor> {
 	public:
 		LeActor(uint32_t modelID = 0, uint32_t textureID = 0, const glm::vec3& color = { 1.0f,1.0f,1.0f },
 			const TransformComponent& transform = TransformComponent{})
@@ -63,7 +64,10 @@ namespace le {
 		uint32_t textureID = 0;    // assuming that texture 0 is the "missing texture" texture
 		glm::vec3 color{};
 		TransformComponent transform{};
-		std::vector<AABBHitbox> hitboxes[1];    // most actors will have a single hitbox for now.
+		std::vector<AABBHitbox> hitboxes;    // most actors will have a single hitbox for now.
+
+		void addHitbox(const glm::vec3& offset, const glm::vec3 halfExtents);
+		bool checkCollision(LeActor& other) const;
 	};
 
 }

@@ -1,5 +1,5 @@
 #include "le_core.hpp"
-#include "demo_app.cpp"
+#include "demo_app.hpp"
 
 // std
 #include <cstdlib>
