@@ -109,7 +109,7 @@ namespace le {
         wireframePipeline_ = std::make_unique<LePipeline>(
             device_,
             "shaders/vert_shader.spv",
-            "shaders/frag_shader.spv",
+            "shaders/wireframe_shader.spv",
             wireConfig
         );
     }
@@ -248,7 +248,7 @@ namespace le {
                 for (const auto& hitbox : actor->hitboxes)
                 {
                     SimplePushConstantData push{};
-                    push.color = glm::vec3(0.0f, 1.0f, 0.6f);  // very visible hitbox color 
+                    push.color = glm::vec3(1.0f, 1.0f, 1.0f);  // very visible hitbox color 
                     push.transform = hitbox.mat4();
 
                     vkCmdPushConstants(

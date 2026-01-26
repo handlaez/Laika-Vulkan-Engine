@@ -33,7 +33,7 @@ namespace le {
 	glm::vec3 AABBHitbox::getGlobalCenter() const
 	{
 		if (auto p = parent_.lock()) {
-			return p->transform.translation + center_; // parent exists
+			return p->transform.translation + (center_ * p->transform.scale); // parent exists
 		}
 		else {
 			return center_; // fallback if parent destroyed

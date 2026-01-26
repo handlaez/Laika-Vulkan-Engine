@@ -36,8 +36,31 @@ namespace le {
 		indexBufferMemory(VK_NULL_HANDLE),
 		indexCount(0)
 	{
-		createVertexBuffers(builder.vertices);
+		// fixing export mismatch
+		const glm::quat bakeRotation = glm::quat(glm::vec3(1.5707f, 1.5707f, 0.0f));
+
+		std::vector<Vertex> transformedVertices = builder.vertices;
+
+		for (auto& v : transformedVertices)
+		{
+			v.position = bakeRotation * v.position;
+			v.normal = bakeRotation * v.normal;
+		}
+		//
+		createVertexBuffers(transformedVertices);
 		createIndexBuffers(builder.indices);
+
+		//BVH
+		std::vector<glm::vec3> positions;
+		std::vector<uint32_t> indices;
+		BVH bvh;
+
+		this->positions.reserve(transformedVertices.size());
+		this->indices = builder.indices;
+		for (const auto& v : transformedVertices) {
+			this->positions.push_back(v.position);
+		}
+		bvh.build(this->positions, this->indices);
 	}
 
 	LeModel::~LeModel()

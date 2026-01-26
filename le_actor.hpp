@@ -65,9 +65,12 @@ namespace le {
 		glm::vec3 color{};
 		TransformComponent transform{};
 		std::vector<AABBHitbox> hitboxes;    // most actors will have a single hitbox for now.
+		std::unique_ptr<BVH> bvh = nullptr;
 
 		void addHitbox(const glm::vec3& offset, const glm::vec3 halfExtents);
 		bool checkCollision(LeActor& other) const;
+		void takeBVHOwnership(std::unique_ptr<BVH> newBVH);
+		bool hasBVH() const { return bvh != nullptr; }
 	};
 
 }

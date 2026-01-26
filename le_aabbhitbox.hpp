@@ -28,7 +28,6 @@ namespace le {
 
 		bool intersects(const AABBHitbox& other) const;
 		bool contains(const glm::vec3& point) const;
-
 	private:
 		glm::vec3 center_{};       // center described as an offset form actors x, y
 		glm::vec3 halfExtents_{};  // half size of the hitbox.
