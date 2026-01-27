@@ -1,5 +1,6 @@
 #include "le_BVH.hpp"
 
+#include <iostream>   // cerr
 #include <algorithm>  // nth_element
 #include <functional> // std::function
 #include <cfloat>     // FLT_MAX
@@ -81,7 +82,10 @@ namespace le {
     }
 
     void BVH::getPotentialCollisions(int nodeIdx, const AABBHitbox& testBox, std::vector<AABBHitbox>& outBoxes) const {
-        if (nodes_.empty() || nodeIdx == -1) return;
+        if (nodes_.empty() || nodeIdx == -1)
+        {
+            return;
+        }
 
         // Use your existing AABBHitbox::intersects method
         if (!nodes_[nodeIdx].bounds.intersects(testBox)) {

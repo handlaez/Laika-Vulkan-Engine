@@ -1,6 +1,7 @@
 #include "le_actor.hpp"
 
 #include "memory"
+#include <iostream> // temp
 
 namespace le {
     void LeActor::addHitbox(const glm::vec3& offset, const glm::vec3 halfExtents)
@@ -10,12 +11,21 @@ namespace le {
         hitboxes.push_back(h);
     }
 
-    bool LeActor::checkCollision(LeActor& other) const
+    bool LeActor::checkCollision(LeActor& other)
     {
         std::vector<AABBHitbox> collisions;
         if (this->hasBVH()) // if this has BVH
         {
             this->bvh->getPotentialCollisions(0, other.hitboxes.at(0), collisions);
+
+            // temp (test)
+            this->hitboxes.clear();
+            for (auto& h : collisions)
+            {
+                this->hitboxes.push_back(h);
+            }
+            // temp (test)
+
             return !collisions.empty();
         }
 

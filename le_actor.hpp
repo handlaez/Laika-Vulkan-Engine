@@ -68,7 +68,7 @@ namespace le {
 		std::unique_ptr<BVH> bvh = nullptr;
 
 		void addHitbox(const glm::vec3& offset, const glm::vec3 halfExtents);
-		bool checkCollision(LeActor& other) const;
+		bool checkCollision(LeActor& other);
 		void takeBVHOwnership(std::unique_ptr<BVH> newBVH);
 		bool hasBVH() const { return bvh != nullptr; }
 	};
