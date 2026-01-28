@@ -7,7 +7,6 @@ namespace le {
     void LeActor::addHitbox(const glm::vec3& offset, const glm::vec3 halfExtents)
     {
         AABBHitbox h(offset, halfExtents);
-        h.setParent(this->shared_from_this());
         hitboxes.push_back(h);
     }
 
@@ -16,22 +15,28 @@ namespace le {
         std::vector<AABBHitbox> collisions;
         if (this->hasBVH()) // if this has BVH
         {
-            this->bvh->getPotentialCollisions(0, other.hitboxes.at(0), collisions);
+            this->bvh->getPotentialCollisions(0, other.hitboxes.at(0), collisions, this->transform.translation, other.transform.translation);
 
-            // temp (test)
+            // draw currently colliding hitboxes (test)
             this->hitboxes.clear();
             for (auto& h : collisions)
             {
                 this->hitboxes.push_back(h);
             }
-            // temp (test)
 
             return !collisions.empty();
         }
 
         if (other.hasBVH()) // if other has BVH
         {
-            other.bvh->getPotentialCollisions(0, this->hitboxes.at(0), collisions);
+            // draw currently colliding hitboxes (test)
+            other.hitboxes.clear();
+            for (auto& h : collisions)
+            {
+                other.hitboxes.push_back(h);
+            }
+
+            other.bvh->getPotentialCollisions(0, this->hitboxes.at(0), collisions, other.transform.translation, this->transform.translation);
             return !collisions.empty();
         }
 
@@ -42,7 +47,7 @@ namespace le {
         {
             for (const auto& hitbox : hitboxes)
             {
-                if (hitbox.intersects(otherHitbox))
+                if (hitbox.intersects(otherHitbox, this->transform.translation, other.transform.translation))
                 {
                     return true;
                 }
@@ -51,26 +56,26 @@ namespace le {
         return false;
     }
 
-    void LeActor::takeBVHOwnership(std::unique_ptr<BVH> newBVH)
+    void LeActor::setBVH(std::shared_ptr<BVH> newBVH)
     {
         if (!newBVH || newBVH->isEmpty())
         {
             return;
         }
 
+        /* is all leaf hitboxes are to be drawn, uncomment this.
+        // for now, only the currently colliding ones are being drawn
+        
         hitboxes.clear();
         hitboxes.reserve(hitboxes.size() + newBVH->getNodes().size());
-
-        auto self = shared_from_this();
-
         for (auto& node : newBVH->getNodes()) {
-            node.bounds.setParent(shared_from_this());
             if (node.isLeaf())
             {
                 hitboxes.push_back(node.bounds);
             }
         }
+        */
 
-        bvh = std::move(newBVH);
+        bvh = newBVH;
     }
 }

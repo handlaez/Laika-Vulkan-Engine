@@ -77,7 +77,7 @@ namespace le {
 		LeModel& operator=(LeModel&&) = delete;
 
 		//BVH
-		const std::unique_ptr<BVH> getBVH() const { return std::make_unique<BVH>(bvh); }
+		const std::shared_ptr<BVH> getBVH() const { return std::make_shared<BVH>(bvh); }
 		const std::vector<glm::vec3>& getPositions() const { return positions; }
 		const std::vector<uint32_t>& getIndices() const { return indices; }
 

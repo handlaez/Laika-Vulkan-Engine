@@ -19,7 +19,7 @@ namespace le {
 
         if (indices.empty()) return;
 
-        // 1. Gather triangle bounds and centroids
+        // 1. gathering triangle bounds and centroids
         std::vector<TriangleMetadata> triangles;
         triangles.reserve(indices.size() / 3);
 
@@ -36,19 +36,19 @@ namespace le {
             triangles.push_back(tri);
         }
 
-        // 2. Recursive build lambda
+        // 2. recursive lambda build function
         std::function<int(int, int)> buildRecursive = [&](int start, int end) -> int {
             int nodeIdx = static_cast<int>(nodes_.size());
-            nodes_.emplace_back(); // Create node
+            nodes_.emplace_back();
 
-            // Calculate AABB for this node's range
+            // calculating AABB for this node's range
             glm::vec3 bMin(FLT_MAX), bMax(-FLT_MAX);
             for (int i = start; i < end; ++i) {
                 bMin = glm::min(bMin, triangles[i].min);
                 bMax = glm::max(bMax, triangles[i].max);
             }
 
-            // Assign bounds using your Center/HalfExtents constructor
+            // assigning bounds
             nodes_[nodeIdx].bounds = AABBHitbox((bMin + bMax) * 0.5f, (bMax - bMin) * 0.5f);
 
             int count = end - start;
@@ -56,13 +56,13 @@ namespace le {
                 nodes_[nodeIdx].firstPrim = static_cast<int>(primitiveIndices_.size());
                 nodes_[nodeIdx].primCount = count;
 
-                // Store indices in the final array
+                // storing indices in the final array
                 for (int i = start; i < end; ++i) {
                     primitiveIndices_.push_back(triangles[i].indexOffset);
                 }
             }
             else {
-                // Split along longest axis
+                // splitting along longest axis (for the best effect)
                 glm::vec3 extent = bMax - bMin;
                 int axis = (extent.x > extent.y && extent.x > extent.z) ? 0 : (extent.y > extent.z ? 1 : 2);
                 int mid = (start + end) / 2;
@@ -76,19 +76,20 @@ namespace le {
                 nodes_[nodeIdx].rightChild = buildRecursive(mid, end);
             }
             return nodeIdx;
-            };
+        };
 
+        // 3. recursion
         buildRecursive(0, static_cast<int>(triangles.size()));
     }
 
-    void BVH::getPotentialCollisions(int nodeIdx, const AABBHitbox& testBox, std::vector<AABBHitbox>& outBoxes) const {
+    void BVH::getPotentialCollisions(int nodeIdx, const AABBHitbox& testBox, std::vector<AABBHitbox>& outBoxes, const glm::vec3& globalPos, const glm::vec3& otherGlobalPos) const {
         if (nodes_.empty() || nodeIdx == -1)
         {
             return;
         }
 
-        // Use your existing AABBHitbox::intersects method
-        if (!nodes_[nodeIdx].bounds.intersects(testBox)) {
+        // using existing AABBHitbox::intersects method
+        if (!nodes_[nodeIdx].bounds.intersects(testBox, globalPos, otherGlobalPos)) {
             return;
         }
 
@@ -96,9 +97,9 @@ namespace le {
             outBoxes.push_back(nodes_[nodeIdx].bounds);
         }
         else {
-            // Recurse down the tree
-            getPotentialCollisions(nodes_[nodeIdx].leftChild, testBox, outBoxes);
-            getPotentialCollisions(nodes_[nodeIdx].rightChild, testBox, outBoxes);
+            // recurse down the tree
+            getPotentialCollisions(nodes_[nodeIdx].leftChild, testBox, outBoxes, globalPos, otherGlobalPos);
+            getPotentialCollisions(nodes_[nodeIdx].rightChild, testBox, outBoxes, globalPos, otherGlobalPos);
         }
     }
 } // namespace le

@@ -64,12 +64,12 @@ namespace le {
 		uint32_t textureID = 0;    // assuming that texture 0 is the "missing texture" texture
 		glm::vec3 color{};
 		TransformComponent transform{};
-		std::vector<AABBHitbox> hitboxes;    // most actors will have a single hitbox for now.
-		std::unique_ptr<BVH> bvh = nullptr;
+		std::vector<AABBHitbox> hitboxes;    // if actor posseses a BVH, this vector is used only for drawing purposes
+		std::shared_ptr<BVH> bvh = nullptr;  // one bvh per actor at most (why would you want more?)
 
 		void addHitbox(const glm::vec3& offset, const glm::vec3 halfExtents);
 		bool checkCollision(LeActor& other);
-		void takeBVHOwnership(std::unique_ptr<BVH> newBVH);
+		void setBVH(std::shared_ptr<BVH> newBVH);
 		bool hasBVH() const { return bvh != nullptr; }
 	};
 

@@ -135,6 +135,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\tiny_obj_loader;C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\stb_image;C:\VulkanSDK\1.4.321.1\Include;C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\glm;C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

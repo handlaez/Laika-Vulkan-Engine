@@ -20,24 +20,9 @@ namespace le {
 		halfExtents_ = halfExtents;
 	}
 
-	void AABBHitbox::setParent(std::shared_ptr<LeActor> p)
-	{
-		parent_ = p;
-	}
-
 	const glm::vec3& AABBHitbox::getCenter() const
 	{
 		return center_;
-	}
-
-	glm::vec3 AABBHitbox::getGlobalCenter() const
-	{
-		if (auto p = parent_.lock()) {
-			return p->transform.translation + (center_ * p->transform.scale); // parent exists
-		}
-		else {
-			return center_; // fallback if parent destroyed
-		}
 	}
 
 	const glm::vec3& AABBHitbox::getHalfExtents() const
@@ -45,46 +30,44 @@ namespace le {
 		return halfExtents_;
 	}
 
-	glm::mat4 AABBHitbox::mat4() const
+	glm::mat4 AABBHitbox::mat4(const glm::vec3& globalPos) const
 	{
-		glm::vec3 globalPos = getGlobalCenter();
-
 		return glm::mat4{
 			{ 2.0f * halfExtents_.x, 0.0f, 0.0f, 0.0f },
 			{ 0.0f, 2.0f * halfExtents_.y, 0.0f, 0.0f },
 			{ 0.0f, 0.0f, 2.0f * halfExtents_.z, 0.0f },
-			{ globalPos, 1.0f }
+			{ center_ + globalPos, 1.0f }
 		};
 	}
 
-	glm::vec3 AABBHitbox::getMin() const
+	glm::vec3 AABBHitbox::getMin(const glm::vec3& globalPos) const
 	{
-		glm::vec3 globalCenter = getGlobalCenter();
+		glm::vec3 globalCenter = center_ + globalPos;
 		return globalCenter - halfExtents_;
 	}
 
-	glm::vec3 AABBHitbox::getMax() const
+	glm::vec3 AABBHitbox::getMax(const glm::vec3& globalPos) const
 	{
-		glm::vec3 globalCenter = getGlobalCenter();
+		glm::vec3 globalCenter = center_ + globalPos;
 		return globalCenter + halfExtents_;
 	}
 
-	bool AABBHitbox::intersects(const AABBHitbox& other) const
+	bool AABBHitbox::intersects(const AABBHitbox& other, const glm::vec3& globalPos, const glm::vec3& otherGlobalPos) const
 	{
-		const glm::vec3 minA = getMin();
-		const glm::vec3 maxA = getMax();
-		const glm::vec3 minB = other.getMin();
-		const glm::vec3 maxB = other.getMax();
+		const glm::vec3 minA = getMin(globalPos);
+		const glm::vec3 maxA = getMax(globalPos);
+		const glm::vec3 minB = other.getMin(otherGlobalPos);
+		const glm::vec3 maxB = other.getMax(otherGlobalPos);
 
 		return (minA.x <= maxB.x && maxA.x >= minB.x) &&
 			   (minA.y <= maxB.y && maxA.y >= minB.y) &&
 			   (minA.z <= maxB.z && maxA.z >= minB.z);
 	}
 
-	bool AABBHitbox::contains(const glm::vec3& point) const
+	bool AABBHitbox::contains(const glm::vec3& point, const glm::vec3& globalPos) const
 	{
-		const glm::vec3 min = getMin();
-		const glm::vec3 max = getMax();
+		const glm::vec3 min = getMin(globalPos);
+		const glm::vec3 max = getMax(globalPos);
 
 		return (point.x >= min.x && point.x <= max.x) &&
 			   (point.y >= min.y && point.y <= max.y) &&

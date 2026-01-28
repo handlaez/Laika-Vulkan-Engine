@@ -23,7 +23,12 @@ namespace le {
         // build the hierarchy from mesh data
         void build(const std::vector<glm::vec3>& vertices, const std::vector<uint32_t>& indices);
 
-        void getPotentialCollisions(int nodeIdx, const AABBHitbox& testBox, std::vector<AABBHitbox>& outBoxes) const; // returns all boxes that collide
+        void getPotentialCollisions(
+            int nodeIdx,
+            const AABBHitbox& testBox,
+            std::vector<AABBHitbox>& outBoxes,
+            const glm::vec3& globalPos,
+            const glm::vec3& otherGlobalPos) const; // returns all boxes that collide
         
         std::vector<BVHNode> getNodes() { return nodes_; } // again, terrible way to do this :)
 

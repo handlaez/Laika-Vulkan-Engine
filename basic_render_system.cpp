@@ -249,7 +249,7 @@ namespace le {
                 {
                     SimplePushConstantData push{};
                     push.color = glm::vec3(1.0f, 1.0f, 1.0f);  // very visible hitbox color 
-                    push.transform = hitbox.mat4();
+                    push.transform = hitbox.mat4(actor->transform.translation);
 
                     vkCmdPushConstants(
                         commandBuffer,

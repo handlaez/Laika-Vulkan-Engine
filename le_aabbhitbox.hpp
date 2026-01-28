@@ -16,22 +16,21 @@ namespace le {
 
 		void setCenter(const glm::vec3& center);
 		void setHalfExtents(const glm::vec3& halfExtents);
-		void setParent(std::shared_ptr<LeActor> p);
 
 		const glm::vec3& getCenter() const;
-		glm::vec3 getGlobalCenter() const;
 		const glm::vec3& getHalfExtents() const;
-		glm::mat4 mat4() const;
+		// mat4 for rendering purposes
+		glm::mat4 mat4(const glm::vec3& globalPos) const;
 
-		glm::vec3 getMin() const;
-		glm::vec3 getMax() const;
+		glm::vec3 getMin(const glm::vec3& globalPos) const;
+		glm::vec3 getMax(const glm::vec3& globalPos) const;
 
-		bool intersects(const AABBHitbox& other) const;
-		bool contains(const glm::vec3& point) const;
+		// intersects will be called from actor's perspective, so thiese vec3's are no problem to get.
+		bool intersects(const AABBHitbox& other, const glm::vec3& globalPos, const glm::vec3& otherGlobalPos) const;
+		bool contains(const glm::vec3& point, const glm::vec3& globalPos) const;
 	private:
 		glm::vec3 center_{};       // center described as an offset form actors x, y
 		glm::vec3 halfExtents_{};  // half size of the hitbox.
-		std::weak_ptr<LeActor> parent_;
 	};
 }
 
