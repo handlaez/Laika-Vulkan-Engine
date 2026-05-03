@@ -22,8 +22,8 @@ namespace le {
 	class LeCore {
 		// when core is created a window is created -> when core is destroyed, any window will be destroyed too.
 	public:
-		static constexpr int WIDTH = 800;
-		static constexpr int HEIGHT = 800;
+		static constexpr int WIDTH = 1600;
+		static constexpr int HEIGHT = 900;
 
 		LeCore();
 		~LeCore();

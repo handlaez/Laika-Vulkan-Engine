@@ -28,11 +28,11 @@
     <Filter Include="Resource Files\Shaders\Compiled">
       <UniqueIdentifier>{3aa3ccad-a9af-40c7-9619-b0264a53c964}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Systems">
+      <UniqueIdentifier>{3575b9d8-4f4e-4c7c-8423-d18872c6fd70}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="keyboard_movement_controller.hpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="le_render_system_manager.hpp">
       <Filter>Header Files</Filter>
     </ClCompile>
@@ -49,9 +49,6 @@
       <Filter>Source Files\Le_Core</Filter>
     </ClCompile>
     <ClCompile Include="le_pipeline.cpp">
-      <Filter>Source Files\Le_Core</Filter>
-    </ClCompile>
-    <ClCompile Include="demo_app.cpp">
       <Filter>Source Files\Le_Core</Filter>
     </ClCompile>
     <ClCompile Include="le_render_system_manager.cpp">
@@ -87,8 +84,17 @@
     <ClCompile Include="le_resource_manager.cpp">
       <Filter>Source Files\Le_Core</Filter>
     </ClCompile>
-    <ClCompile Include="tiny_obj_loader.cpp">
+    <ClCompile Include="demo_app.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tiny_obj_loader.cpp">
+      <Filter>Source Files\Third Party</Filter>
+    </ClCompile>
+    <ClCompile Include="Boid.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="BoidSystem.cpp">
+      <Filter>Source Files\Systems</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -116,9 +122,6 @@
     <ClInclude Include="le_renderer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="basic_render_system.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="le_camera.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -139,6 +142,18 @@
     </ClInclude>
     <ClInclude Include="le_utils.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="keyboard_movement_controller.hpp">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="basic_render_system.hpp">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Boid.hpp">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="BoidSystem.hpp">
+      <Filter>Header Files\Systems</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
