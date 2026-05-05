@@ -2,32 +2,58 @@
 #define BOIDSYSTEM_CLASS_H
 
 #include <vector>
-#include "Boid.hpp"
+#include <glm/glm.hpp>
 
-namespace le {
+#include "le_utils.hpp"
 
-    class BoidSystem
-    {
-    public:
-        void AddBoid(const Boid& boid);
-        void Update(float deltaTime);
-        void KeepInBounds(Boid& b, float deltaTime);
+struct BoidData {
+    // boid data
+    std::vector<glm::vec3> position;
+    std::vector<glm::vec3> velocity;
+    std::vector<glm::vec3> acceleration;
 
-        std::vector<Boid>& GetBoids();
+    std::vector<int> boidCell;
 
-    private:
-        std::vector<Boid> boids;
+    std::vector<float> maxSpeed;
+    std::vector<float> maxForce;
 
-        glm::vec3 Limit(const glm::vec3& v, float max);
+    size_t Size() const { return position.size(); }
+};
 
-        glm::vec3 Separation(Boid& boid);
-        glm::vec3 Alignment(Boid& boid);
-        glm::vec3 Cohesion(Boid& boid);
+struct GridData {
+    // grid data
+    float cellSize;
+    int gridX, gridY, gridZ;
 
-        float separationRadius = 15.0f;
-        float alignmentRadius = 20.0f;
-        float cohesionRadius = 16.0f;
-    };
-}
+    std::vector<int> cellCount;
+    std::vector<int> cellOffset;
+    std::vector<int> sortedIndices;
+};
+
+class BoidSystem
+{
+public:
+    void AddBoid(const glm::vec3& pos);
+    void Update(float deltaTime);
+    void KeepInBounds(const int i, float deltaTime);
+    glm::vec3 LimitVec(glm::vec3 v, float max);
+
+    const std::vector<glm::vec3>& GetPositions() const { return _data.position; }
+    const std::vector<glm::vec3>& GetVelocities() const { return _data.velocity; }
+
+private:
+    BoidData _data;
+    GridData _grid;
+
+    void BuildGrid();
+    void ComputeForces();
+    void Integrate(float deltaTime);
+
+    glm::vec3 Limit(const glm::vec3& v, float max);
+
+    float _separationRadius = 8.0f;
+    float _alignmentRadius = 12.0f;
+    float _cohesionRadius = 20.0f;
+};
 
 #endif

@@ -10,7 +10,6 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "BoidSystem.hpp"
-#include "Boid.hpp"
 
 using namespace le;
 
@@ -29,15 +28,15 @@ public:
         return -1.0f + (rand() / (RAND_MAX / 2.0f));
     }
 
-    void onStart(le::LeScene& scene) override {
-        // reserving the space so it doesn't change the address (hopefully)
+    void onStart(le::LeScene& scene) override
+    {
         const int boidCount = 200;
+
         boidActorIndices.reserve(boidCount);
         scene.getActors().reserve(scene.getActors().size() + boidCount);
 
-        // those are handles! (integers i think)
-        auto model1 = scene.leResourceManager.loadModel("models/ugly_fish/ugly_fish.obj");
-        auto texture1 = scene.leResourceManager.loadTexture("models/ugly_fish/fish.jpg");
+        auto model = scene.leResourceManager.loadModel("models/ugly_fish/ugly_fish.obj");
+        auto texture = scene.leResourceManager.loadTexture("models/ugly_fish/fish.jpg");
 
         auto& actors = scene.getActors();
 
@@ -49,24 +48,25 @@ public:
                 randf() * 50.f
             );
 
-            boidSystem.AddBoid(Boid(pos));
+            boidSystem.AddBoid(pos);
 
-            scene.addActor(model1, texture1);
+            scene.addActor(model, texture);
 
-            size_t newIndex = scene.getActors().size() - 1;
+            size_t index = actors.size() - 1;
 
-            boidActorIndices.push_back(newIndex);
+            boidActorIndices.push_back(index);
 
-            scene.getActors()[newIndex].transform.translation = pos;
+            actors[index].transform.translation = pos;
         }
     }
 
-    void onUpdate(le::LeScene& scene, FrameInfo fi) override {
+    void onUpdate(le::LeScene& scene, FrameInfo fi) override
+    {
         // FPS counter
         counter++;
 
         double crntTime = glfwGetTime();
-        float deltaTime = crntTime - lastTime;
+        float deltaTime = fi.deltaTime;
         lastTime = crntTime;
 
         double timeDiff = crntTime - prevTime;
@@ -89,34 +89,46 @@ public:
         // movement
         controller.moveInPlaneXZ(fi.window, fi.deltaTime, scene.getCameraObject());
 
-        // camera update
-        scene.getCamera().setPerspectiveProjection(glm::radians(50.f), fi.aspect, 1.f, 5000.f);
-        scene.getCamera().setView(
-            scene.getCameraObject().transform.translation,
-            scene.getCameraObject().transform.rotation
+        // camera
+        auto& camera = scene.getCamera();
+        auto& camObj = scene.getCameraObject();
+
+        camera.setPerspectiveProjection(glm::radians(50.f), fi.aspect, 1.f, 5000.f);
+        camera.setView(
+            camObj.transform.translation,
+            camObj.transform.rotation
         );
 
-        // boids
-        boidSystem.Update(fi.deltaTime);
+        boidSystem.Update(deltaTime);
 
-        auto& boids = boidSystem.GetBoids();
-        auto& actors = scene.getActors(); // <-- critical change
+        auto& positions = boidSystem.GetPositions();
+        auto& velocities = boidSystem.GetVelocities();
+        auto& actors = scene.getActors();
 
-        for (size_t i = 0; i < boids.size(); i++)
+        const size_t count = boidActorIndices.size();
+
+        for (size_t i = 0; i < count; i++)
         {
-            auto& actor = actors[boidActorIndices[i]];
+            const size_t actorIndex = boidActorIndices[i];
 
-            actor.transform.translation = boids[i].GetPosition();
+            auto& actor = actors[actorIndex];
 
-            glm::vec3 vel = boids[i].GetVelocity();
+            // position sync
+            glm::vec3 pos = glm::vec3(positions[i]);
+            glm::vec3 vel = glm::vec3(velocities[i]);
+
+            actor.transform.translation = pos;
+
+            // orientation from velocity
             if (glm::length(vel) > 0.001f)
             {
                 glm::vec3 dir = glm::normalize(vel);
 
-                // handle Euler vs quat
-                actor.transform.rotation = glm::eulerAngles(
-                    glm::quatLookAt(dir, glm::vec3(0, 1, 0))
-                );
+                glm::quat rot = glm::quatLookAt(dir, glm::vec3(0, 1, 0));
+
+                actor.transform.rotation = rot;
+                // OR:
+                // actor.transform.rotation = glm::eulerAngles(rot);
             }
         }
     }

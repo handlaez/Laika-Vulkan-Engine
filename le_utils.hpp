@@ -1,6 +1,8 @@
 #ifndef LE_UTILS_HPP
 #define LE_UTILS_HPP
 
+#include <random>
+
 namespace le {
 
 	// stolen from: https://stackoverflow.com/a/57595105
@@ -10,6 +12,12 @@ namespace le {
 		(hashCombine(seed, rest), ...);
 	};
 
+	inline float randf()
+	{
+		thread_local static std::mt19937 rng(std::random_device{}());
+		thread_local static std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
+		return dist(rng);
+	}
 }
 
 #endif 

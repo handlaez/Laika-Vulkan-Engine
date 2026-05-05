@@ -1,199 +1,337 @@
 #include "BoidSystem.hpp"
+#define GLM_ENABLE_EXPERIMENTAL
+
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
 
-namespace le {
+static inline int CellIndex(int x, int y, int z, int gx, int gy)
+{
+    return x + y * gx + z * gx * gy;
+}
 
-    void BoidSystem::AddBoid(const Boid& boid)
+void BoidSystem::AddBoid(const glm::vec3& pos)
+{
+    _data.position.push_back(pos);
+
+    glm::vec3 v = glm::normalize(glm::vec3(le::randf(), le::randf(), le::randf()));
+    _data.velocity.push_back(v * 2.0f);
+
+    _data.acceleration.push_back(glm::vec3(0.0f));
+
+    _data.maxSpeed.push_back(40.0f);
+    _data.maxForce.push_back(2.0f);
+}
+
+void BoidSystem::Update(float deltaTime)
+{
+    BuildGrid(); // O(N)
+    ComputeForces(); // ~ O(N) ??
+    Integrate(deltaTime); // O(N)
+}
+
+void BoidSystem::BuildGrid()
+{
+    const int N = (int)_data.Size();
+    if (N == 0) return;
+
+    // Ensure boidCell is correctly sized
+    _data.boidCell.resize(N);
+
+    const float xLimit = 50.0f;
+    const float yMin = -25.f;
+    const float yMax = 25.f;
+    const float zLimit = 50.0f;
+
+    const float maxRadius = std::max({ _separationRadius, _alignmentRadius, _cohesionRadius });
+
+    // --- validate cell size FIRST ---
+    _grid.cellSize = (maxRadius > 0.0f) ? maxRadius : 1.0f;
+
+    _grid.gridX = int((2 * xLimit) / _grid.cellSize) + 1;
+    _grid.gridY = int((yMax - yMin) / _grid.cellSize) + 1;
+    _grid.gridZ = int((2 * zLimit) / _grid.cellSize) + 1;
+
+    if (_grid.gridX <= 0 || _grid.gridY <= 0 || _grid.gridZ <= 0)
+        return;
+
+    const int numCells = _grid.gridX * _grid.gridY * _grid.gridZ;
+
+    _grid.cellCount.assign(numCells, 0);
+    _grid.cellOffset.resize(numCells);
+    _grid.sortedIndices.resize(N);
+
+    // --- count phase ---
+    for (int i = 0; i < N; i++)
     {
-        boids.push_back(boid);
+        const glm::vec3& p = _data.position[i];
+
+        float fx = (p.x + xLimit) / _grid.cellSize;
+        float fy = (p.y - yMin) / _grid.cellSize;
+        float fz = (p.z + zLimit) / _grid.cellSize;
+
+        // guard against NaN / Inf
+        if (!std::isfinite(fx) || !std::isfinite(fy) || !std::isfinite(fz))
+        {
+            _data.boidCell[i] = 0;
+            continue;
+        }
+
+        int gx = glm::clamp((int)fx, 0, _grid.gridX - 1);
+        int gy = glm::clamp((int)fy, 0, _grid.gridY - 1);
+        int gz = glm::clamp((int)fz, 0, _grid.gridZ - 1);
+
+        int cell = CellIndex(gx, gy, gz, _grid.gridX, _grid.gridY);
+
+        _data.boidCell[i] = cell;
+        _grid.cellCount[cell]++;
     }
 
-    std::vector<Boid>& BoidSystem::GetBoids()
+    // --- prefix sum ---
+    _grid.cellOffset[0] = 0;
+    for (int i = 1; i < numCells; i++)
     {
-        return boids;
+        _grid.cellOffset[i] = _grid.cellOffset[i - 1] + _grid.cellCount[i - 1];
     }
 
-    void BoidSystem::Update(float deltaTime)
+    // --- fill ---
+    std::vector<int> currentOffset = _grid.cellOffset;
+
+    for (int i = 0; i < N; i++)
     {
-        for (auto& b : boids)
-        {
-            glm::vec3 sep = Separation(b);
-            glm::vec3 ali = Alignment(b);
-            glm::vec3 coh = Cohesion(b);
+        int cell = _data.boidCell[i];
 
-            sep = Limit(sep, b.GetMaxForce());
-            ali = Limit(ali, b.GetMaxForce());
-            coh = Limit(coh, b.GetMaxForce());
+        // safety (can remove later for perf)
+        assert(cell >= 0 && cell < numCells);
 
-            // weights matter a lot
-            b.ApplyForce(sep * 5.0f * deltaTime);
-            b.ApplyForce(ali * 3.5f * deltaTime);
-            b.ApplyForce(coh * 3.0f * deltaTime);
+        int idx = currentOffset[cell]++;
 
-            KeepInBounds(b, deltaTime);
-        }
+        assert(idx >= 0 && idx < N);
 
-        // update AFTER applying all forces
-        for (auto& b : boids)
-        {
-            b.Update(deltaTime);
-        }
+        _grid.sortedIndices[idx] = i;
     }
 
-    void BoidSystem::KeepInBounds(Boid& b, float deltaTime)
+#ifdef _DEBUG
+    // sanity check (VERY useful)
+    for (int i = 0; i < numCells; i++)
     {
-        float xLimit = 100.0f;
-        float yMin = -25.0f;
-        float yMax = 25.0f;
-        float zLimit = 100.0f;
+        int start = _grid.cellOffset[i];
+        int end = start + _grid.cellCount[i];
 
-        float margin = 10.0f;
-
-        glm::vec3 steer(0.0f);
-        glm::vec3 pos = b.GetPosition();
-
-        // X axis
-        if (pos.x > xLimit - margin)
-        {
-            float t = (pos.x - (xLimit - margin)) / margin;
-            steer.x -= t;
-        }
-        else if (pos.x < -xLimit + margin)
-        {
-            float t = ((-xLimit + margin) - pos.x) / margin;
-            steer.x += t;
-        }
-
-        // Y axis
-        if (pos.y > yMax - margin)
-        {
-            float t = (pos.y - (yMax - margin)) / margin;
-            steer.y -= t;
-        }
-        else if (pos.y < yMin + margin)
-        {
-            float t = ((yMin + margin) - pos.y) / margin;
-            steer.y += t;
-        }
-
-        // Z axis
-        if (pos.z > zLimit - margin)
-        {
-            float t = (pos.z - (zLimit - margin)) / margin;
-            steer.z -= t;
-        }
-        else if (pos.z < -zLimit + margin)
-        {
-            float t = ((-zLimit + margin) - pos.z) / margin;
-            steer.z += t;
-        }
-
-        if (glm::length(steer) > 0.0f)
-        {
-            steer = glm::normalize(steer) * b.GetMaxSpeed();
-            steer -= b.GetVelocity();
-
-            steer = Limit(steer, b.GetMaxForce());
-
-            b.ApplyForce(steer * 5.f * deltaTime);
-        }
+        assert(start >= 0);
+        assert(end <= N);
     }
+#endif
+}
 
-    glm::vec3 BoidSystem::Limit(const glm::vec3& v, float max)
+void BoidSystem::ComputeForces()
+{
+    const int N = (int)_data.Size();
+
+    const float sepR2 = _separationRadius * _separationRadius;
+    const float aliR2 = _alignmentRadius * _alignmentRadius;
+    const float cohR2 = _cohesionRadius * _cohesionRadius;
+
+    const float xLimit = 50.0f;
+    const float yMin = -25.f;
+    const float yMax = 25.f;
+    const float zLimit = 50.0f;
+
+    for (int i = 0; i < N; i++)
     {
-        if (glm::length(v) > max)
+        const glm::vec3 pos_i = _data.position[i];
+        const glm::vec3 vel_i = _data.velocity[i];
+
+        glm::vec3 sep(0.0f);
+        glm::vec3 ali(0.0f);
+        glm::vec3 coh(0.0f);
+
+        int countSep = 0;
+        int countAli = 0;
+        int countCoh = 0;
+
+        // current cell
+        int cell = _data.boidCell[i];
+
+        int gz = cell / (_grid.gridX * _grid.gridY);
+        int gy = (cell / _grid.gridX) % _grid.gridY;
+        int gx = cell % _grid.gridX;
+
+        // neighbor cells (const 27)
+        for (int dz = -1; dz <= 1; dz++)
         {
-            return glm::normalize(v) * max;
-        }
-        return v;
-    }
-
-    glm::vec3 BoidSystem::Separation(Boid& boid)
-    {
-        glm::vec3 steer(0.0f);
-        int count = 0;
-        float dist = 0.f;
-
-        for (auto& other : boids)
-        {
-            dist = glm::distance(boid.GetPosition(), other.GetPosition());
-
-            if (&other != &boid && dist < separationRadius && dist > 0.0f)
+            for (int dy = -1; dy <= 1; dy++)
             {
-                glm::vec3 diff = boid.GetPosition() - other.GetPosition();
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    int nx = gx + dx;
+                    int ny = gy + dy;
+                    int nz = gz + dz;
 
-                // stronger when closer
-                diff /= dist * dist;
+                    if (nx < 0 || ny < 0 || nz < 0 ||
+                        nx >= _grid.gridX || ny >= _grid.gridY || nz >= _grid.gridZ)
+                        continue;
 
-                steer += diff;
-                count++;
+                    int ncell = CellIndex(nx, ny, nz, _grid.gridX, _grid.gridY);
+
+                    int start = _grid.cellOffset[ncell];
+                    int end = start + _grid.cellCount[ncell];
+
+                    for (int k = start; k < end; k++)
+                    {
+                        int j = _grid.sortedIndices[k];
+                        if (j == i) continue;
+
+                        glm::vec3 d = pos_i - _data.position[j];
+                        float dist2 = glm::length2(d);
+
+                        if (dist2 < sepR2 && dist2 > 1e-8f)
+                        {
+                            sep += d / dist2;
+                            countSep++;
+                        }
+
+                        if (dist2 < aliR2)
+                        {
+                            ali += _data.velocity[j];
+                            countAli++;
+                        }
+
+                        if (dist2 < cohR2)
+                        {
+                            coh += _data.position[j];
+                            countCoh++;
+                        }
+                    }
+                }
             }
         }
 
-        if (count > 0)
-        {
-            steer /= (float)count;
+        glm::vec3 force(0.0f);
 
-            float factor = glm::clamp(glm::length(steer), 0.2f, 1.0f);
-            glm::vec3 desired = glm::normalize(steer) * (boid.GetMaxSpeed() * factor);
-            return desired - boid.GetVelocity();
+        if (countSep > 0)
+        {
+            sep /= (float)countSep;
+            force += (glm::normalize(sep) * _data.maxSpeed[i] - vel_i) * 1.0f;
         }
 
-        return glm::vec3(0.0f);
-    }
-
-    glm::vec3 BoidSystem::Alignment(Boid& boid)
-    {
-        glm::vec3 avgVelocity(0.0f);
-        int count = 0;
-
-        for (auto& other : boids)
+        if (countAli > 0)
         {
-            float dist = glm::distance(boid.GetPosition(), other.GetPosition());
+            ali /= (float)countAli;
+            force += (glm::normalize(ali) * _data.maxSpeed[i] - vel_i) * 0.9f;
+        }
 
-            if (&other != &boid && dist < alignmentRadius)
+        if (countCoh > 0)
+        {
+            coh /= (float)countCoh;
+            glm::vec3 dir = coh - pos_i;
+
+            if (glm::length2(dir) > 1e-8f)
             {
-                avgVelocity += other.GetVelocity();
-                count++;
+                force += (glm::normalize(dir) * _data.maxSpeed[i] - vel_i) * 0.8f;
             }
         }
 
-        if (count > 0)
-        {
-            avgVelocity /= (float)count;
+        _data.acceleration[i] = force;
 
-            glm::vec3 desired = glm::normalize(avgVelocity) * (boid.GetMaxSpeed() * 0.8f);
-            return desired - boid.GetVelocity();
-        }
-
-        return glm::vec3(0.0f);
+        KeepInBounds(i, 0.0f);
     }
+}
 
-    glm::vec3 BoidSystem::Cohesion(Boid& boid)
+void BoidSystem::Integrate(float deltaTime)
+{
+    const int N = (int)_data.Size();
+
+    for (int i = 0; i < N; i++)
     {
-        glm::vec3 center(0.0f);
-        int count = 0;
+        glm::vec3& vel = _data.velocity[i];
+        glm::vec3& pos = _data.position[i];
+        glm::vec3& acc = _data.acceleration[i];
 
-        for (auto& other : boids)
-        {
-            float dist = glm::distance(boid.GetPosition(), other.GetPosition());
+        acc = Limit(acc, 1.0f);
 
-            if (&other != &boid && dist < cohesionRadius)
-            {
-                center += other.GetPosition();
-                count++;
-            }
-        }
+        vel += acc * deltaTime;
 
-        if (count > 0)
-        {
-            center /= (float)count;
+        float speed2 = glm::length2(vel);
+        float maxS = _data.maxSpeed[i];
 
-            float factor = glm::clamp(glm::length(center - boid.GetPosition()) / cohesionRadius, 0.3f, 1.0f);
-            glm::vec3 desired = glm::normalize(center - boid.GetPosition()) * (boid.GetMaxSpeed() * factor);
-            return desired - boid.GetVelocity();
-        }
+        if (speed2 > maxS * maxS)
+            vel = glm::normalize(vel) * maxS;
 
-        return glm::vec3(0.0f);
+        vel *= 0.995f;
+
+        pos += vel * 20.0f * deltaTime;
+
+        acc = glm::vec3(0.0f);
     }
+}
+
+void BoidSystem::KeepInBounds(const int i, float)
+{
+    float xLimit = 100.0f;
+    float yMin = -50.f;
+    float yMax = 50.f;
+    float zLimit = 100.0f;
+    float margin = 15.f;
+
+    glm::vec3 steer(0.0f);
+    const glm::vec3& pos = _data.position[i];
+
+    if (pos.x > xLimit - margin)
+    {
+        steer.x -= (pos.x - (xLimit - margin)) / margin;
+    }
+    else if (pos.x < -xLimit + margin)
+    {
+        steer.x += ((-xLimit + margin) - pos.x) / margin;
+    }
+
+    if (pos.y > yMax - margin)
+    {
+        steer.y -= (pos.y - (yMax - margin)) / margin;
+    }
+    else if (pos.y < yMin + margin)
+    {
+        steer.y += ((yMin + margin) - pos.y) / margin;
+    }
+
+    if (pos.z > zLimit - margin)
+    {
+        steer.z -= (pos.z - (zLimit - margin)) / margin;
+    }
+    else if (pos.z < -zLimit + margin)
+    {
+        steer.z += ((-zLimit + margin) - pos.z) / margin;
+    }
+
+    if (glm::length2(steer) > 0.0f)
+    {
+        glm::vec3 desired = glm::normalize(steer) * _data.maxSpeed[i];
+        glm::vec3 force = desired - _data.velocity[i];
+
+        force = Limit(force, _data.maxForce[i]);
+        _data.acceleration[i] += force * 12.0f;
+    }
+}
+
+// additional Utils
+
+glm::vec3 BoidSystem::LimitVec(glm::vec3 v, float max)
+{
+    float len2 = glm::length2(v);
+    if (len2 > max * max)
+    {
+        return glm::normalize(v) * max;
+    }
+    return v;
+}
+
+glm::vec3 BoidSystem::Limit(const glm::vec3& v, float max)
+{
+    float len2 = glm::length2(v);
+    if (len2 > max * max)
+    {
+        return glm::normalize(v) * max;
+    }
+    return v;
 }
