@@ -51,9 +51,18 @@ private:
 
     glm::vec3 Limit(const glm::vec3& v, float max);
 
-    float _separationRadius = 8.0f;
-    float _alignmentRadius = 12.0f;
-    float _cohesionRadius = 20.0f;
+    // params
+    const float xLimit = 75.0f;
+    const float yMin = -25.f;
+    const float yMax = 25.f;
+    const float zLimit = 75.0f;
+    // border margin
+    const float margin = 25.f;
+
+    // radius
+    const float _separationRadius = 8.0f;
+    const float _alignmentRadius = 20.0f;
+    const float _cohesionRadius = 25.0f;
 };
 
 #endif

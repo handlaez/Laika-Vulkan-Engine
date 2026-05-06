@@ -38,11 +38,6 @@ void BoidSystem::BuildGrid()
     // Ensure boidCell is correctly sized
     _data.boidCell.resize(N);
 
-    const float xLimit = 50.0f;
-    const float yMin = -25.f;
-    const float yMax = 25.f;
-    const float zLimit = 50.0f;
-
     const float maxRadius = std::max({ _separationRadius, _alignmentRadius, _cohesionRadius });
 
     // --- validate cell size FIRST ---
@@ -132,11 +127,6 @@ void BoidSystem::ComputeForces()
     const float aliR2 = _alignmentRadius * _alignmentRadius;
     const float cohR2 = _cohesionRadius * _cohesionRadius;
 
-    const float xLimit = 50.0f;
-    const float yMin = -25.f;
-    const float yMax = 25.f;
-    const float zLimit = 50.0f;
-
     for (int i = 0; i < N; i++)
     {
         const glm::vec3 pos_i = _data.position[i];
@@ -212,13 +202,13 @@ void BoidSystem::ComputeForces()
         if (countSep > 0)
         {
             sep /= (float)countSep;
-            force += (glm::normalize(sep) * _data.maxSpeed[i] - vel_i) * 1.0f;
+            force += (glm::normalize(sep) * _data.maxSpeed[i] - vel_i) * 1.2f;
         }
 
         if (countAli > 0)
         {
             ali /= (float)countAli;
-            force += (glm::normalize(ali) * _data.maxSpeed[i] - vel_i) * 0.9f;
+            force += (glm::normalize(ali) * _data.maxSpeed[i] - vel_i) * 1.f;
         }
 
         if (countCoh > 0)
@@ -228,7 +218,7 @@ void BoidSystem::ComputeForces()
 
             if (glm::length2(dir) > 1e-8f)
             {
-                force += (glm::normalize(dir) * _data.maxSpeed[i] - vel_i) * 0.8f;
+                force += (glm::normalize(dir) * _data.maxSpeed[i] - vel_i) * 1.f;
             }
         }
 
@@ -268,12 +258,6 @@ void BoidSystem::Integrate(float deltaTime)
 
 void BoidSystem::KeepInBounds(const int i, float)
 {
-    float xLimit = 100.0f;
-    float yMin = -50.f;
-    float yMax = 50.f;
-    float zLimit = 100.0f;
-    float margin = 15.f;
-
     glm::vec3 steer(0.0f);
     const glm::vec3& pos = _data.position[i];
 
@@ -310,7 +294,7 @@ void BoidSystem::KeepInBounds(const int i, float)
         glm::vec3 force = desired - _data.velocity[i];
 
         force = Limit(force, _data.maxForce[i]);
-        _data.acceleration[i] += force * 12.0f;
+        _data.acceleration[i] += force * 20.0f;
     }
 }
 

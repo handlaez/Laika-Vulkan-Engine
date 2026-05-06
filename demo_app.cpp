@@ -30,7 +30,7 @@ public:
 
     void onStart(le::LeScene& scene) override
     {
-        const int boidCount = 200;
+        const int boidCount = 5000;
 
         boidActorIndices.reserve(boidCount);
         scene.getActors().reserve(scene.getActors().size() + boidCount);
