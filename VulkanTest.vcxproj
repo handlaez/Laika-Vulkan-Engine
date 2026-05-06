@@ -76,6 +76,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <OpenMPSupport>true</OpenMPSupport>
+      <AdditionalOptions>/openmp:llvm %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -90,6 +92,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <OpenMPSupport>true</OpenMPSupport>
+      <AdditionalOptions>/openmp:llvm %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -106,6 +110,8 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\tiny_obj_loader;C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\stb_image;C:\VulkanSDK\1.4.321.1\Include;C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\glm;C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <OpenMPSupport>true</OpenMPSupport>
+      <AdditionalOptions>/openmp:llvm %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -128,6 +134,8 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\tiny_obj_loader;C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\stb_image;C:\VulkanSDK\1.4.321.1\Include;C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\glm;C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <OpenMPSupport>true</OpenMPSupport>
+      <AdditionalOptions>/openmp:llvm %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -144,7 +152,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="basic_render_system.cpp" />
-    <ClCompile Include="Boid.cpp" />
     <ClCompile Include="BoidSystem.cpp" />
     <ClCompile Include="demo_app.cpp" />
     <ClCompile Include="instanced_render_system.cpp" />
@@ -171,7 +178,6 @@
     <ClCompile Include="tiny_obj_loader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Boid.hpp" />
     <ClInclude Include="BoidSystem.hpp" />
     <ClInclude Include="instanced_render_system.hpp" />
     <ClInclude Include="instance_data.hpp" />

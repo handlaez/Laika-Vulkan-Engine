@@ -14,6 +14,7 @@
 #include "instanced_render_system.hpp"
 #include "instance_data.hpp"
 
+#include <omp.h>
 #include <iostream>
 
 using namespace le;
@@ -56,7 +57,8 @@ public:
             boidSystem.AddBoid(pos);
         }
 
-        std::cerr << boidModelID << " " << boidTextureID << "\n";
+        int max_threads = omp_get_max_threads();
+        std::cout << "OpenMP is using " << max_threads << " threads." << std::endl;
     }
 
     void onUpdate(le::LeScene& scene, FrameInfo fi) override
@@ -101,13 +103,15 @@ public:
         boidSystem.Update(deltaTime);
 
         auto& positions = boidSystem.GetPositions();
-
-        instances_.clear();
-        instances_.reserve(positions.size());
-
         auto& velocities = boidSystem.GetVelocities();
 
-        for (size_t i = 0; i < positions.size(); i++)
+        instances_.clear();
+        instances_.resize(positions.size());
+
+        const int boidCount = static_cast<int>(positions.size());
+
+        #pragma omp parallel for
+        for (int i = 0; i < boidCount; i++) // int for MSVC OpenMP
         {
             glm::vec3 pos = positions[i];
             glm::vec3 vel = velocities[i];
@@ -117,17 +121,12 @@ public:
             if (glm::length(vel) > 0.001f)
             {
                 glm::vec3 dir = glm::normalize(vel);
-
-                glm::quat rot =
-                    glm::quatLookAt(dir, glm::vec3(0, 1, 0));
-
+                glm::quat rot = glm::quatLookAt(dir, glm::vec3(0, 1, 0));
                 model *= glm::mat4_cast(rot);
             }
 
-            InstanceData d{};
-            d.model = model;
-
-            instances_.push_back(d);
+            // direct assignment, NOT push_back
+            instances_[i].model = model;
         }
 
         scene.instanceData = instances_;

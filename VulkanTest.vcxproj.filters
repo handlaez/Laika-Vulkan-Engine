@@ -93,9 +93,6 @@
     <ClCompile Include="tiny_obj_loader.cpp">
       <Filter>Source Files\Third Party</Filter>
     </ClCompile>
-    <ClCompile Include="Boid.cpp">
-      <Filter>Source Files\Systems</Filter>
-    </ClCompile>
     <ClCompile Include="BoidSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
@@ -153,9 +150,6 @@
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
     <ClInclude Include="basic_render_system.hpp">
-      <Filter>Header Files\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="Boid.hpp">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
     <ClInclude Include="BoidSystem.hpp">
