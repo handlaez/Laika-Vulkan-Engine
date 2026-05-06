@@ -3,6 +3,7 @@
 
 #include "le_renderer.hpp"
 #include "basic_render_system.hpp"
+#include "instanced_render_system.hpp"
 #include "le_scene.hpp"
 #include "le_texture.hpp"
 #include "le_device.hpp"
@@ -32,6 +33,7 @@ namespace le {
         LeRenderer& renderer_;
 
         std::unique_ptr<BasicRenderSystem> basicRenderSystem;
+        std::unique_ptr<InstancedRenderSystem> instancedRenderSystem;
 
         VkDescriptorSetLayout frameSetLayout_{ VK_NULL_HANDLE };
         VkDescriptorSetLayout textureSetLayout_{ VK_NULL_HANDLE };

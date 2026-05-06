@@ -77,8 +77,8 @@ namespace le
         // IMPORTANT: we will extend vertex attributes later for instance data
         pipeline_ = std::make_unique<LePipeline>(
             device_,
-            "shaders/instanced.vert.spv",
-            "shaders/instanced.frag.spv",
+            "shaders/instanced_vert_shader.spv",
+            "shaders/instanced_frag_shader.spv",
             pipelineConfig
         );
     }
@@ -107,6 +107,11 @@ namespace le
         textureID_ = textureID;
     }
 
+    void InstancedRenderSystem::setInstances(const std::vector<InstanceData>& instances)
+    {
+        instances_ = instances;
+    }
+
     void InstancedRenderSystem::updateInstances(const std::vector<InstanceData>& instances)
     {
         instanceCount_ = static_cast<uint32_t>(instances.size());
@@ -121,7 +126,7 @@ namespace le
     {
         pipeline_->bind(frameData.cmd);
 
-        // set 0 (camera)
+        // set 0: camera
         vkCmdBindDescriptorSets(
             frameData.cmd,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -133,7 +138,11 @@ namespace le
             nullptr
         );
 
-        // set 1 (texture)
+        instanceBuffer_->update(
+            instances_.data(),
+            sizeof(InstanceData) * instances_.size()
+        );
+
         VkDescriptorSet textureSet =
             resourceManager_.getTextureDescriptorSet(textureID_);
 
@@ -148,7 +157,6 @@ namespace le
             nullptr
         );
 
-        // mesh + instance buffer
         auto model = resourceManager_.getModel(modelID_);
 
         VkBuffer buffers[] = {
@@ -171,7 +179,7 @@ namespace le
         vkCmdDrawIndexed(
             frameData.cmd,
             model->getIndexCount(),
-            instanceCount_,
+            static_cast<uint32_t>(instances_.size()),
             0,
             0,
             0

@@ -5,6 +5,7 @@
 #include "le_camera.hpp"
 #include "le_device.hpp"
 #include "le_resource_manager.hpp"
+#include "instance_data.hpp"
 
 // std
 #include <vector>
@@ -31,6 +32,7 @@ namespace le {
 
         LeActor& getCameraObject();
 
+        std::vector<InstanceData> instanceData;
     private:
         void createDefaultCamera();
 

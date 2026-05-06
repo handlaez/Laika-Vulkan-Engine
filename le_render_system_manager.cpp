@@ -12,6 +12,17 @@ namespace le {
             frameSetLayout_,
             textureSetLayout_
         );
+
+        instancedRenderSystem = std::make_unique<InstancedRenderSystem>(
+            device,
+            renderer,
+            resourceManager,
+            frameSetLayout_,
+            textureSetLayout_
+        );
+
+        instancedRenderSystem->setModel(1);
+        instancedRenderSystem->setTexture(1);
 	}
 
     void LeRenderSystemManager::render(LeScene& scene)
@@ -30,7 +41,10 @@ namespace le {
                 frameDescriptorSet
             };
 
+            instancedRenderSystem->setInstances(scene.instanceData);
+
             basicRenderSystem->render(frameData, scene.getActors());
+            instancedRenderSystem->render(frameData);
 
             renderer_.endSwapChainRenderPass(commandBuffer);
             renderer_.endFrame();

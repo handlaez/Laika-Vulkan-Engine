@@ -9,13 +9,22 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+// boid includes
 #include "BoidSystem.hpp"
+#include "instanced_render_system.hpp"
+#include "instance_data.hpp"
+
+#include <iostream>
 
 using namespace le;
 
 class DemoApp : public ILaikaEngineApp {
+    // boids
     BoidSystem boidSystem;
     std::vector<size_t> boidActorIndices;
+    std::vector<InstanceData> instances_;
+    uint32_t boidModelID;
+    uint32_t boidTextureID;
 
     // fps counter
     double prevTime = 0.0;
@@ -23,11 +32,6 @@ class DemoApp : public ILaikaEngineApp {
     unsigned int counter = 0;
 
 public:
-    float randf()
-    {
-        return -1.0f + (rand() / (RAND_MAX / 2.0f));
-    }
-
     void onStart(le::LeScene& scene) override
     {
         const int boidCount = 5000;
@@ -38,26 +42,21 @@ public:
         auto model = scene.leResourceManager.loadModel("models/ugly_fish/ugly_fish.obj");
         auto texture = scene.leResourceManager.loadTexture("models/ugly_fish/fish.jpg");
 
-        auto& actors = scene.getActors();
+        boidModelID = model;
+        boidTextureID = texture;
 
         for (int i = 0; i < boidCount; i++)
         {
             glm::vec3 pos(
-                randf() * 50.f,
-                randf() * 20.f,
-                randf() * 50.f
+                le::randf() * 50.f,
+                le::randf() * 20.f,
+                le::randf() * 50.f
             );
 
             boidSystem.AddBoid(pos);
-
-            scene.addActor(model, texture);
-
-            size_t index = actors.size() - 1;
-
-            boidActorIndices.push_back(index);
-
-            actors[index].transform.translation = pos;
         }
+
+        std::cerr << boidModelID << " " << boidTextureID << "\n";
     }
 
     void onUpdate(le::LeScene& scene, FrameInfo fi) override
@@ -102,35 +101,36 @@ public:
         boidSystem.Update(deltaTime);
 
         auto& positions = boidSystem.GetPositions();
+
+        instances_.clear();
+        instances_.reserve(positions.size());
+
         auto& velocities = boidSystem.GetVelocities();
-        auto& actors = scene.getActors();
 
-        const size_t count = boidActorIndices.size();
-
-        for (size_t i = 0; i < count; i++)
+        for (size_t i = 0; i < positions.size(); i++)
         {
-            const size_t actorIndex = boidActorIndices[i];
+            glm::vec3 pos = positions[i];
+            glm::vec3 vel = velocities[i];
 
-            auto& actor = actors[actorIndex];
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), pos);
 
-            // position sync
-            glm::vec3 pos = glm::vec3(positions[i]);
-            glm::vec3 vel = glm::vec3(velocities[i]);
-
-            actor.transform.translation = pos;
-
-            // orientation from velocity
             if (glm::length(vel) > 0.001f)
             {
                 glm::vec3 dir = glm::normalize(vel);
 
-                glm::quat rot = glm::quatLookAt(dir, glm::vec3(0, 1, 0));
+                glm::quat rot =
+                    glm::quatLookAt(dir, glm::vec3(0, 1, 0));
 
-                actor.transform.rotation = rot;
-                // OR:
-                // actor.transform.rotation = glm::eulerAngles(rot);
+                model *= glm::mat4_cast(rot);
             }
+
+            InstanceData d{};
+            d.model = model;
+
+            instances_.push_back(d);
         }
+
+        scene.instanceData = instances_;
     }
 
     void onShutdown() override {

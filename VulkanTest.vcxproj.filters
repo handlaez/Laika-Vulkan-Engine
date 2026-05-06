@@ -173,6 +173,9 @@
     <ClInclude Include="instanced_render_system.hpp">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
+    <ClInclude Include="instance_data.hpp">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="compile.bat" />
@@ -181,6 +184,12 @@
     </None>
     <None Include="shaders\frag_shader.spv">
       <Filter>Resource Files\Shaders\Compiled</Filter>
+    </None>
+    <None Include="instanced_shader.vert">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="instanced_shader.frag">
+      <Filter>Resource Files\Shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

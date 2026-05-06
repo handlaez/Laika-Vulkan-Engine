@@ -2,6 +2,7 @@
 #define LE_INSTANCED_RENDER_SYSTEM_HPP
 
 #include "i_render_system.hpp"
+#include "instance_data.hpp"
 
 #include "le_device.hpp"
 #include "le_renderer.hpp"
@@ -18,10 +19,6 @@
 namespace le {
     const int MAX_INSTANCES = 10000;
 
-    struct InstanceData {
-        glm::mat4 model;
-    };
-
     class InstancedRenderSystem {
     public:
         InstancedRenderSystem(
@@ -34,6 +31,7 @@ namespace le {
 
         void setModel(uint32_t modelID);
         void setTexture(uint32_t textureID);
+        void setInstances(const std::vector<InstanceData>& instances);
 
         void updateInstances(const std::vector<InstanceData>& instances);
 
@@ -56,6 +54,7 @@ namespace le {
         VkDescriptorSetLayout textureLayout_;
 
         std::unique_ptr<LeBuffer> instanceBuffer_;
+        std::vector<InstanceData> instances_;
 
         uint32_t modelID_;
         uint32_t textureID_;

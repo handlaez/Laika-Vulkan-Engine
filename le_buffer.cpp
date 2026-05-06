@@ -30,6 +30,14 @@ namespace le {
         vkFreeMemory( leDevice.device(), memory_, nullptr);
     }
 
+    void LeBuffer::update(void* data, VkDeviceSize size)
+    {
+        void* mapped;
+        vkMapMemory(leDevice.device(), memory_, 0, size, 0, &mapped);
+        memcpy(mapped, data, size);
+        vkUnmapMemory(leDevice.device(), memory_);
+    }
+
     void LeBuffer::map(VkDeviceSize size, VkDeviceSize offset)
     {
         if (vkMapMemory(
