@@ -5,18 +5,40 @@
 #include "basic_render_system.hpp"
 #include "le_scene.hpp"
 #include "le_texture.hpp"
+#include "le_device.hpp"
+
+#include <memory>
 
 namespace le {
-	class LeRenderSystemManager {
-	public:
-		LeRenderSystemManager(LeDevice& device, LeRenderer& renderer, LeResourceManager& resourceManager);
-		void render(LeScene& scene);
 
-	private:
-		LeDevice& leDevice;
-		LeRenderer& leRenderer;
-		std::unique_ptr<BasicRenderSystem> basicRenderSystem;
-	};
+    class LeRenderSystemManager {
+    public:
+        LeRenderSystemManager(
+            LeDevice& device,
+            LeRenderer& renderer,
+            LeResourceManager& resourceManager
+        );
+
+        void render(LeScene& scene);
+
+        VkDescriptorSetLayout getFrameSetLayout() const { return frameSetLayout_; }
+        VkDescriptorSetLayout getTextureSetLayout() const { return textureSetLayout_; }
+
+    private:
+        void createDescriptorSetLayouts();
+
+    private:
+        LeDevice& device_;
+        LeRenderer& renderer_;
+
+        std::unique_ptr<BasicRenderSystem> basicRenderSystem;
+
+        VkDescriptorSetLayout frameSetLayout_{ VK_NULL_HANDLE };
+        VkDescriptorSetLayout textureSetLayout_{ VK_NULL_HANDLE };
+
+        LeResourceManager& resourceManager_;
+    };
+
 }
 
 #endif

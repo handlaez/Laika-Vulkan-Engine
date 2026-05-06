@@ -1,6 +1,8 @@
 #ifndef BASIC_RENDER_SYSTEM_HPP
 #define BASIC_RENDER_SYSTEM_HPP
 
+#include "i_render_system.hpp"
+
 #include "le_device.hpp"
 #include "le_pipeline.hpp"
 #include "le_actor.hpp"
@@ -26,24 +28,27 @@ namespace le {
         alignas(16) glm::vec3 color;
     };
 
-    class BasicRenderSystem {
+    class BasicRenderSystem : public IRenderSystem {
     public:
-        BasicRenderSystem(LeDevice& device, VkRenderPass renderPass, LeResourceManager& resourceManager);
+        BasicRenderSystem(LeDevice& device,
+            VkRenderPass renderPass,
+            LeResourceManager& resourceManager,
+            VkDescriptorSetLayout frameSetLayout,
+            VkDescriptorSetLayout textureSetLayout
+        );
         ~BasicRenderSystem();
+
+        VkDescriptorSet getFrameDescriptorSet(size_t frameIndex) const {
+            return descriptorSets_.at(frameIndex);
+        }
 
         // Non-copyable
         BasicRenderSystem(const BasicRenderSystem&) = delete;
         BasicRenderSystem& operator=(const BasicRenderSystem&) = delete;
 
-        void renderActors(
-            VkCommandBuffer commandBuffer,
-            std::vector<LeActor>& actors,
-            const LeCamera& camera,
-            size_t currentFrame
-        );
+        void render(const RenderFrameData& frameData, std::vector<LeActor>& actors);
 
     private:
-        void createDescriptorSetLayout();
         void createPipelineLayout();
         void createPipeline(VkRenderPass renderPass);
         void createUniformBuffers();
@@ -60,9 +65,9 @@ namespace le {
         std::vector<VkDeviceMemory> uniformBuffersMemory_;
         std::vector<void*> uniformBuffersMapped_;
 
+        VkDescriptorSetLayout frameSetLayout_;
+        VkDescriptorSetLayout textureSetLayout_;
         VkDescriptorPool descriptorPool_{ VK_NULL_HANDLE };
-        VkDescriptorSetLayout frameSetLayout_{ VK_NULL_HANDLE };    // UBO
-        VkDescriptorSetLayout materialSetLayout_{ VK_NULL_HANDLE }; // Textures from le_resource_manager
         std::vector<VkDescriptorSet> descriptorSets_;
     };
 

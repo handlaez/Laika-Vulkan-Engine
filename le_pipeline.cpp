@@ -74,14 +74,14 @@ namespace le {
 		shaderStages[1].pNext = nullptr;
 		shaderStages[1].pSpecializationInfo = nullptr;
 
-		auto bindingDescriptions = LeModel::Vertex::getBindingDescriptions();
-		auto attributeDescriptions = LeModel::Vertex::getAttributeDescriptions();
+		auto& bindingDescriptions = configInfo.bindingDescriptions;
+		auto& attributeDescriptions = configInfo.attributeDescriptions;
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
 		vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
-		vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+		vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
 		vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
+		vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;

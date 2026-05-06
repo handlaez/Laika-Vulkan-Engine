@@ -147,10 +147,12 @@
     <ClCompile Include="Boid.cpp" />
     <ClCompile Include="BoidSystem.cpp" />
     <ClCompile Include="demo_app.cpp" />
+    <ClCompile Include="instanced_render_system.cpp" />
     <ClCompile Include="keyboard_movement_controller.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="le_buffer.cpp" />
     <ClCompile Include="le_camera.cpp" />
     <ClCompile Include="le_core.cpp" />
     <ClCompile Include="le_device.cpp" />
@@ -171,10 +173,18 @@
   <ItemGroup>
     <ClInclude Include="Boid.hpp" />
     <ClInclude Include="BoidSystem.hpp" />
+    <ClInclude Include="instanced_render_system.hpp" />
+    <ClInclude Include="i_render_system.hpp" />
     <ClInclude Include="keyboard_movement_controller.hpp" />
     <ClInclude Include="basic_render_system.hpp" />
-    <ClInclude Include="i_laika_engine_app.hpp" />
+    <ClInclude Include="i_laika_engine_app.hpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="le_actor.hpp" />
+    <ClInclude Include="le_buffer.hpp" />
     <ClInclude Include="le_camera.hpp" />
     <ClInclude Include="le_core.hpp" />
     <ClInclude Include="le_device.hpp" />

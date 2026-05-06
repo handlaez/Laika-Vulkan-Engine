@@ -4,10 +4,18 @@
 
 namespace le {
 
-    BasicRenderSystem::BasicRenderSystem(LeDevice& device, VkRenderPass renderPass, LeResourceManager& resourceManager)
-        : device_(device), resourceManager_(resourceManager) {
+    BasicRenderSystem::BasicRenderSystem(LeDevice& device,
+        VkRenderPass renderPass,
+        LeResourceManager& resourceManager,
+        VkDescriptorSetLayout frameSetLayout,
+        VkDescriptorSetLayout textureSetLayout
+    )
+        : device_(device),
+        resourceManager_(resourceManager),
+        frameSetLayout_(frameSetLayout),
+        textureSetLayout_(textureSetLayout)
+    {
 
-        createDescriptorSetLayout();   // UBO only
         createPipelineLayout();        // uses 2 set layouts
         createPipeline(renderPass);
 
@@ -31,34 +39,10 @@ namespace le {
         vkDestroyPipelineLayout(device_.device(), pipelineLayout_, nullptr);
     }
 
-    void BasicRenderSystem::createDescriptorSetLayout() {
-        VkDescriptorSetLayoutBinding uboLayoutBinding{};
-        uboLayoutBinding.binding = 0;
-        uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        uboLayoutBinding.descriptorCount = 1;
-        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-        uboLayoutBinding.pImmutableSamplers = nullptr;
-
-        VkDescriptorSetLayoutCreateInfo layoutInfo{};
-        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutInfo.bindingCount = 1;              // only the UBO
-        layoutInfo.pBindings = &uboLayoutBinding;
-
-        if (vkCreateDescriptorSetLayout(
-            device_.device(),
-            &layoutInfo,
-            nullptr,
-            &frameSetLayout_
-        ) != VK_SUCCESS)
-        {
-            throw std::runtime_error("failed to create frame descriptor set layout!");
-        }
-    }
-
     void BasicRenderSystem::createPipelineLayout() {
         std::array<VkDescriptorSetLayout, 2> setLayouts = {
         frameSetLayout_,                                    // set = 0
-        resourceManager_.getTextureDescriptorSetLayout()    // set = 1
+        textureSetLayout_    // set = 1
         };
 
         VkPushConstantRange pushConstantRange{};
@@ -85,6 +69,8 @@ namespace le {
         LePipeline::defaultPipelineConfigInfo(pipelineConfig);
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = pipelineLayout_;
+        pipelineConfig.bindingDescriptions = LeModel::Vertex::getBindingDescriptions();
+        pipelineConfig.attributeDescriptions = LeModel::Vertex::getAttributeDescriptions();
 
         pipeline_ = std::make_unique<LePipeline>(
             device_,
@@ -163,49 +149,55 @@ namespace le {
         }
     }
 
-    void BasicRenderSystem::renderActors(
-        VkCommandBuffer commandBuffer,
-        std::vector<LeActor>& actors,
-        const LeCamera& camera,
-        size_t currentFrame
-    ) {
-        pipeline_->bind(commandBuffer);
-
+    void BasicRenderSystem::render(const RenderFrameData& frameData, std::vector<LeActor>& actors)
+    {
         UniformBufferObject ubo{};
-        ubo.view = camera.getView();
-        ubo.proj = camera.getProjection();
-        memcpy(uniformBuffersMapped_[currentFrame], &ubo, sizeof(ubo));
+        ubo.proj = frameData.camera.getProjection();
+        ubo.view = frameData.camera.getView();
 
+        memcpy(uniformBuffersMapped_[frameData.frameIndex], &ubo, sizeof(UniformBufferObject));
+
+        pipeline_->bind(frameData.cmd);
+
+        // set 0 - frame UBO
         vkCmdBindDescriptorSets(
-            commandBuffer,
+            frameData.cmd,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
             pipelineLayout_,
-            0, 1,
-            &descriptorSets_[currentFrame],
-            0, nullptr
+            0,
+            1,
+            &descriptorSets_[frameData.frameIndex],
+            0,
+            nullptr
         );
 
-        for (auto& actor : actors) {
-            // actor's texture descriptor set
-            VkDescriptorSet textureSet = resourceManager_.getTextureDescriptorSet(actor.textureID);
+        for (auto& actor : actors)
+        {
+            auto model = resourceManager_.getModel(actor.modelID);
+
+            VkDescriptorSet textureSet =
+                resourceManager_.getTextureDescriptorSet(actor.textureID);
+
+            // set 1 - texture
             vkCmdBindDescriptorSets(
-                commandBuffer,
+                frameData.cmd,
                 VK_PIPELINE_BIND_POINT_GRAPHICS,
                 pipelineLayout_,
-                1, 1,
+                1,
+                1,
                 &textureSet,
-                0, nullptr
+                0,
+                nullptr
             );
 
-            auto model = resourceManager_.getModel(actor.modelID);
-            model->bind(commandBuffer);
+            model->bind(frameData.cmd);
 
             SimplePushConstantData push{};
             push.color = actor.color;
             push.transform = actor.transform.mat4();
 
             vkCmdPushConstants(
-                commandBuffer,
+                frameData.cmd,
                 pipelineLayout_,
                 VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                 0,
@@ -213,7 +205,7 @@ namespace le {
                 &push
             );
 
-            model->draw(commandBuffer);
+            model->draw(frameData.cmd);
         }
     }
 

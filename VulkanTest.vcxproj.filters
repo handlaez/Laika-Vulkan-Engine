@@ -31,6 +31,9 @@
     <Filter Include="Header Files\Systems">
       <UniqueIdentifier>{3575b9d8-4f4e-4c7c-8423-d18872c6fd70}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Interfaces">
+      <UniqueIdentifier>{8b2a3103-4c2d-4de4-a436-bf39e7e114df}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="le_render_system_manager.hpp">
@@ -96,6 +99,12 @@
     <ClCompile Include="BoidSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
+    <ClCompile Include="le_buffer.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="instanced_render_system.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="le_window.hpp">
@@ -128,9 +137,6 @@
     <ClInclude Include="le_texture.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="i_laika_engine_app.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="le_scene.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -153,6 +159,18 @@
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
     <ClInclude Include="BoidSystem.hpp">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="i_laika_engine_app.hpp">
+      <Filter>Header Files\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="i_render_system.hpp">
+      <Filter>Header Files\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="le_buffer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="instanced_render_system.hpp">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
   </ItemGroup>

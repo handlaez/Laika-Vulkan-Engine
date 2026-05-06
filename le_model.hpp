@@ -73,6 +73,11 @@ namespace le {
 		// disabling move assignment (because leDevice& cannot be reassigned)
 		LeModel& operator=(LeModel&&) = delete;
 
+		VkBuffer getVertexBuffer() const { return vertexBuffer; }
+		VkBuffer getIndexBuffer() const { return indexBuffer; }
+		uint32_t getIndexCount() const { return indexCount; }
+
+		void bindIndexBuffer(VkCommandBuffer commandBuffer);
 
 	private: 
 		void createVertexBuffers(const std::vector<Vertex>& vertices);

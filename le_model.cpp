@@ -244,6 +244,16 @@ namespace le {
 		return attributeDescriptions;
 	}
 
+	void LeModel::bindIndexBuffer(VkCommandBuffer commandBuffer)
+	{
+		vkCmdBindIndexBuffer(
+			commandBuffer,
+			indexBuffer,
+			0,
+			VK_INDEX_TYPE_UINT32
+		);
+	}
+
 	void LeModel::Builder::loadModel(const std::string& filepath)
 	{
 		tinyobj::attrib_t attrib;
