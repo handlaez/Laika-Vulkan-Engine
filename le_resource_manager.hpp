@@ -29,7 +29,15 @@ namespace le {
 		// descriptors 
 		VkDescriptorSetLayout getTextureDescriptorSetLayout() const { return textureSetLayout; }
 		VkSampler getSharedSampler() const { return sharedSampler; }
-		VkDescriptorSet getTextureDescriptorSet(uint32_t id) const { return textureDescriptorSets.at(id); }
+		VkDescriptorSet getTextureDescriptorSet(uint32_t id) const 
+		{
+			auto it = textureDescriptorSets.find(id);
+			if (it != textureDescriptorSets.end()) {
+				return it->second;
+			}
+			// Fallback to descriptor set 0
+			return textureDescriptorSets.at(0);
+		}
 
 	private:
 		// fallback texture

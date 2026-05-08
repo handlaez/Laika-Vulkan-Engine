@@ -7,7 +7,11 @@
 #include "le_scene.hpp"
 #include "le_texture.hpp"
 #include "le_device.hpp"
+#include "le_camera.hpp"
+#include "le_swapchain.hpp"
 
+#include <array>
+#include <stdexcept>
 #include <memory>
 
 namespace le {
@@ -19,16 +23,21 @@ namespace le {
             LeRenderer& renderer,
             LeResourceManager& resourceManager
         );
+        ~LeRenderSystemManager();
 
+        void sync(LeScene& scene);
         void render(LeScene& scene);
+        
+        void createFrameResources();
+        void updateFrameUBO(uint32_t frameIndex, const LeCamera& camera);
 
+        VkDescriptorSet getFrameDescriptorSet(uint32_t frameIndex) const;
         VkDescriptorSetLayout getFrameSetLayout() const { return frameSetLayout_; }
         VkDescriptorSetLayout getTextureSetLayout() const { return textureSetLayout_; }
 
     private:
         void createDescriptorSetLayouts();
 
-    private:
         LeDevice& device_;
         LeRenderer& renderer_;
 
@@ -37,6 +46,13 @@ namespace le {
 
         VkDescriptorSetLayout frameSetLayout_{ VK_NULL_HANDLE };
         VkDescriptorSetLayout textureSetLayout_{ VK_NULL_HANDLE };
+
+        std::vector<VkBuffer> frameUniformBuffers_;
+        std::vector<VkDeviceMemory> frameUniformBuffersMemory_;
+        std::vector<void*> frameUniformBuffersMapped_;
+
+        VkDescriptorPool frameDescriptorPool_{ VK_NULL_HANDLE };
+        std::vector<VkDescriptorSet> frameDescriptorSets_;
 
         LeResourceManager& resourceManager_;
     };

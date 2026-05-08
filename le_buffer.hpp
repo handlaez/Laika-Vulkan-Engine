@@ -21,7 +21,6 @@ namespace le {
         LeBuffer& operator=(const LeBuffer&) = delete;
 
         VkBuffer getBuffer() const { return buffer_; }
-        void update(void* data, VkDeviceSize size);
 
         void map(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 

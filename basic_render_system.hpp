@@ -38,22 +38,15 @@ namespace le {
         );
         ~BasicRenderSystem();
 
-        VkDescriptorSet getFrameDescriptorSet(size_t frameIndex) const {
-            return descriptorSets_.at(frameIndex);
-        }
-
         // Non-copyable
         BasicRenderSystem(const BasicRenderSystem&) = delete;
         BasicRenderSystem& operator=(const BasicRenderSystem&) = delete;
 
-        void render(const RenderFrameData& frameData, std::vector<LeActor>& actors);
+        void render(const RenderFrameData& frameData, const std::vector<LeActor>& actors);
 
     private:
         void createPipelineLayout();
         void createPipeline(VkRenderPass renderPass);
-        void createUniformBuffers();
-        void createDescriptorPool();
-        void createDescriptorSets();
 
         LeDevice& device_;
         LeResourceManager& resourceManager_;
@@ -61,14 +54,8 @@ namespace le {
         std::unique_ptr<LePipeline> pipeline_;
         VkPipelineLayout pipelineLayout_{ VK_NULL_HANDLE };
 
-        std::vector<VkBuffer> uniformBuffers_;
-        std::vector<VkDeviceMemory> uniformBuffersMemory_;
-        std::vector<void*> uniformBuffersMapped_;
-
         VkDescriptorSetLayout frameSetLayout_;
         VkDescriptorSetLayout textureSetLayout_;
-        VkDescriptorPool descriptorPool_{ VK_NULL_HANDLE };
-        std::vector<VkDescriptorSet> descriptorSets_;
     };
 
 }

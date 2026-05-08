@@ -19,7 +19,7 @@ namespace le {
 		
 		// Matrix corresponds to translate * Ry * Rx * Rz * scale; 
 		// TODO: Remove euler angles, and implement Quaternions!;
-		glm::mat4 mat4() {
+		glm::mat4 mat4() const {
 			glm::mat4 rot = glm::mat4_cast(rotation);
 
 			return glm::translate(glm::mat4(1.0f), translation)

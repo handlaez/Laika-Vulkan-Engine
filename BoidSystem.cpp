@@ -127,7 +127,7 @@ void BoidSystem::ComputeForces()
     const float aliR2 = _alignmentRadius * _alignmentRadius;
     const float cohR2 = _cohesionRadius * _cohesionRadius;
 
-    #pragma omp parallel for schedule (static)
+    #pragma omp parallel for schedule (guided, 128)
     for (int i = 0; i < N; i++)
     {
         const glm::vec3 pos_i = _data.position[i];
@@ -233,7 +233,7 @@ void BoidSystem::Integrate(float deltaTime)
 {
     const int N = (int)_data.Size();
 
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(static, 512)
     for (int i = 0; i < N; i++)
     {
         glm::vec3& vel = _data.velocity[i];

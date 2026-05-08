@@ -1,6 +1,7 @@
 #include "instanced_render_system.hpp"
-
 #include "le_frame_info.hpp"
+
+#include <iostream>
 
 namespace le
 {
@@ -20,6 +21,11 @@ namespace le
         createPipelineLayout();
         createPipeline(renderer_.getSwapchainRenderPass());
         createInstanceBuffer();
+    }
+
+    InstancedRenderSystem::~InstancedRenderSystem()
+    {
+        vkDestroyPipelineLayout(device_.device(), pipelineLayout_, nullptr);
     }
 
     void InstancedRenderSystem::createPipelineLayout()
@@ -85,44 +91,57 @@ namespace le
 
     void InstancedRenderSystem::createInstanceBuffer()
     {
-        instanceBuffer_ = std::make_unique<LeBuffer>(
-            device_,
-            sizeof(InstanceData),
-            MAX_INSTANCES,
-            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-        );
+        for (int i = 0; i < LeSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            instanceBuffer_[i] = std::make_unique<LeBuffer>(
+                device_,
+                sizeof(InstanceData),
+                MAX_INSTANCES,
+                VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+            );
 
-        instanceBuffer_->map();
+            instanceBuffer_[i]->map();
+        }
     }
 
     void InstancedRenderSystem::setModel(uint32_t modelID)
     {
         modelID_ = modelID;
+        auto modelPtr = resourceManager_.getModel(modelID);
+        if (modelPtr) {
+            cachedModel_ = modelPtr.get();
+        }
+        else {
+            std::cerr << "Vulkan Error: Model ID " << modelID << " not found in ResourceManager!\n";
+            cachedModel_ = nullptr;
+        }
     }
 
     void InstancedRenderSystem::setTexture(uint32_t textureID)
     {
         textureID_ = textureID;
+        if (resourceManager_.getTexture(textureID)) {
+            cachedTextureSet_ = resourceManager_.getTextureDescriptorSet(textureID);
+        }
+        else {
+            std::cerr << "Vulkan Error: Texture ID " << textureID << " not found!" << std::endl;
+            cachedTextureSet_ = VK_NULL_HANDLE;
+        }
     }
 
-    void InstancedRenderSystem::setInstances(const std::vector<InstanceData>& instances)
-    {
-        instances_ = instances;
-    }
-
-    void InstancedRenderSystem::updateInstances(const std::vector<InstanceData>& instances)
+    void InstancedRenderSystem::updateInstances(const std::vector<InstanceData>& instances, const RenderFrameData& frameData)
     {
         instanceCount_ = static_cast<uint32_t>(instances.size());
 
-        instanceBuffer_->writeToBuffer(
+        instanceBuffer_[frameData.frameIndex]->writeToBuffer(
             (void*)instances.data(),
             instances.size() * sizeof(InstanceData)
         );
     }
 
-    void InstancedRenderSystem::render(const RenderFrameData& frameData)
+    void InstancedRenderSystem::render(const RenderFrameData& frameData) const
     {
         pipeline_->bind(frameData.cmd);
 
@@ -138,30 +157,20 @@ namespace le
             nullptr
         );
 
-        instanceBuffer_->update(
-            instances_.data(),
-            sizeof(InstanceData) * instances_.size()
-        );
-
-        VkDescriptorSet textureSet =
-            resourceManager_.getTextureDescriptorSet(textureID_);
-
         vkCmdBindDescriptorSets(
             frameData.cmd,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
             pipelineLayout_,
             1,
             1,
-            &textureSet,
+            &cachedTextureSet_,
             0,
             nullptr
         );
 
-        auto model = resourceManager_.getModel(modelID_);
-
         VkBuffer buffers[] = {
-            model->getVertexBuffer(),
-            instanceBuffer_->getBuffer()
+        cachedModel_->getVertexBuffer(), // CACHED model
+        instanceBuffer_[frameData.frameIndex]->getBuffer()
         };
 
         VkDeviceSize offsets[] = { 0, 0 };
@@ -173,16 +182,9 @@ namespace le
             buffers,
             offsets
         );
+        
+        cachedModel_->bindIndexBuffer(frameData.cmd);
 
-        model->bindIndexBuffer(frameData.cmd);
-
-        vkCmdDrawIndexed(
-            frameData.cmd,
-            model->getIndexCount(),
-            static_cast<uint32_t>(instances_.size()),
-            0,
-            0,
-            0
-        );
+        vkCmdDrawIndexed(frameData.cmd, cachedModel_->getIndexCount(), instanceCount_, 0, 0, 0);
     }
 }

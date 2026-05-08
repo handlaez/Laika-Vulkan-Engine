@@ -16,7 +16,7 @@ namespace le {
     public:
         virtual ~IRenderSystem() = default;
 
-        virtual void render(const RenderFrameData& frameData, std::vector<LeActor>& actors) = 0;
+        virtual void render(const RenderFrameData& frameData, const std::vector<LeActor>& actors) = 0;
     };
 }
 #endif

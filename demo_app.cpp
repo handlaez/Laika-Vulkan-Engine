@@ -35,13 +35,13 @@ class DemoApp : public ILaikaEngineApp {
 public:
     void onStart(le::LeScene& scene) override
     {
-        const int boidCount = 5000;
+        const int boidCount = 10000;
+        instances_.resize(boidCount);
 
         boidActorIndices.reserve(boidCount);
-        scene.getActors().reserve(scene.getActors().size() + boidCount);
 
-        auto model = scene.leResourceManager.loadModel("models/ugly_fish/ugly_fish.obj");
-        auto texture = scene.leResourceManager.loadTexture("models/ugly_fish/fish.jpg");
+        auto model = scene.leResourceManager.loadModel("models/trout/Mesh_Trout.obj");
+        auto texture = scene.leResourceManager.loadTexture("models/trout/Tex_Trout.png");
 
         boidModelID = model;
         boidTextureID = texture;
@@ -49,9 +49,9 @@ public:
         for (int i = 0; i < boidCount; i++)
         {
             glm::vec3 pos(
-                le::randf() * 50.f,
+                le::randf() * 100.f,
                 le::randf() * 20.f,
-                le::randf() * 50.f
+                le::randf() * 100.f
             );
 
             boidSystem.AddBoid(pos);
@@ -105,9 +105,6 @@ public:
         auto& positions = boidSystem.GetPositions();
         auto& velocities = boidSystem.GetVelocities();
 
-        instances_.clear();
-        instances_.resize(positions.size());
-
         const int boidCount = static_cast<int>(positions.size());
 
         #pragma omp parallel for
@@ -128,8 +125,7 @@ public:
             // direct assignment, NOT push_back
             instances_[i].model = model;
         }
-
-        scene.instanceData = instances_;
+        scene.setInstanceData(instances_);
     }
 
     void onShutdown() override {

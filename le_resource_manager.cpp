@@ -57,12 +57,22 @@ namespace le {
 
 	std::shared_ptr<LeTexture> LeResourceManager::getTexture(uint32_t id)
 	{
-		return textures.at(id);
+		auto it = textures.find(id);
+		if (it != textures.end()) {
+			return it->second;
+		}
+		// fallback to texture 0 if ID not found
+		return textures.at(0);
 	}
 
 	std::shared_ptr<LeModel> LeResourceManager::getModel(uint32_t id)
 	{
-		return models.at(id);
+		auto it = models.find(id);
+		if (it != models.end()) {
+			return it->second;
+		}
+		// Fallback to model 0 if ID not found
+		return models.at(0);
 	}
 	
 	void LeResourceManager::loadFallbackTexture()

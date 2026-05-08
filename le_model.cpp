@@ -63,7 +63,7 @@ namespace le {
 		return model;
 	}
 
-	void LeModel::bind(VkCommandBuffer commandBuffer)
+	void LeModel::bind(VkCommandBuffer commandBuffer) const
 	{
 		VkBuffer buffers[] = { vertexBuffer };
 		VkDeviceSize offsets[] = { 0 };
@@ -74,7 +74,7 @@ namespace le {
 		}
 	}
 
-	void LeModel::draw(VkCommandBuffer commandBuffer)
+	void LeModel::draw(VkCommandBuffer commandBuffer) const
 	{
 		if (hasIndexBuffer) {
 			vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 0);

@@ -26,6 +26,8 @@ namespace le {
 
         application.onStart(scene);
 
+        renderManager.sync(scene);
+
         currentTime = std::chrono::high_resolution_clock::now();
 
         while (!leWindow.shouldClose()) {

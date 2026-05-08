@@ -39,8 +39,8 @@ namespace le {
 		LeModel(LeDevice &device, const LeModel::Builder &builder);
 		~LeModel();
 
-		void bind(VkCommandBuffer commandBuffer);
-		void draw(VkCommandBuffer commandBuffer);
+		void bind(VkCommandBuffer commandBuffer) const;
+		void draw(VkCommandBuffer commandBuffer) const;
 
 		static std::shared_ptr<LeModel> createModelFromFile(LeDevice& device, const std::string& filepath, glm::vec3 offset = {});
 		static std::shared_ptr<LeModel> createCube(LeDevice& device, glm::vec3 offset = {});

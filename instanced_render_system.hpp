@@ -28,14 +28,14 @@ namespace le {
             VkDescriptorSetLayout frameLayout,
             VkDescriptorSetLayout textureLayout
         );
+        ~InstancedRenderSystem();
 
         void setModel(uint32_t modelID);
         void setTexture(uint32_t textureID);
-        void setInstances(const std::vector<InstanceData>& instances);
 
-        void updateInstances(const std::vector<InstanceData>& instances);
+        void updateInstances(const std::vector<InstanceData>& instances, const RenderFrameData& frameData);
 
-        void render(const RenderFrameData& frameData);
+        void render(const RenderFrameData& frameData) const;
 
     private:
         void createPipeline(VkRenderPass renderPass);
@@ -53,11 +53,14 @@ namespace le {
         VkDescriptorSetLayout frameLayout_;
         VkDescriptorSetLayout textureLayout_;
 
-        std::unique_ptr<LeBuffer> instanceBuffer_;
-        std::vector<InstanceData> instances_;
+        std::array < std::unique_ptr<LeBuffer>, LeSwapchain::MAX_FRAMES_IN_FLIGHT > instanceBuffer_;
 
         uint32_t modelID_;
         uint32_t textureID_;
+
+        //boid helpers
+        LeModel* cachedModel_;
+        VkDescriptorSet cachedTextureSet_ = VK_NULL_HANDLE;
 
         uint32_t instanceCount_ = 0;
     };

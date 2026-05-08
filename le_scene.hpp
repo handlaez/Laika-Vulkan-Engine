@@ -32,7 +32,12 @@ namespace le {
 
         LeActor& getCameraObject();
 
-        std::vector<InstanceData> instanceData;
+        const std::vector<InstanceData>* instanceDataPtr = nullptr;
+
+        void setInstanceData(const std::vector<InstanceData>& data) {
+            instanceDataPtr = &data;
+        }
+
     private:
         void createDefaultCamera();
 
