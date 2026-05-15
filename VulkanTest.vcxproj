@@ -152,7 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="basic_render_system.cpp" />
-    <ClCompile Include="BoidSystem.cpp" />
+    <ClCompile Include="boid_system.cpp" />
     <ClCompile Include="demo_app.cpp" />
     <ClCompile Include="instanced_render_system.cpp" />
     <ClCompile Include="keyboard_movement_controller.cpp">
@@ -162,28 +162,31 @@
     <ClCompile Include="le_buffer.cpp" />
     <ClCompile Include="le_camera.cpp" />
     <ClCompile Include="le_core.cpp" />
+    <ClCompile Include="le_cubemap.cpp" />
     <ClCompile Include="le_device.cpp" />
     <ClCompile Include="le_model.cpp" />
     <ClCompile Include="le_pipeline.cpp" />
     <ClCompile Include="le_renderer.cpp" />
     <ClCompile Include="le_render_system_manager.cpp" />
-    <ClCompile Include="le_render_system_manager.hpp" />
     <ClCompile Include="le_resource_manager.cpp" />
     <ClCompile Include="le_scene.cpp" />
     <ClCompile Include="le_swapchain.cpp" />
     <ClCompile Include="le_texture.cpp" />
     <ClCompile Include="le_window.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="skybox_render_system.cpp" />
     <ClCompile Include="stb.cpp" />
     <ClCompile Include="tiny_obj_loader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BoidSystem.hpp" />
+    <ClInclude Include="boid_system.hpp" />
     <ClInclude Include="instanced_render_system.hpp" />
     <ClInclude Include="instance_data.hpp" />
     <ClInclude Include="i_render_system.hpp" />
     <ClInclude Include="keyboard_movement_controller.hpp" />
     <ClInclude Include="basic_render_system.hpp" />
+    <ClInclude Include="le_cubemap.hpp" />
+    <ClInclude Include="le_render_system_manager.hpp" />
     <ClInclude Include="i_laika_engine_app.hpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
@@ -205,6 +208,7 @@
     <ClInclude Include="le_texture.hpp" />
     <ClInclude Include="le_utils.hpp" />
     <ClInclude Include="le_window.hpp" />
+    <ClInclude Include="skybox_render_system.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="compile.bat" />
@@ -234,6 +238,8 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)shaders\\%(Filename)%(Extension)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)shaders\\%(Filename)%(Extension)</AdditionalInputs>
     </CustomBuild>
+    <None Include="skybox_shader.frag" />
+    <None Include="skybox_shader.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

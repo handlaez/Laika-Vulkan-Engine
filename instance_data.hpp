@@ -3,8 +3,9 @@
 
 #include <glm/glm.hpp>
 
-struct InstanceData {
-    glm::mat4 model;
+struct alignas(16) InstanceData {
+    alignas(16) glm::vec4 position;
+    alignas(16) glm::vec4 forward;
 };
 
 #endif

@@ -48,12 +48,13 @@ namespace le {
         LeResourceManager& resourceManager_;
 
         std::unique_ptr<LePipeline> pipeline_;
+        std::unique_ptr<LePipeline> wireframePipeline_;
         VkPipelineLayout pipelineLayout_;
 
         VkDescriptorSetLayout frameLayout_;
         VkDescriptorSetLayout textureLayout_;
 
-        std::array < std::unique_ptr<LeBuffer>, LeSwapchain::MAX_FRAMES_IN_FLIGHT > instanceBuffer_;
+        std::array <std::unique_ptr<LeBuffer>, LeSwapchain::MAX_FRAMES_IN_FLIGHT> instanceBuffer_;
 
         uint32_t modelID_;
         uint32_t textureID_;

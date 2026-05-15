@@ -1,23 +1,75 @@
 #ifndef LE_UTILS_HPP
 #define LE_UTILS_HPP
 
+#include<GLFW/glfw3.h>
+
 #include <random>
+#include <atomic>
 
-namespace le {
+class Utils
+{
+public:
+    inline static std::atomic<bool> parallelEnabled = true;
 
-	// stolen from: https://stackoverflow.com/a/57595105
-	template <typename T, typename... Rest>
-	void hashCombine(std::size_t& seed, const T& v, const Rest&... rest) {
-		seed ^= std::hash<T>{}(v)+0x9e3779b9 + (seed << 6) + (seed >> 2);
-		(hashCombine(seed, rest), ...);
-	};
+    inline static bool texturesEnabled = true;
+    inline static bool lightingEnabled = true;
+    inline static bool wireframeEnabled = false;
+    inline static bool skyboxEnabled = true;
 
-	inline float randf()
-	{
-		thread_local static std::mt19937 rng(std::random_device{}());
-		thread_local static std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
-		return dist(rng);
-	}
-}
+    static bool isKeyPressed(GLFWwindow* window, int key)
+    {
+        static bool keyStates[1024] = { false };
+
+        bool current = glfwGetKey(window, key) == GLFW_PRESS;
+
+        bool pressedThisFrame = current && !keyStates[key];
+
+        keyStates[key] = current;
+
+        return pressedThisFrame;
+    }
+
+    static void checkKeys(GLFWwindow* window)
+    {
+        if (isKeyPressed(window, GLFW_KEY_1))
+        {
+            parallelEnabled = !parallelEnabled;
+        }
+
+        if (isKeyPressed(window, GLFW_KEY_2))
+        {
+            lightingEnabled = !lightingEnabled;
+        }
+
+        if (isKeyPressed(window, GLFW_KEY_3))
+        {
+            texturesEnabled = !texturesEnabled;
+        }
+
+        if (isKeyPressed(window, GLFW_KEY_4))
+        {
+            wireframeEnabled = !wireframeEnabled;
+        }
+
+        if (isKeyPressed(window, GLFW_KEY_5))
+        {
+            skyboxEnabled = !skyboxEnabled;
+        }
+    }
+
+    // stolen from: https://stackoverflow.com/a/57595105
+    template <typename T, typename... Rest>
+    static void hashCombine(std::size_t& seed, const T& v, const Rest&... rest) {
+        seed ^= std::hash<T>{}(v)+0x9e3779b9 + (seed << 6) + (seed >> 2);
+        (hashCombine(seed, rest), ...);
+    };
+
+    static float randf()
+    {
+        thread_local static std::mt19937 rng(std::random_device{}());
+        thread_local static std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
+        return dist(rng);
+    }
+};
 
 #endif 

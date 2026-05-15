@@ -1,4 +1,5 @@
 #include "le_render_system_manager.hpp"
+#include "le_utils.hpp"
 
 namespace le {
 	LeRenderSystemManager::LeRenderSystemManager(LeDevice& device, LeRenderer& renderer, LeResourceManager& resourceManager) : device_(device), renderer_(renderer), resourceManager_(resourceManager)
@@ -21,6 +22,13 @@ namespace le {
             resourceManager,
             frameSetLayout_,
             textureSetLayout_
+        );
+
+        skyboxRenderSystem = std::make_unique<SkyboxRenderSystem>(
+            device,
+            renderer,
+            resourceManager,
+            frameSetLayout_
         );
 
         instancedRenderSystem->setModel(0);   //just so it's not empty later on
@@ -55,7 +63,13 @@ namespace le {
 
         VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
-        // create buffers
+        lightingUniformBuffers_.resize(frames);
+        lightingUniformBuffersMemory_.resize(frames);
+        lightingUniformBuffersMapped_.resize(frames);
+
+        VkDeviceSize lightingBufferSize = sizeof(LightingUBO);
+
+        // create buffers (frame)
         for (size_t i = 0; i < frames; i++)
         {
             device_.createBuffer(
@@ -77,10 +91,32 @@ namespace le {
             );
         }
 
+        // (lighting)
+        for (size_t i = 0; i < frames; i++)
+        {
+            device_.createBuffer(
+                lightingBufferSize,
+                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                lightingUniformBuffers_[i],
+                lightingUniformBuffersMemory_[i]
+            );
+
+            vkMapMemory(
+                device_.device(),
+                lightingUniformBuffersMemory_[i],
+                0,
+                lightingBufferSize,
+                0,
+                &lightingUniformBuffersMapped_[i]
+            );
+        }
+
         // create descriptor pool
         VkDescriptorPoolSize poolSize{};
         poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        poolSize.descriptorCount = static_cast<uint32_t>(frames);
+        poolSize.descriptorCount = static_cast<uint32_t>(frames * 2);
 
         VkDescriptorPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -114,20 +150,39 @@ namespace le {
         // bind buffers to descriptor sets
         for (size_t i = 0; i < frames; i++)
         {
-            VkDescriptorBufferInfo bufferInfo{};
-            bufferInfo.buffer = frameUniformBuffers_[i];
-            bufferInfo.offset = 0;
-            bufferInfo.range = sizeof(UniformBufferObject);
+            VkDescriptorBufferInfo cameraBufferInfo{};
+            cameraBufferInfo.buffer = frameUniformBuffers_[i];
+            cameraBufferInfo.offset = 0;
+            cameraBufferInfo.range = sizeof(UniformBufferObject);
 
-            VkWriteDescriptorSet write{};
-            write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            write.dstSet = frameDescriptorSets_[i];
-            write.dstBinding = 0;
-            write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            write.descriptorCount = 1;
-            write.pBufferInfo = &bufferInfo;
+            VkDescriptorBufferInfo lightingBufferInfo{};
+            lightingBufferInfo.buffer = lightingUniformBuffers_[i];
+            lightingBufferInfo.offset = 0;
+            lightingBufferInfo.range = sizeof(LightingUBO);
 
-            vkUpdateDescriptorSets(device_.device(), 1, &write, 0, nullptr);
+            std::array<VkWriteDescriptorSet, 2> writes{};
+
+            writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            writes[0].dstSet = frameDescriptorSets_[i];
+            writes[0].dstBinding = 0;
+            writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            writes[0].descriptorCount = 1;
+            writes[0].pBufferInfo = &cameraBufferInfo;
+
+            writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            writes[1].dstSet = frameDescriptorSets_[i];
+            writes[1].dstBinding = 1;
+            writes[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            writes[1].descriptorCount = 1;
+            writes[1].pBufferInfo = &lightingBufferInfo;
+
+            vkUpdateDescriptorSets(
+                device_.device(),
+                static_cast<uint32_t>(writes.size()),
+                writes.data(),
+                0,
+                nullptr
+            );
         }
     }
 
@@ -160,6 +215,7 @@ namespace le {
 
             // camera update now lives here
             updateFrameUBO(currentFrame, scene.getCamera());
+            updateLightingUBO(currentFrame);
 
             VkDescriptorSet frameSet = getFrameDescriptorSet(currentFrame);
 
@@ -174,27 +230,59 @@ namespace le {
                 instancedRenderSystem->updateInstances(*scene.instanceDataPtr, frameData);
             }
 
-            //basicRenderSystem->render(frameData, scene.getActors());
             instancedRenderSystem->render(frameData);
+            if (Utils::skyboxEnabled)
+            {
+                skyboxRenderSystem->render(frameData);
+            }
 
             renderer_.endSwapChainRenderPass(commandBuffer);
             renderer_.endFrame();
         }
     }
 
+    void LeRenderSystemManager::updateLightingUBO(uint32_t frameIndex)
+    {
+        LightingUBO lighting{};
+
+        lighting.lightColor = glm::vec4(1.0f);
+        lighting.lightDir = glm::vec4(1.f, 3.f, 2.f, 0.f);
+
+        lighting.lightingEnabled = Utils::lightingEnabled;
+        lighting.texturesEnabled = Utils::texturesEnabled;
+
+        memcpy(
+            lightingUniformBuffersMapped_[frameIndex],
+            &lighting,
+            sizeof(LightingUBO)
+        );
+    }
+
     void LeRenderSystemManager::createDescriptorSetLayouts()
     {
-        VkDescriptorSetLayoutBinding uboLayoutBinding{};
-        uboLayoutBinding.binding = 0;
-        uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        uboLayoutBinding.descriptorCount = 1;
-        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-        uboLayoutBinding.pImmutableSamplers = nullptr;
+        VkDescriptorSetLayoutBinding cameraBinding{};
+        cameraBinding.binding = 0;
+        cameraBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        cameraBinding.descriptorCount = 1;
+        cameraBinding.stageFlags =
+            VK_SHADER_STAGE_VERTEX_BIT;
+
+        VkDescriptorSetLayoutBinding lightingBinding{};
+        lightingBinding.binding = 1;
+        lightingBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        lightingBinding.descriptorCount = 1;
+        lightingBinding.stageFlags =
+            VK_SHADER_STAGE_FRAGMENT_BIT;
+
+        std::array<VkDescriptorSetLayoutBinding, 2> bindings = {
+            cameraBinding,
+            lightingBinding
+        };
 
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutInfo.bindingCount = 1;              // only the UBO
-        layoutInfo.pBindings = &uboLayoutBinding;
+        layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+        layoutInfo.pBindings = bindings.data();
 
         if (vkCreateDescriptorSetLayout(
             device_.device(),

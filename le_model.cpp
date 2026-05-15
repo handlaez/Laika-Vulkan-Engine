@@ -19,7 +19,7 @@ namespace std {
 	struct hash<le::LeModel::Vertex> {
 		size_t operator()(le::LeModel::Vertex const& vertex) const {
 			size_t seed = 0;
-			le::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.texCoord);
+			Utils::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.texCoord);
 			return seed;
 		}
 	};

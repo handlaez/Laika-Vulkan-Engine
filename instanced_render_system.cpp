@@ -1,5 +1,6 @@
 #include "instanced_render_system.hpp"
 #include "le_frame_info.hpp"
+#include "le_utils.hpp"
 
 #include <iostream>
 
@@ -67,10 +68,8 @@ namespace le
 
         uint32_t loc = static_cast<uint32_t>(attributes.size());
 
-        attributes.push_back({ loc + 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, model) + sizeof(glm::vec4) * 0 });
-        attributes.push_back({ loc + 1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, model) + sizeof(glm::vec4) * 1 });
-        attributes.push_back({ loc + 2, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, model) + sizeof(glm::vec4) * 2 });
-        attributes.push_back({ loc + 3, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, model) + sizeof(glm::vec4) * 3 });
+        attributes.push_back({loc + 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, position)});
+        attributes.push_back({loc + 1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, forward)});
 
         PipelineConfigInfo pipelineConfig{};
         LePipeline::defaultPipelineConfigInfo(pipelineConfig);
@@ -80,12 +79,31 @@ namespace le
         pipelineConfig.bindingDescriptions = bindings;
         pipelineConfig.attributeDescriptions = attributes;
 
-        // IMPORTANT: we will extend vertex attributes later for instance data
+        // IMPORTANT: will extend vertex attributes later for instance data
         pipeline_ = std::make_unique<LePipeline>(
             device_,
             "shaders/instanced_vert_shader.spv",
             "shaders/instanced_frag_shader.spv",
             pipelineConfig
+        );
+
+        // wireframe pipeline
+        PipelineConfigInfo wireframeConfig{};
+        LePipeline::defaultPipelineConfigInfo(wireframeConfig);
+
+        wireframeConfig.renderPass = renderPass;
+        wireframeConfig.pipelineLayout = pipelineLayout_;
+        wireframeConfig.bindingDescriptions = bindings;
+        wireframeConfig.attributeDescriptions = attributes;
+
+        wireframeConfig.rasterizationInfo.polygonMode =
+            VK_POLYGON_MODE_LINE;
+
+        wireframePipeline_ = std::make_unique<LePipeline>(
+            device_,
+            "shaders/instanced_vert_shader.spv",
+            "shaders/instanced_frag_shader.spv",
+            wireframeConfig
         );
     }
 
@@ -143,7 +161,14 @@ namespace le
 
     void InstancedRenderSystem::render(const RenderFrameData& frameData) const
     {
-        pipeline_->bind(frameData.cmd);
+        if (Utils::wireframeEnabled)
+        {
+            wireframePipeline_->bind(frameData.cmd);
+        }
+        else
+        {
+            pipeline_->bind(frameData.cmd);
+        }
 
         // set 0: camera
         vkCmdBindDescriptorSets(

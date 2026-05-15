@@ -4,13 +4,14 @@
 #include "le_camera.hpp"
 #include "le_scene.hpp"
 #include "le_frame_info.hpp"
+#include "le_utils.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 // boid includes
-#include "BoidSystem.hpp"
+#include "boid_system.hpp"
 #include "instanced_render_system.hpp"
 #include "instance_data.hpp"
 
@@ -35,7 +36,7 @@ class DemoApp : public ILaikaEngineApp {
 public:
     void onStart(le::LeScene& scene) override
     {
-        const int boidCount = 10000;
+        const int boidCount = 5000;
         instances_.resize(boidCount);
 
         boidActorIndices.reserve(boidCount);
@@ -49,9 +50,9 @@ public:
         for (int i = 0; i < boidCount; i++)
         {
             glm::vec3 pos(
-                le::randf() * 100.f,
-                le::randf() * 20.f,
-                le::randf() * 100.f
+                Utils::randf() * 100.f,
+                Utils::randf() * 20.f,
+                Utils::randf() * 100.f
             );
 
             boidSystem.AddBoid(pos);
@@ -94,7 +95,7 @@ public:
         auto& camera = scene.getCamera();
         auto& camObj = scene.getCameraObject();
 
-        camera.setPerspectiveProjection(glm::radians(50.f), fi.aspect, 1.f, 5000.f);
+        camera.setPerspectiveProjection(glm::radians(45.f), fi.aspect, 1.f, 5000.f);
         camera.setView(
             camObj.transform.translation,
             camObj.transform.rotation
@@ -107,25 +108,24 @@ public:
 
         const int boidCount = static_cast<int>(positions.size());
 
-        #pragma omp parallel for
+        #pragma omp parallel for if(Utils::parallelEnabled.load())
         for (int i = 0; i < boidCount; i++) // int for MSVC OpenMP
         {
-            glm::vec3 pos = positions[i];
-            glm::vec3 vel = velocities[i];
+            instances_[i].position = glm::vec4(positions[i], 1.f);
 
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), pos);
-
-            if (glm::length(vel) > 0.001f)
+            if (glm::length(velocities[i]) > 0.001f)
             {
-                glm::vec3 dir = glm::normalize(vel);
-                glm::quat rot = glm::quatLookAt(dir, glm::vec3(0, 1, 0));
-                model *= glm::mat4_cast(rot);
+                instances_[i].forward = glm::vec4(glm::normalize(velocities[i]), 0.f);
             }
-
-            // direct assignment, NOT push_back
-            instances_[i].model = model;
+            else
+            {
+                instances_[i].forward = glm::vec4(0.f, 0.f, 1.f, 0.f);
+            }
         }
+
         scene.setInstanceData(instances_);
+
+        Utils::checkKeys(fi.window);
     }
 
     void onShutdown() override {

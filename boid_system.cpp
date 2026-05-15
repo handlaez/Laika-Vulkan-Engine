@@ -1,4 +1,4 @@
-#include "BoidSystem.hpp"
+#include "boid_system.hpp"
 #define GLM_ENABLE_EXPERIMENTAL
 
 #include <glm/glm.hpp>
@@ -14,7 +14,7 @@ void BoidSystem::AddBoid(const glm::vec3& pos)
 {
     _data.position.push_back(pos);
 
-    glm::vec3 v = glm::normalize(glm::vec3(le::randf(), le::randf(), le::randf()));
+    glm::vec3 v = glm::normalize(glm::vec3(Utils::randf(), Utils::randf(), Utils::randf()));
     _data.velocity.push_back(v * 2.0f);
 
     _data.acceleration.push_back(glm::vec3(0.0f));
@@ -127,7 +127,7 @@ void BoidSystem::ComputeForces()
     const float aliR2 = _alignmentRadius * _alignmentRadius;
     const float cohR2 = _cohesionRadius * _cohesionRadius;
 
-    #pragma omp parallel for schedule (guided, 128)
+    #pragma omp parallel for schedule (guided, 128) if(Utils::parallelEnabled.load())
     for (int i = 0; i < N; i++)
     {
         const glm::vec3 pos_i = _data.position[i];
@@ -233,7 +233,7 @@ void BoidSystem::Integrate(float deltaTime)
 {
     const int N = (int)_data.Size();
 
-    #pragma omp parallel for schedule(static, 512)
+    #pragma omp parallel for schedule(static, 512) if(Utils::parallelEnabled.load())
     for (int i = 0; i < N; i++)
     {
         glm::vec3& vel = _data.velocity[i];
