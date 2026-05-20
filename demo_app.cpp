@@ -5,6 +5,7 @@
 #include "le_scene.hpp"
 #include "le_frame_info.hpp"
 #include "le_utils.hpp"
+#include "profiler.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -36,7 +37,7 @@ class DemoApp : public ILaikaEngineApp {
 public:
     void onStart(le::LeScene& scene) override
     {
-        const int boidCount = 5000;
+        const int boidCount = 2000;
         instances_.resize(boidCount);
 
         boidActorIndices.reserve(boidCount);
@@ -64,30 +65,6 @@ public:
 
     void onUpdate(le::LeScene& scene, FrameInfo fi) override
     {
-        // FPS counter
-        counter++;
-
-        double crntTime = glfwGetTime();
-        float deltaTime = fi.deltaTime;
-        lastTime = crntTime;
-
-        double timeDiff = crntTime - prevTime;
-
-        if (timeDiff >= 1.0) {
-            double fps = counter / timeDiff;
-            double msPerFrame = (timeDiff / counter) * 1000.0;
-
-            std::string title =
-                "Vulkan Engine - " +
-                std::to_string(fps) + " FPS (" +
-                std::to_string(msPerFrame) + " ms)";
-
-            glfwSetWindowTitle(fi.window, title.c_str());
-
-            prevTime = crntTime;
-            counter = 0;
-        }
-
         // movement
         controller.moveInPlaneXZ(fi.window, fi.deltaTime, scene.getCameraObject());
 
@@ -96,13 +73,13 @@ public:
         auto& camObj = scene.getCameraObject();
 
         camera.setPerspectiveProjection(glm::radians(45.f), fi.aspect, 1.f, 5000.f);
-        camera.setView(
-            camObj.transform.translation,
-            camObj.transform.rotation
-        );
+        camera.setView(camObj.transform.translation, camObj.transform.rotation);
 
-        boidSystem.Update(deltaTime);
+        Profiler::StartBoidUpdate();
+        boidSystem.Update(fi.deltaTime);
+        Profiler::EndBoidUpdate();
 
+        Profiler::StartDataFetch();
         auto& positions = boidSystem.GetPositions();
         auto& velocities = boidSystem.GetVelocities();
 
@@ -124,6 +101,7 @@ public:
         }
 
         scene.setInstanceData(instances_);
+        Profiler::EndDataFetch();
 
         Utils::checkKeys(fi.window);
     }

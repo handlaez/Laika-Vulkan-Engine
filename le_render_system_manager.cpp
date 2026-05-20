@@ -1,5 +1,6 @@
 #include "le_render_system_manager.hpp"
 #include "le_utils.hpp"
+#include "profiler.hpp"
 
 namespace le {
 	LeRenderSystemManager::LeRenderSystemManager(LeDevice& device, LeRenderer& renderer, LeResourceManager& resourceManager) : device_(device), renderer_(renderer), resourceManager_(resourceManager)
@@ -203,11 +204,17 @@ namespace le {
     {
         instancedRenderSystem->setModel(1);
         instancedRenderSystem->setTexture(1);
+
+        basicRenderSystem->setModel(1);
+        basicRenderSystem->setTexture(1);
     }
 
     void LeRenderSystemManager::render(LeScene& scene)
     {
         if (auto commandBuffer = renderer_.beginFrame()) {
+            Profiler::StartRenderDispatch();
+            Profiler::ResetQueries(commandBuffer);
+            Profiler::WriteTimestampStart(commandBuffer);
 
             renderer_.beginSwapChainRenderPass(commandBuffer);
 
@@ -226,18 +233,35 @@ namespace le {
                 frameSet
             };
 
-            if (scene.instanceDataPtr != nullptr) {
-                instancedRenderSystem->updateInstances(*scene.instanceDataPtr, frameData);
+            if (scene.instanceDataPtr != nullptr)
+            {
+                if (Utils::instancingEnabled)
+                {
+                    instancedRenderSystem->updateInstances(*scene.instanceDataPtr, frameData);
+                    instancedRenderSystem->render(frameData);
+                }
+                else
+                {
+                    if (Utils::parallelEnabled.load())
+                    {
+                        basicRenderSystem->renderParallel(frameData, *scene.instanceDataPtr, renderer_.getSwapchainRenderPass());
+                    }
+                    else
+                    {
+                        basicRenderSystem->render(frameData, *scene.instanceDataPtr);
+                    }
+                }
             }
 
-            instancedRenderSystem->render(frameData);
             if (Utils::skyboxEnabled)
             {
                 skyboxRenderSystem->render(frameData);
             }
 
+            Profiler::WriteTimestampEnd(commandBuffer);
             renderer_.endSwapChainRenderPass(commandBuffer);
             renderer_.endFrame();
+            Profiler::EndRenderDispatch();
         }
     }
 

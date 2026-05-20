@@ -34,6 +34,12 @@
     <Filter Include="Header Files\Interfaces">
       <UniqueIdentifier>{8b2a3103-4c2d-4de4-a436-bf39e7e114df}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Service">
+      <UniqueIdentifier>{adcf617a-7238-43de-b127-b3133509ca03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Service">
+      <UniqueIdentifier>{a72678ff-8c07-48e1-825e-b27448db9f46}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="le_camera.cpp">
@@ -98,6 +104,15 @@
     </ClCompile>
     <ClCompile Include="instanced_render_system.cpp">
       <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="le_cubemap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="skybox_render_system.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="profiler.cpp">
+      <Filter>Source Files\Service</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -170,6 +185,15 @@
     <ClInclude Include="instance_data.hpp">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
+    <ClInclude Include="le_cubemap.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="skybox_render_system.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="profiler.hpp">
+      <Filter>Header Files\Service</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="compile.bat" />
@@ -185,6 +209,8 @@
     <None Include="instanced_shader.frag">
       <Filter>Resource Files\Shaders</Filter>
     </None>
+    <None Include="skybox_shader.frag" />
+    <None Include="skybox_shader.vert" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="shaders\frag_shader.frag">

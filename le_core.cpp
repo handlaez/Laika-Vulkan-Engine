@@ -1,6 +1,8 @@
 #include "le_core.hpp"
 #include "le_frame_info.hpp"
 
+#include "profiler.hpp"
+
 namespace le {
 
 	LeCore::LeCore() : currentTime(std::chrono::high_resolution_clock::now()) {}
@@ -24,6 +26,11 @@ namespace le {
         FrameInfo fi{};
         fi.window = leWindow.getGLFWwindow();
 
+        //profiler pt.1
+        constexpr uint64_t maxMeasuredFrames = 5001;
+        Profiler::Initialize(leDevice.device(), leDevice.getPhysicalDevice(), maxMeasuredFrames);
+        uint64_t measuredFrames = 0;
+
         application.onStart(scene);
 
         renderManager.sync(scene);
@@ -36,10 +43,25 @@ namespace le {
 
             updateFrameInfo(fi);
 
+            Profiler::StartFrame();
             application.onUpdate(scene, fi);
-
+            
             renderManager.render(scene);
+            Profiler::EndFrame();
+
+            // profiler pt.2
+            measuredFrames++;
+            if (measuredFrames > maxMeasuredFrames)
+            {
+                break;
+            }
         }
+
+        // profiler pt.3
+        vkDeviceWaitIdle(leDevice.device());
+        
+        Profiler::ExportToCSV("vulkan_profile.csv");
+        Profiler::Shutdown();
 
         application.onShutdown();
         resourceManager.shutDown();

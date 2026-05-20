@@ -1,4 +1,5 @@
 #include "le_swapchain.hpp"
+#include "profiler.hpp"
 
 // std
 #include <array>
@@ -72,6 +73,9 @@ namespace le {
             &inFlightFences[currentFrame],
             VK_TRUE,
             std::numeric_limits<uint64_t>::max());
+
+        // collects timings for just finished frame
+        Profiler::CollectFrameResults();
 
         VkResult result = vkAcquireNextImageKHR(
             device.device(),

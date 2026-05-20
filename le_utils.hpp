@@ -9,8 +9,9 @@
 class Utils
 {
 public:
-    inline static std::atomic<bool> parallelEnabled = true;
+    inline static std::atomic<bool> parallelEnabled = false;
 
+    inline static bool instancingEnabled = false;
     inline static bool texturesEnabled = true;
     inline static bool lightingEnabled = true;
     inline static bool wireframeEnabled = false;
@@ -38,20 +39,25 @@ public:
 
         if (isKeyPressed(window, GLFW_KEY_2))
         {
-            lightingEnabled = !lightingEnabled;
+            instancingEnabled = !instancingEnabled;
         }
 
         if (isKeyPressed(window, GLFW_KEY_3))
         {
-            texturesEnabled = !texturesEnabled;
+            lightingEnabled = !lightingEnabled;
         }
 
         if (isKeyPressed(window, GLFW_KEY_4))
         {
-            wireframeEnabled = !wireframeEnabled;
+            texturesEnabled = !texturesEnabled;
         }
 
         if (isKeyPressed(window, GLFW_KEY_5))
+        {
+            wireframeEnabled = !wireframeEnabled;
+        }
+
+        if (isKeyPressed(window, GLFW_KEY_6))
         {
             skyboxEnabled = !skyboxEnabled;
         }
@@ -64,9 +70,11 @@ public:
         (hashCombine(seed, rest), ...);
     };
 
+    inline static unsigned int totallyRandomSeed = 42;
+
     static float randf()
     {
-        thread_local static std::mt19937 rng(std::random_device{}());
+        thread_local static std::mt19937 rng(totallyRandomSeed);
         thread_local static std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
         return dist(rng);
     }

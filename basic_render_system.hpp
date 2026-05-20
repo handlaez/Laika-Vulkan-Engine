@@ -24,8 +24,9 @@ namespace le {
     };
 
     struct SimplePushConstantData {
-        glm::mat4 transform{ 1.f };
-        alignas(16) glm::vec3 color;
+        glm::vec4 position;
+        glm::vec4 forward;
+        glm::vec4 color;
     };
 
     class BasicRenderSystem : public IRenderSystem {
@@ -43,6 +44,11 @@ namespace le {
         BasicRenderSystem& operator=(const BasicRenderSystem&) = delete;
 
         void render(const RenderFrameData& frameData, const std::vector<LeActor>& actors);
+        void render(const RenderFrameData& frameData, const std::vector<InstanceData>& instances);
+        void renderParallel(const RenderFrameData& frameData, const std::vector<InstanceData>& instances, VkRenderPass renderPass);
+
+        void setModel(uint32_t modelID);
+        void setTexture(uint32_t textureID);
 
     private:
         void createPipelineLayout();
@@ -56,6 +62,16 @@ namespace le {
 
         VkDescriptorSetLayout frameSetLayout_;
         VkDescriptorSetLayout textureSetLayout_;
+
+        // boid
+        std::unique_ptr<LePipeline> wireframePipeline_;
+        LeModel* cachedModel_ = nullptr;
+        VkDescriptorSet cachedTextureSet_ = VK_NULL_HANDLE;
+
+        std::vector<VkCommandPool> threadCommandPools;
+        std::vector<VkCommandBuffer> threadCommandBuffers;
+
+        void createThreadLocalCommandBuffers();
     };
 
 }
