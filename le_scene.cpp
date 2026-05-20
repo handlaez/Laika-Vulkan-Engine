@@ -48,7 +48,7 @@ namespace le {
 
     void LeScene::createDefaultCamera() {
         cameraObject = std::make_unique<LeActor>(LeActor::createGameObject());
-        cameraObject->transform.translation = { 0.f, 0.f, 0.f };
+        cameraObject->transform.translation = { 0.f, 0.f, -100.f };
         cameraObject->transform.rotation = glm::quat(1.f, 0.f, 0.f, 0.f);
 
         camera.setPerspectiveProjection(glm::radians(50.f), 1.f, 0.1f, 100.f);

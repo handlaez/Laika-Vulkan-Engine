@@ -35,7 +35,7 @@ class BoidSystem
 public:
     void AddBoid(const glm::vec3& pos);
     void Update(float deltaTime);
-    void KeepInBounds(const int i, float deltaTime);
+    void KeepInBounds(const int i);
     glm::vec3 LimitVec(glm::vec3 v, float max);
 
     const std::vector<glm::vec3>& GetPositions() const { return _data.position; }
@@ -52,17 +52,17 @@ private:
     glm::vec3 Limit(const glm::vec3& v, float max);
 
     // params
-    const float xLimit = 75.0f;
-    const float yMin = -25.f;
-    const float yMax = 25.f;
-    const float zLimit = 75.0f;
+    const float xLimit = 150.0f;
+    const float yMin = -50.f;
+    const float yMax = 50.f;
+    const float zLimit = 150.0f;
     // border margin
-    const float margin = 25.f;
+    const float margin = 30.f;
 
     // radius
-    const float _separationRadius = 8.0f;
-    const float _alignmentRadius = 20.0f;
-    const float _cohesionRadius = 25.0f;
+    const float _separationRadius = 4.5f;
+    const float _alignmentRadius = 15.0f;
+    const float _cohesionRadius = 20.0f;
 };
 
 #endif

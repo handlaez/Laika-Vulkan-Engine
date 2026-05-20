@@ -15,12 +15,13 @@ void BoidSystem::AddBoid(const glm::vec3& pos)
     _data.position.push_back(pos);
 
     glm::vec3 v = glm::normalize(glm::vec3(Utils::randf(), Utils::randf(), Utils::randf()));
-    _data.velocity.push_back(v * 2.0f);
-
+    _data.velocity.push_back(v * 50.0f);
     _data.acceleration.push_back(glm::vec3(0.0f));
 
-    _data.maxSpeed.push_back(40.0f);
-    _data.maxForce.push_back(2.0f);
+    float randFactor = 1.f + Utils::randf();
+
+    _data.maxSpeed.push_back(25.f * randFactor + 40.0f);
+    _data.maxForce.push_back(randFactor + 4.f);
 }
 
 void BoidSystem::Update(float deltaTime)
@@ -107,7 +108,7 @@ void BoidSystem::BuildGrid()
     }
 
 #ifdef _DEBUG
-    // sanity check (VERY useful)
+    // sanity check (useful)
     for (int i = 0; i < numCells; i++)
     {
         int start = _grid.cellOffset[i];
@@ -203,29 +204,34 @@ void BoidSystem::ComputeForces()
         if (countSep > 0)
         {
             sep /= (float)countSep;
-            force += (glm::normalize(sep) * _data.maxSpeed[i] - vel_i) * 1.2f;
+            force += (glm::normalize(sep) * _data.maxSpeed[i] - vel_i) * 1.f;
         }
 
         if (countAli > 0)
         {
             ali /= (float)countAli;
-            force += (glm::normalize(ali) * _data.maxSpeed[i] - vel_i) * 1.f;
+
+            if (glm::length(ali) > 10.0f)
+            {
+                force += (glm::normalize(ali) * _data.maxSpeed[i] - vel_i) * 1.5f;
+            }
         }
 
         if (countCoh > 0)
         {
-            coh /= (float)countCoh;
-            glm::vec3 dir = coh - pos_i;
+            glm::vec3 centerOfMass = coh / (float)countCoh;
+            glm::vec3 dir = centerOfMass - pos_i;
+            float dist = glm::length(dir);
 
-            if (glm::length2(dir) > 1e-8f)
+            if (dist > 5.0f)
             {
-                force += (glm::normalize(dir) * _data.maxSpeed[i] - vel_i) * 1.f;
+                force += (glm::normalize(dir) * _data.maxSpeed[i] - vel_i) * 0.3f;
             }
         }
 
         _data.acceleration[i] = force;
 
-        KeepInBounds(i, 0.0f);
+        KeepInBounds(i);
     }
 }
 
@@ -240,63 +246,53 @@ void BoidSystem::Integrate(float deltaTime)
         glm::vec3& pos = _data.position[i];
         glm::vec3& acc = _data.acceleration[i];
 
-        acc = Limit(acc, 1.0f);
-
         vel += acc * deltaTime;
 
-        float speed2 = glm::length2(vel);
+        vel *= std::pow(0.95f, deltaTime * 60.0f);
+
+        float speed = glm::length(vel);
         float maxS = _data.maxSpeed[i];
+        float minS = maxS * 0.6f;
+        if (speed > maxS)
+        {
+            vel = (vel / speed) * maxS;
+        }
+        else if (speed < maxS * 0.2f)
+        {
+            vel = (vel / speed) * minS;
+        }
+        else if (speed < 0.1f)
+        {
+            vel *= 5.f;
+        }
 
-        if (speed2 > maxS * maxS)
-            vel = glm::normalize(vel) * maxS;
-
-        vel *= 0.995f;
-
-        pos += vel * 20.0f * deltaTime;
-
+        pos += vel * deltaTime;
         acc = glm::vec3(0.0f);
     }
 }
 
-void BoidSystem::KeepInBounds(const int i, float)
+void BoidSystem::KeepInBounds(const int i)
 {
+    glm::vec3 pos = _data.position[i];
     glm::vec3 steer(0.0f);
-    const glm::vec3& pos = _data.position[i];
+    float margin = 20.0f;
 
-    if (pos.x > xLimit - margin)
-    {
-        steer.x -= (pos.x - (xLimit - margin)) / margin;
-    }
-    else if (pos.x < -xLimit + margin)
-    {
-        steer.x += ((-xLimit + margin) - pos.x) / margin;
-    }
+    auto checkAxis = [&](float p, float limit) {
+        if (p > limit - margin) return -(p - (limit - margin)) / margin;
+        if (p < -limit + margin) return ((-limit + margin) - p) / margin;
+        return 0.0f;
+        };
 
-    if (pos.y > yMax - margin)
-    {
-        steer.y -= (pos.y - (yMax - margin)) / margin;
-    }
-    else if (pos.y < yMin + margin)
-    {
-        steer.y += ((yMin + margin) - pos.y) / margin;
-    }
+    steer.x = checkAxis(pos.x, xLimit);
+    steer.y = checkAxis(pos.y, yMax);
+    steer.z = checkAxis(pos.z, zLimit);
 
-    if (pos.z > zLimit - margin)
+    if (glm::length2(steer) > 0.001f)
     {
-        steer.z -= (pos.z - (zLimit - margin)) / margin;
-    }
-    else if (pos.z < -zLimit + margin)
-    {
-        steer.z += ((-zLimit + margin) - pos.z) / margin;
-    }
-
-    if (glm::length2(steer) > 0.0f)
-    {
-        glm::vec3 desired = glm::normalize(steer) * _data.maxSpeed[i];
+        glm::vec3 desired = steer * _data.maxSpeed[i];
         glm::vec3 force = desired - _data.velocity[i];
 
-        force = Limit(force, _data.maxForce[i]);
-        _data.acceleration[i] += force * 20.0f;
+        _data.acceleration[i] += force * 2.0f;
     }
 }
 
