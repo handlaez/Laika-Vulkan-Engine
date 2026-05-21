@@ -112,8 +112,9 @@ namespace le {
         submitInfo.pSignalSemaphores = signalSemaphores;
 
         vkResetFences(device.device(), 1, &inFlightFences[currentFrame]);
-        if (vkQueueSubmit(device.graphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) !=
-            VK_SUCCESS) {
+        VkResult submitResult = vkQueueSubmit(device.graphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]);
+        if (submitResult != VK_SUCCESS) {
+            std::cerr << "vkQueueSubmit failed with VkResult: " << submitResult << std::endl;
             throw std::runtime_error("failed to submit draw command buffer!");
         }
 

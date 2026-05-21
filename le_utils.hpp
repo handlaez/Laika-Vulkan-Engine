@@ -11,7 +11,7 @@ class Utils
 public:
     inline static std::atomic<bool> parallelEnabled = false;
 
-    inline static bool instancingEnabled = false;
+    inline static bool instancingEnabled = true;
     inline static bool texturesEnabled = true;
     inline static bool lightingEnabled = true;
     inline static bool wireframeEnabled = false;

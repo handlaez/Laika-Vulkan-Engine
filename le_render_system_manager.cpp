@@ -260,8 +260,10 @@ namespace le {
 
             Profiler::WriteTimestampEnd(commandBuffer);
             renderer_.endSwapChainRenderPass(commandBuffer);
-            renderer_.endFrame();
+
             Profiler::EndRenderDispatch();
+            Profiler::EndFrame();
+            renderer_.endFrame();
         }
     }
 

@@ -47,7 +47,6 @@ namespace le {
             application.onUpdate(scene, fi);
             
             renderManager.render(scene);
-            Profiler::EndFrame();
 
             // profiler pt.2
             measuredFrames++;
