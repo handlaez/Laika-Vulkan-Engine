@@ -31,7 +31,7 @@ void main() {
     vec3 right = normalize(cross(worldUp, forward));
     vec3 up = cross(forward, right);
 
-    mat3 rotation = mat3(right, up, -forward);
+    mat3 rotation = mat3(right, up, forward);
 
     vec3 worldPos = rotation * inPos + push.objectPos.xyz;
     fragPos = worldPos;

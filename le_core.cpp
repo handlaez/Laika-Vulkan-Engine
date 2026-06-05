@@ -50,10 +50,10 @@ namespace le {
 
             // profiler pt.2
             measuredFrames++;
-            if (measuredFrames > maxMeasuredFrames)
+            /*if (measuredFrames > maxMeasuredFrames)
             {
                 break;
-            }
+            }*/
         }
 
         // profiler pt.3

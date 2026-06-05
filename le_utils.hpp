@@ -9,7 +9,7 @@
 class Utils
 {
 public:
-    inline static std::atomic<bool> parallelEnabled = false;
+    inline static std::atomic<bool> parallelEnabled = true;
 
     inline static bool instancingEnabled = true;
     inline static bool texturesEnabled = true;
@@ -70,7 +70,7 @@ public:
         (hashCombine(seed, rest), ...);
     };
 
-    inline static unsigned int totallyRandomSeed = 42;
+    inline static unsigned int totallyRandomSeed = 51;
 
     static float randf()
     {
