@@ -13,8 +13,9 @@ namespace le {
         return leDevice;
     }
 
-    void LeScene::addActor(LeActor actor) {
+    uint32_t LeScene::addActor(LeActor actor) {
         actors.push_back(std::move(actor));
+        return actors.size() - 1;
     }
 
     void LeScene::addActor(int32_t model, int32_t texture)
@@ -48,7 +49,7 @@ namespace le {
 
     void LeScene::createDefaultCamera() {
         cameraObject = std::make_unique<LeActor>(LeActor::createGameObject());
-        cameraObject->transform.translation = { 0.f, 0.f, -100.f };
+        cameraObject->transform.translation = { 0.f, 16.f, 0.f };
         cameraObject->transform.rotation = glm::quat(1.f, 0.f, 0.f, 0.f);
 
         camera.setPerspectiveProjection(glm::radians(50.f), 1.f, 0.1f, 100.f);

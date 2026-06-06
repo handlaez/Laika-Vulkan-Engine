@@ -20,7 +20,7 @@ namespace le {
         LeDevice& getDevice();
         LeResourceManager& leResourceManager;
 
-        void addActor(LeActor actor);
+        uint32_t addActor(LeActor actor);
         void addActor(int32_t model, int32_t texture);
 
         std::vector<LeActor>& getActors();

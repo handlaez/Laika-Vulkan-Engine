@@ -64,6 +64,19 @@ namespace le {
 		return id;
 	}
 
+	void LeResourceManager::updateModel(const uint32_t id, const MeshData& newMeshData)
+	{
+		auto it = models.find(id);
+		if (it != models.end()) 
+		{
+			it->second->updateGeometry(newMeshData.vertices);
+		}
+		else 
+		{
+			std::cerr << "tried to update a model that doesn't exist! ID: " << id << std::endl;
+		}
+	}
+
 	std::shared_ptr<LeTexture> LeResourceManager::getTexture(uint32_t id)
 	{
 		auto it = textures.find(id);

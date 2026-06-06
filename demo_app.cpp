@@ -9,6 +9,7 @@
 
 //test
 #include "terrain_generation_system.hpp"
+#include "procedural_terrain.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -27,12 +28,8 @@ public:
         int max_threads = omp_get_max_threads();
         std::cout << "OpenMP is using " << max_threads << " threads." << std::endl;
 
-        MeshData chunk = TerrainGenerator::generateChunk(-1, -1);
-        uint32_t terrainModelID = scene.leResourceManager.addModel(chunk);
-        LeActor terrainActor = LeActor::createGameObject();
-        terrainActor.modelID = terrainModelID;
-        terrainActor.textureID = 0;
-        scene.addActor(std::move(terrainActor));
+        glm::vec3 startPos = scene.getCameraObject().transform.translation;
+        m_terrain.init(scene, startPos);
     }
 
     void onUpdate(le::LeScene& scene, FrameInfo fi) override
@@ -44,8 +41,10 @@ public:
         auto& camera = scene.getCamera();
         auto& camObj = scene.getCameraObject();
 
-        camera.setPerspectiveProjection(glm::radians(45.f), fi.aspect, 1.f, 5000.f);
+        camera.setPerspectiveProjection(glm::radians(45.f), fi.aspect, 1.f, 1024.f);
         camera.setView(camObj.transform.translation, camObj.transform.rotation);
+
+        m_terrain.update(scene, camObj.transform.translation);
 
         Utils::checkKeys(fi.window);
     }
@@ -54,5 +53,6 @@ public:
     }
 
 private:
-    le::KeyboardMovementController controller{};
+    KeyboardMovementController controller{};
+    ProceduralTerrain m_terrain{ 9 };
 };

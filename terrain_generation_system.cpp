@@ -37,14 +37,18 @@ namespace le {
             for (uint32_t x = 0; x < CHUNK_SIZE; ++x) {
                 Vertex vertex{};
 
-                // World Space
-                float worldX = (chunkX * chunkOffset) + (x * CELL_SIZE);
-                float worldZ = (chunkZ * chunkOffset) + (z * CELL_SIZE);
+                // local
+                float localX = x * CELL_SIZE;
+                float localZ = z * CELL_SIZE;
 
-                vertex.position = { worldX, getHeight(worldX, worldZ), worldZ };
+                // world space
+                float worldX = (chunkX * chunkOffset) + localX;
+                float worldZ = (chunkZ * chunkOffset) + localZ;
+
+                vertex.position = { localX, getHeight(worldX, worldZ), localZ };
                 vertex.normal = getNormal(worldX, worldZ);
 
-                // mapping collor and height (for funsies, for now)
+                // mapping color and height (for funsies, for now)
                 float heightNorm = (vertex.position.y + 10.0f) / 20.0f;
                 vertex.color = { 0.2f + heightNorm * 0.3f, 0.6f + heightNorm * 0.4f, 0.3f };
 

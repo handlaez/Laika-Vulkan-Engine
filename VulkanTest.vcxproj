@@ -175,6 +175,7 @@
     <ClCompile Include="le_window.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mesh_data.cpp" />
+    <ClCompile Include="procedural_terrain.cpp" />
     <ClCompile Include="profiler.cpp" />
     <ClCompile Include="skybox_render_system.cpp" />
     <ClCompile Include="stb.cpp" />
@@ -212,6 +213,7 @@
     <ClInclude Include="le_utils.hpp" />
     <ClInclude Include="le_window.hpp" />
     <ClInclude Include="mesh_data.hpp" />
+    <ClInclude Include="procedural_terrain.hpp" />
     <ClInclude Include="profiler.hpp" />
     <ClInclude Include="skybox_render_system.hpp" />
     <ClInclude Include="terrain_generation_system.hpp" />

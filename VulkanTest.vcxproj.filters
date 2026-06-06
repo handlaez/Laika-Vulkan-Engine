@@ -40,6 +40,9 @@
     <Filter Include="Source Files\Service">
       <UniqueIdentifier>{a72678ff-8c07-48e1-825e-b27448db9f46}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Le_Core">
+      <UniqueIdentifier>{10182940-2bdd-4848-a19f-aedcfa53ffc3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="le_camera.cpp">
@@ -120,53 +123,11 @@
     <ClCompile Include="terrain_generation_system.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
+    <ClCompile Include="procedural_terrain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="le_render_system_manager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_window.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_core.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_pipeline.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_device.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_swapchain.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_model.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_actor.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_renderer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_camera.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_texture.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_scene.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_frame_info.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_resource_manager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_utils.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="keyboard_movement_controller.hpp">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
@@ -182,17 +143,11 @@
     <ClInclude Include="i_render_system.hpp">
       <Filter>Header Files\Interfaces</Filter>
     </ClInclude>
-    <ClInclude Include="le_buffer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="instanced_render_system.hpp">
       <Filter>Header Files\Systems</Filter>
     </ClInclude>
     <ClInclude Include="instance_data.hpp">
       <Filter>Header Files\Systems</Filter>
-    </ClInclude>
-    <ClInclude Include="le_cubemap.hpp">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="profiler.hpp">
       <Filter>Header Files\Service</Filter>
@@ -205,6 +160,60 @@
     </ClInclude>
     <ClInclude Include="skybox_render_system.hpp">
       <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="le_actor.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_buffer.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_camera.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_core.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_cubemap.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_device.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_frame_info.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_model.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_pipeline.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_render_system_manager.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_renderer.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_resource_manager.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_scene.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_swapchain.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_texture.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_utils.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_window.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="procedural_terrain.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

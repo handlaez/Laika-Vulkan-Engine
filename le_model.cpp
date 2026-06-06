@@ -230,16 +230,31 @@ namespace le {
 
 	void LeModel::updateGeometry(const std::vector<Vertex>& newVertices)
 	{
-		assert(newVertices.size() == vertexCount && "New model gemetry cannot exceed the size of current geometry!");
+		assert(newVertices.size() == vertexCount && "New model geometry cannot exceed the size of current geometry!");
 
 		VkDeviceSize bufferSize = sizeof(newVertices[0]) * newVertices.size();
+
+		// staging buffer
+		VkBuffer stagingBuffer;
+		VkDeviceMemory stagingBufferMemory;
+		leDevice.createBuffer(
+			bufferSize,
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			stagingBuffer,
+			stagingBufferMemory
+		);
+
+		// map memory
 		void* data;
-
-		vkMapMemory(leDevice.device(), vertexBufferMemory, 0, bufferSize, 0, &data);
-
+		vkMapMemory(leDevice.device(), stagingBufferMemory, 0, bufferSize, 0, &data);
 		memcpy(data, newVertices.data(), (size_t)bufferSize);
+		vkUnmapMemory(leDevice.device(), stagingBufferMemory);
 
-		vkUnmapMemory(leDevice.device(), vertexBufferMemory);
+		leDevice.copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+
+		vkDestroyBuffer(leDevice.device(), stagingBuffer, nullptr);
+		vkFreeMemory(leDevice.device(), stagingBufferMemory, nullptr);
 	}
 
 	void LeModel::bindIndexBuffer(VkCommandBuffer commandBuffer)

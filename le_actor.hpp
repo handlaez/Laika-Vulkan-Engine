@@ -22,9 +22,7 @@ namespace le {
 		glm::mat4 mat4() const {
 			glm::mat4 rot = glm::mat4_cast(rotation);
 
-			return glm::translate(glm::mat4(1.0f), translation)
-				* rot
-				* glm::scale(glm::mat4(1.0f), scale);
+			return glm::translate(glm::mat4(1.0f), translation) * rot * glm::scale(glm::mat4(1.0f), scale);
 		}
 	};
 
@@ -49,8 +47,8 @@ namespace le {
 
 		const id_t getId() { return id; }
 
-		uint32_t modelID = 0;        // assuming that model 0 is the "missing model" model
-		uint32_t textureID = 0;    // assuming that texture 0 is the "missing texture" texture
+		uint32_t modelID = 0;		// assuming that model 0 is the "missing model" model
+		uint32_t textureID = 0;		// assuming that texture 0 is the "missing texture" texture
 		glm::vec3 color{};
 		TransformComponent transform{};
 
