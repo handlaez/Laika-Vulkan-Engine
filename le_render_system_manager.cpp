@@ -212,15 +212,11 @@ namespace le {
     void LeRenderSystemManager::render(LeScene& scene)
     {
         if (auto commandBuffer = renderer_.beginFrame()) {
-            Profiler::StartRenderDispatch();
-            Profiler::ResetQueries(commandBuffer);
-            Profiler::WriteTimestampStart(commandBuffer);
 
             renderer_.beginSwapChainRenderPass(commandBuffer);
 
             uint32_t currentFrame = renderer_.getFrameIndex();
 
-            // camera update now lives here
             updateFrameUBO(currentFrame, scene.getCamera());
             updateLightingUBO(currentFrame);
 
@@ -233,7 +229,15 @@ namespace le {
                 frameSet
             };
 
-            if (scene.instanceDataPtr != nullptr)
+            // actors
+            auto& actors = scene.getActors();
+            if (!actors.empty())
+            {
+                basicRenderSystem->render(frameData, actors);
+            }
+
+            /*
+            if (scene.instanceDataPtr != nullptr && !scene.instanceDataPtr->empty())
             {
                 if (Utils::instancingEnabled)
                 {
@@ -252,17 +256,15 @@ namespace le {
                     }
                 }
             }
+            */
 
+            //skybox
             if (Utils::skyboxEnabled)
             {
                 skyboxRenderSystem->render(frameData);
             }
 
-            Profiler::WriteTimestampEnd(commandBuffer);
             renderer_.endSwapChainRenderPass(commandBuffer);
-
-            Profiler::EndRenderDispatch();
-            Profiler::EndFrame();
             renderer_.endFrame();
         }
     }

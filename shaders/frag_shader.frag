@@ -37,8 +37,7 @@ void main()
     float ambient = 0.25;
     float diffuse = max(dot(N, L), 0.0);
 
-    vec3 lightingResult = ambient * baseColor.rgb +
-                          diffuse * baseColor.rgb * lighting.lightColor.rgb;
+    vec3 lightingResult = ambient * baseColor.rgb + diffuse * baseColor.rgb * lighting.lightColor.rgb;
 
     outColor = vec4(lightingResult, baseColor.a);
 }

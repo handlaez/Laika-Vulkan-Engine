@@ -7,14 +7,12 @@
 #include "le_utils.hpp"
 #include "profiler.hpp"
 
+//test
+#include "terrain_generation_system.hpp"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
-// boid includes
-#include "boid_system.hpp"
-#include "instanced_render_system.hpp"
-#include "instance_data.hpp"
 
 #include <omp.h>
 #include <iostream>
@@ -22,45 +20,19 @@
 using namespace le;
 
 class DemoApp : public ILaikaEngineApp {
-    // boids
-    BoidSystem boidSystem;
-    std::vector<size_t> boidActorIndices;
-    std::vector<InstanceData> instances_;
-    uint32_t boidModelID;
-    uint32_t boidTextureID;
-
-    // fps counter
-    double prevTime = 0.0;
-    double lastTime = 0.0;
-    unsigned int counter = 0;
 
 public:
     void onStart(le::LeScene& scene) override
     {
-        const int boidCount = 2000;
-        instances_.resize(boidCount);
-
-        boidActorIndices.reserve(boidCount);
-
-        auto model = scene.leResourceManager.loadModel("models/trout/Mesh_Trout.obj");
-        auto texture = scene.leResourceManager.loadTexture("models/trout/Tex_Trout.png");
-
-        boidModelID = model;
-        boidTextureID = texture;
-
-        for (int i = 0; i < boidCount; i++)
-        {
-            glm::vec3 pos(
-                Utils::randf() * 100.f,
-                Utils::randf() * 20.f,
-                Utils::randf() * 100.f
-            );
-
-            boidSystem.AddBoid(pos);
-        }
-
         int max_threads = omp_get_max_threads();
         std::cout << "OpenMP is using " << max_threads << " threads." << std::endl;
+
+        MeshData chunk = TerrainGenerator::generateChunk(-1, -1);
+        uint32_t terrainModelID = scene.leResourceManager.addModel(chunk);
+        LeActor terrainActor = LeActor::createGameObject();
+        terrainActor.modelID = terrainModelID;
+        terrainActor.textureID = 0;
+        scene.addActor(std::move(terrainActor));
     }
 
     void onUpdate(le::LeScene& scene, FrameInfo fi) override
@@ -74,34 +46,6 @@ public:
 
         camera.setPerspectiveProjection(glm::radians(45.f), fi.aspect, 1.f, 5000.f);
         camera.setView(camObj.transform.translation, camObj.transform.rotation);
-
-        Profiler::StartBoidUpdate();
-        boidSystem.Update(fi.deltaTime);
-        Profiler::EndBoidUpdate();
-
-        Profiler::StartDataFetch();
-        auto& positions = boidSystem.GetPositions();
-        auto& velocities = boidSystem.GetVelocities();
-
-        const int boidCount = static_cast<int>(positions.size());
-
-        #pragma omp parallel for if(Utils::parallelEnabled.load())
-        for (int i = 0; i < boidCount; i++) // int for MSVC OpenMP
-        {
-            instances_[i].position = glm::vec4(positions[i], 1.f);
-
-            if (glm::length(velocities[i]) > 0.001f)
-            {
-                instances_[i].forward = glm::vec4(glm::normalize(velocities[i]), 0.f);
-            }
-            else
-            {
-                instances_[i].forward = glm::vec4(0.f, 0.f, 1.f, 0.f);
-            }
-        }
-
-        scene.setInstanceData(instances_);
-        Profiler::EndDataFetch();
 
         Utils::checkKeys(fi.window);
     }

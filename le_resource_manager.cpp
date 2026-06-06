@@ -55,6 +55,15 @@ namespace le {
 		return id;
 	}
 
+	uint32_t LeResourceManager::addModel(const MeshData& meshData)
+	{
+		uint32_t id = nextModelID++;
+
+		models[id] = std::make_shared<LeModel>(device, meshData);
+
+		return id;
+	}
+
 	std::shared_ptr<LeTexture> LeResourceManager::getTexture(uint32_t id)
 	{
 		auto it = textures.find(id);

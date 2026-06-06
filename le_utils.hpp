@@ -2,6 +2,8 @@
 #define LE_UTILS_HPP
 
 #include<GLFW/glfw3.h>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
 
 #include <random>
 #include <atomic>
@@ -9,9 +11,9 @@
 class Utils
 {
 public:
-    inline static std::atomic<bool> parallelEnabled = true;
+    inline static std::atomic<bool> parallelEnabled = false;
 
-    inline static bool instancingEnabled = true;
+    inline static bool instancingEnabled = false;
     inline static bool texturesEnabled = true;
     inline static bool lightingEnabled = true;
     inline static bool wireframeEnabled = false;

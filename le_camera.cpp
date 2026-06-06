@@ -10,7 +10,7 @@ namespace le {
 	{
 		projectionMatrix = glm::mat4{ 1.0f };
 		projectionMatrix[0][0] = 2.f / (right - left);
-		projectionMatrix[1][1] = 2.f / (bottom - top);
+		projectionMatrix[1][1] = -2.f / (bottom - top);
 		projectionMatrix[2][2] = 1.f / (far - near);
 		projectionMatrix[3][0] = -(right + left) / (right - left);
 		projectionMatrix[3][1] = -(bottom + top) / (bottom - top);
@@ -27,6 +27,7 @@ namespace le {
 		projectionMatrix[2][2] = far / (far - near);
 		projectionMatrix[2][3] = 1.f;
 		projectionMatrix[3][2] = -(far * near) / (far - near);
+		projectionMatrix[1][1] *= -1.f;
 	}
 
 	void LeCamera::setViewDirection(glm::vec3 position, glm::vec3 direction, glm::vec3 up) {
@@ -54,7 +55,7 @@ namespace le {
 	}
 
 	void LeCamera::setView(glm::vec3 position, glm::quat rotation) {
-		glm::mat4 rot = glm::mat4_cast(rotation);
+		glm::mat4 rot = glm::mat4_cast(glm::inverse(rotation));
 
 		// camera forward is -Z in view space
 		glm::mat4 translation = glm::translate(glm::mat4(1.0f), -position);

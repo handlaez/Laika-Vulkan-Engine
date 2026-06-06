@@ -10,7 +10,7 @@ namespace le
 
 		std::vector<unsigned char*> facePixels(6);
 
-		stbi_set_flip_vertically_on_load(false);
+		stbi_set_flip_vertically_on_load(true);
 
 		for (size_t i = 0; i < 6; i++)
 		{

@@ -4,50 +4,64 @@
 #include <iostream>
 
 namespace le {
-	void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, float timestep, LeActor& actor)
-	{
-		if (!window) {
-			std::cerr << "Window is NULL\n";
-		}
+    void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, float deltatime, LeActor& actor)
+    {
+        float speed = moveSpeed;
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+            speed *= 4.0f;
+        }
 
-		glm::vec3 rotInput{ 0.f };
+        glm::vec3 forward = actor.transform.rotation * glm::vec3(0, 0, 1);
+        glm::vec3 right = actor.transform.rotation * glm::vec3(1, 0, 0);
+        glm::vec3 up = glm::vec3(0, 1, 0);
 
-		if (glfwGetKey(window, keys.lookRight) == GLFW_PRESS) rotInput.y -= 1.f;
-		if (glfwGetKey(window, keys.lookLeft) == GLFW_PRESS)  rotInput.y += 1.f;
-		if (glfwGetKey(window, keys.lookUp) == GLFW_PRESS)    rotInput.x -= 1.f;
-		if (glfwGetKey(window, keys.lookDown) == GLFW_PRESS)  rotInput.x += 1.f;
+        glm::vec3 moveDir{ 0.f };
+        if (glfwGetKey(window, keys.moveForward) == GLFW_PRESS)     moveDir += forward;
+        if (glfwGetKey(window, keys.moveBackwards) == GLFW_PRESS)   moveDir -= forward;
+        if (glfwGetKey(window, keys.moveRight) == GLFW_PRESS)       moveDir += right;
+        if (glfwGetKey(window, keys.moveLeft) == GLFW_PRESS)        moveDir -= right;
+        if (glfwGetKey(window, keys.moveUp) == GLFW_PRESS)          moveDir += up;
+        if (glfwGetKey(window, keys.moveDown) == GLFW_PRESS)        moveDir -= up;
 
-		if (glm::length2(rotInput) > 0.0001f) {
-			rotInput = glm::normalize(rotInput);
+        if (glm::length2(moveDir) > 0.0001f) {
+            actor.transform.translation += speed * deltatime * glm::normalize(moveDir);
+        }
 
-			glm::quat qPitch = glm::angleAxis(
-				lookSpeed * timestep * rotInput.x,
-				glm::vec3(1, 0, 0)
-			);
+        // rot
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
-			glm::quat qYaw = glm::angleAxis(
-				lookSpeed * timestep * rotInput.y,
-				glm::vec3(0, 1, 0)
-			);
+            int width, height;
+            glfwGetWindowSize(window, &width, &height);
 
-			actor.transform.rotation = glm::normalize(qYaw * qPitch * actor.transform.rotation);
-		}
+            double mouseX, mouseY;
+            glfwGetCursorPos(window, &mouseX, &mouseY);
 
-		glm::vec3 forward = actor.transform.rotation * glm::vec3(0, 0, 1);
-		glm::vec3 right = actor.transform.rotation * glm::vec3(1, 0, 0);
-		glm::vec3 up = glm::vec3(0, -1, 0);
+            float centerX = (float)width / 2.0f;
+            float centerY = (float)height / 2.0f;
 
-		glm::vec3 moveDir{ 0.f };
+            float deltaX = (float)mouseX - centerX;
+            float deltaY = (float)mouseY - centerY;
 
-		if (glfwGetKey(window, keys.moveForward) == GLFW_PRESS) moveDir += forward;
-		if (glfwGetKey(window, keys.moveBackwards) == GLFW_PRESS) moveDir -= forward;
-		if (glfwGetKey(window, keys.moveRight) == GLFW_PRESS) moveDir += right;
-		if (glfwGetKey(window, keys.moveLeft) == GLFW_PRESS) moveDir -= right;
-		if (glfwGetKey(window, keys.moveUp) == GLFW_PRESS) moveDir += up;
-		if (glfwGetKey(window, keys.moveDown) == GLFW_PRESS) moveDir -= up;
+            if (firstClick || std::abs(deltaX) > width || std::abs(deltaY) > height) {
+                glfwSetCursorPos(window, (double)centerX, (double)centerY);
+                firstClick = false;
+                return;
+            }
 
-		if (glm::length2(moveDir) > 0.0001f) {
-			actor.transform.translation += moveSpeed * timestep * glm::normalize(moveDir);
-		}
-	}
+            float sensitivityMultiplier = mouseSensitivity * 100.0f;
+            pitch += (deltaY / height) * sensitivityMultiplier;
+            yaw += (deltaX / width) * sensitivityMultiplier;
+
+            pitch = glm::clamp(pitch, -glm::half_pi<float>() + 0.1f, glm::half_pi<float>() - 0.1f);
+            actor.transform.rotation = glm::quat(glm::vec3(pitch, yaw, 0.0f));
+
+            glfwSetCursorPos(window, (double)centerX, (double)centerY);
+        }
+        else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            firstClick = true;
+        }
+    }
 }

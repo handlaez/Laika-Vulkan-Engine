@@ -22,6 +22,9 @@ namespace le {
 		uint32_t loadTexture(const std::string& path);
 		uint32_t   loadModel(const std::string& path);
 
+		// adders (for models procedurally generated -- terrain for example)
+		uint32_t addModel(const MeshData& meshData);
+
 		// accessors
 		std::shared_ptr<LeTexture> getTexture(uint32_t id);
 		std::shared_ptr<LeModel>     getModel(uint32_t id);

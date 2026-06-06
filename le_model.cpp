@@ -1,10 +1,5 @@
 #include "le_model.hpp"
-
 #include "le_utils.hpp"
-
-#include <tiny_obj_loader.h>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/hash.hpp>
 
 //std
 #include <cassert>
@@ -14,19 +9,8 @@
 //temp
 #include <iostream>
 
-namespace std {
-	template <>
-	struct hash<le::LeModel::Vertex> {
-		size_t operator()(le::LeModel::Vertex const& vertex) const {
-			size_t seed = 0;
-			Utils::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.texCoord);
-			return seed;
-		}
-	};
-}
-
 namespace le {
-	LeModel::LeModel(LeDevice& device, const LeModel::Builder& builder)
+	LeModel::LeModel(LeDevice& device, const MeshData &meshdata)
 		: leDevice( device ),
 		vertexBuffer(VK_NULL_HANDLE),
 		vertexBufferMemory(VK_NULL_HANDLE),
@@ -36,8 +20,8 @@ namespace le {
 		indexBufferMemory(VK_NULL_HANDLE),
 		indexCount(0)
 	{
-		createVertexBuffers(builder.vertices);
-		createIndexBuffers(builder.indices);
+		createVertexBuffers(meshdata.vertices);
+		createIndexBuffers(meshdata.indices);
 	}
 
 	LeModel::~LeModel()
@@ -54,11 +38,11 @@ namespace le {
 
 	std::shared_ptr<LeModel> LeModel::createModelFromFile(LeDevice& device, const std::string& filepath, glm::vec3 offset)
 	{
-		Builder builder{};
-		builder.loadModel(filepath);
+		MeshData meshdata{};
+		meshdata.loadModel(filepath);
 
-		std::cout << "Model: " << filepath << "\nVertex count: " << builder.vertices.size() << "\n";
-		auto model = std::make_unique<LeModel>(device, builder);
+		std::cout << "Model: " << filepath << "\nVertex count: " << meshdata.vertices.size() << "\n";
+		auto model = std::make_unique<LeModel>(device, meshdata);
 
 		return model;
 	}
@@ -86,7 +70,7 @@ namespace le {
 
 	std::shared_ptr<LeModel> LeModel::createCube(LeDevice& device, glm::vec3 offset)
 	{
-		LeModel::Builder modelBuilder{};
+		MeshData modelBuilder{};
 		modelBuilder.vertices = {
 			// left face (white) — normal (-1, 0, 0)
 			{{-.5f, -.5f, -.5f}, {.9f, .9f, .9f}, {-1.f,  0.f,  0.f}, {1.f, 0.f}},
@@ -205,7 +189,7 @@ namespace le {
 		vkFreeMemory(leDevice.device(), stagingBufferMemory, nullptr);
 	}
 
-	std::vector<VkVertexInputBindingDescription> LeModel::Vertex::getBindingDescriptions()
+	std::vector<VkVertexInputBindingDescription> Vertex::getBindingDescriptions()
 	{
 		std::vector< VkVertexInputBindingDescription> bindingDescriptions(1);
 		bindingDescriptions[0].binding = 0;
@@ -214,7 +198,7 @@ namespace le {
 		return bindingDescriptions;
 	}
 
-	std::vector<VkVertexInputAttributeDescription> LeModel::Vertex::getAttributeDescriptions()
+	std::vector<VkVertexInputAttributeDescription> Vertex::getAttributeDescriptions()
 	{
 		std::vector<VkVertexInputAttributeDescription> attributeDescriptions(4);
 		// position
@@ -244,6 +228,20 @@ namespace le {
 		return attributeDescriptions;
 	}
 
+	void LeModel::updateGeometry(const std::vector<Vertex>& newVertices)
+	{
+		assert(newVertices.size() == vertexCount && "New model gemetry cannot exceed the size of current geometry!");
+
+		VkDeviceSize bufferSize = sizeof(newVertices[0]) * newVertices.size();
+		void* data;
+
+		vkMapMemory(leDevice.device(), vertexBufferMemory, 0, bufferSize, 0, &data);
+
+		memcpy(data, newVertices.data(), (size_t)bufferSize);
+
+		vkUnmapMemory(leDevice.device(), vertexBufferMemory);
+	}
+
 	void LeModel::bindIndexBuffer(VkCommandBuffer commandBuffer)
 	{
 		vkCmdBindIndexBuffer(
@@ -252,69 +250,5 @@ namespace le {
 			0,
 			VK_INDEX_TYPE_UINT32
 		);
-	}
-
-	void LeModel::Builder::loadModel(const std::string& filepath)
-	{
-		tinyobj::attrib_t attrib;
-		std::vector<tinyobj::shape_t> shapes;
-		std::vector<tinyobj::material_t> materials;
-		std::string warn, err;
-
-		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filepath.c_str())) {
-			throw std::runtime_error(warn + err);
-		}
-
-		vertices.clear();
-		indices.clear();
-
-		std::unordered_map<Vertex, uint32_t> uniqueVertices{};
-		for (const auto& shape : shapes) {
-			for (const auto& index : shape.mesh.indices) {
-				Vertex vertex{};
-
-				if (index.vertex_index >= 0) {
-					vertex.position = {
-						attrib.vertices[3 * index.vertex_index + 0],
-						-attrib.vertices[3 * index.vertex_index + 1],
-						attrib.vertices[3 * index.vertex_index + 2],
-					};
-
-					//colorIndexes (optional)
-					auto colorIndex = 3 * index.vertex_index + 2;
-					if (colorIndex < attrib.colors.size()) {
-						vertex.color = {
-							attrib.colors[colorIndex - 2],
-							attrib.colors[colorIndex - 1],
-							attrib.colors[colorIndex - 0],
-						};
-					}
-					else {
-						vertex.color = { 1.f, 1.f, 1.f };
-					}
-				}
-				
-				if (index.normal_index >= 0) {
-					vertex.normal = {
-						attrib.normals[3 * index.normal_index + 0],
-						attrib.normals[3 * index.normal_index + 1],
-						attrib.normals[3 * index.normal_index + 2],
-					};
-				}
-
-				if (index.texcoord_index >= 0) {
-					vertex.texCoord = {
-						attrib.texcoords[2 * index.texcoord_index + 0],
-						-attrib.texcoords[2 * index.texcoord_index + 1],
-					};
-				}
-
-				if (uniqueVertices.count(vertex) == 0) {
-					uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-					vertices.push_back(vertex);
-				}
-				indices.push_back(uniqueVertices[vertex]);
-			}
-		}
 	}
 }

@@ -3,6 +3,7 @@
 
 #include "le_device.hpp"
 #include "le_texture.hpp"
+#include "mesh_data.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -15,28 +16,7 @@
 namespace le {
 	class LeModel {
 	public:
-		struct Vertex {
-			glm::vec3 position;
-			glm::vec3 color;
-			glm::vec3 normal;
-			glm::vec2 texCoord;
-
-			static std::vector<VkVertexInputBindingDescription> getBindingDescriptions();
-			static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
-
-			bool operator==(const Vertex& other) const {
-				return position == other.position && color == other.color && normal == other.normal && texCoord == other.texCoord;
-			}
-		};
-
-		struct Builder {
-			std::vector<Vertex> vertices{};
-			std::vector<uint32_t> indices{};
-
-			void loadModel(const std::string& filepath);
-		};
-
-		LeModel(LeDevice &device, const LeModel::Builder &builder);
+		LeModel(LeDevice &device, const MeshData &meshdata);
 		~LeModel();
 
 		void bind(VkCommandBuffer commandBuffer) const;
@@ -72,6 +52,9 @@ namespace le {
 
 		// disabling move assignment (because leDevice& cannot be reassigned)
 		LeModel& operator=(LeModel&&) = delete;
+
+		// modifying is sometimes cool
+		void updateGeometry(const std::vector<Vertex>& newVertices);
 
 		VkBuffer getVertexBuffer() const { return vertexBuffer; }
 		VkBuffer getIndexBuffer() const { return indexBuffer; }

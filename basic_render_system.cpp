@@ -62,8 +62,8 @@ namespace le {
         LePipeline::defaultPipelineConfigInfo(pipelineConfig);
         pipelineConfig.renderPass = renderPass;
         pipelineConfig.pipelineLayout = pipelineLayout_;
-        pipelineConfig.bindingDescriptions = LeModel::Vertex::getBindingDescriptions();
-        pipelineConfig.attributeDescriptions = LeModel::Vertex::getAttributeDescriptions();
+        pipelineConfig.bindingDescriptions = Vertex::getBindingDescriptions();
+        pipelineConfig.attributeDescriptions = Vertex::getAttributeDescriptions();
 
         pipeline_ = std::make_unique<LePipeline>(
             device_,
@@ -76,8 +76,8 @@ namespace le {
         LePipeline::defaultPipelineConfigInfo(wireframeConfig);
         wireframeConfig.renderPass = renderPass;
         wireframeConfig.pipelineLayout = pipelineLayout_;
-        wireframeConfig.bindingDescriptions = LeModel::Vertex::getBindingDescriptions();
-        wireframeConfig.attributeDescriptions = LeModel::Vertex::getAttributeDescriptions();
+        wireframeConfig.bindingDescriptions = Vertex::getBindingDescriptions();
+        wireframeConfig.attributeDescriptions = Vertex::getAttributeDescriptions();
 
         wireframeConfig.rasterizationInfo.polygonMode = VK_POLYGON_MODE_LINE;
 
@@ -121,7 +121,12 @@ namespace le {
 
     void BasicRenderSystem::render(const RenderFrameData& frameData, const std::vector<LeActor>& actors)
     {
-        pipeline_->bind(frameData.cmd);
+        if (Utils::wireframeEnabled) {
+            wireframePipeline_->bind(frameData.cmd);
+        }
+        else {
+            pipeline_->bind(frameData.cmd);
+        }
 
         // set 0: global frame
         vkCmdBindDescriptorSets(
@@ -156,9 +161,9 @@ namespace le {
             model->bind(frameData.cmd);
 
             SimplePushConstantData push{};
+
+            push.model = actor.transform.mat4();
             push.color = glm::vec4(actor.color, 1.f);
-            push.position = glm::vec4(actor.transform.translation, 1.f);
-            push.forward = glm::vec4(actor.transform.rotation.x, actor.transform.rotation.y, actor.transform.rotation.z, 1.f);
 
             vkCmdPushConstants(
                 frameData.cmd,
@@ -197,8 +202,7 @@ namespace le {
         for (const auto& instance : instances)
         {
             SimplePushConstantData push{};
-            push.position = instance.position;
-            push.forward = instance.forward;
+            push.model = instance.model;
             push.color = glm::vec4(1.0f);
 
             vkCmdPushConstants(
@@ -251,8 +255,7 @@ namespace le {
             for (int i = 0; i < instances.size(); i++)
             {
                 SimplePushConstantData push{};
-                push.position = instances[i].position;
-                push.forward = instances[i].forward;
+                push.model = instances[i].model;
                 push.color = glm::vec4(1.0f);
 
                 vkCmdPushConstants(

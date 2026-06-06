@@ -211,8 +211,8 @@ namespace le
             {
                 "skybox/uw_rt.jpg",
                 "skybox/uw_lf.jpg",
-                "skybox/uw_up.jpg",
                 "skybox/uw_dn.jpg",
+                "skybox/uw_up.jpg",
                 "skybox/uw_bk.jpg",
                 "skybox/uw_ft.jpg"
             }   

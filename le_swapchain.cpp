@@ -74,9 +74,6 @@ namespace le {
             VK_TRUE,
             std::numeric_limits<uint64_t>::max());
 
-        // collects timings for just finished frame
-        Profiler::CollectFrameResults();
-
         VkResult result = vkAcquireNextImageKHR(
             device.device(),
             swapchain,
@@ -391,7 +388,7 @@ namespace le {
         return availableFormats[0];
     }
 
-    // TODO: check some of that juicy documentation and familiarize yourself with more presentModes uwu
+    // TODO: check some of that documentation
 
     VkPresentModeKHR LeSwapchain::chooseSwapPresentMode(
         const std::vector<VkPresentModeKHR>& availablePresentModes) {

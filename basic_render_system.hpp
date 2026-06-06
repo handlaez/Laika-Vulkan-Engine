@@ -24,8 +24,7 @@ namespace le {
     };
 
     struct SimplePushConstantData {
-        glm::vec4 position;
-        glm::vec4 forward;
+        glm::mat4 model;
         glm::vec4 color;
     };
 

@@ -55,7 +55,7 @@ namespace le
 
     void InstancedRenderSystem::createPipeline(VkRenderPass renderPass)
     {
-        auto bindings = LeModel::Vertex::getBindingDescriptions();
+        auto bindings = Vertex::getBindingDescriptions();
 
         VkVertexInputBindingDescription instanceBinding{};
         instanceBinding.binding = 1;
@@ -64,12 +64,11 @@ namespace le
 
         bindings.push_back(instanceBinding);
 
-        auto attributes = LeModel::Vertex::getAttributeDescriptions();
+        auto attributes = Vertex::getAttributeDescriptions();
 
         uint32_t loc = static_cast<uint32_t>(attributes.size());
 
-        attributes.push_back({loc + 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, position)});
-        attributes.push_back({loc + 1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, forward)});
+        attributes.push_back({loc + 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, model)});
 
         PipelineConfigInfo pipelineConfig{};
         LePipeline::defaultPipelineConfigInfo(pipelineConfig);
