@@ -23,7 +23,7 @@ namespace le {
         void moveInPlaneXZ(GLFWwindow* window, float timestep, LeActor& actor);
 
         KeyMappings keys{};
-        float moveSpeed{ 10.f };
+        float moveSpeed{ 64.f };
         float mouseSensitivity{ 0.03f };
 
     private:

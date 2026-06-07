@@ -34,10 +34,21 @@ void main()
 
     vec3 N = normalize(fragNorm);
     vec3 L = normalize(-lighting.lightDir.xyz);
-    float ambient = 0.25;
-    float diffuse = max(dot(N, L), 0.0);
+    vec3 V = normalize(lighting.cameraPos.xyz - fragPos);
+    vec3 H = normalize(L + V);
 
-    vec3 lightingResult = ambient * baseColor.rgb + diffuse * baseColor.rgb * lighting.lightColor.rgb;
+    float ambientStrength = 0.05;
+    vec3 ambient = ambientStrength * baseColor.rgb;
+
+    float diff = max(dot(N, L), 0.0);
+    vec3 diffuse = diff * baseColor.rgb * lighting.lightColor.rgb;
+
+    float specularStrength = 0.6; 
+    float shininess = 32.0;
+    float spec = pow(max(dot(N, H), 0.0), shininess);
+    vec3 specular = specularStrength * spec * lighting.lightColor.rgb;
+
+    vec3 lightingResult = ambient + diffuse + specular;
 
     outColor = vec4(lightingResult, baseColor.a);
 }

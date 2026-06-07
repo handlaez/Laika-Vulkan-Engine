@@ -269,7 +269,7 @@ namespace le {
         LightingUBO lighting{};
 
         lighting.lightColor = glm::vec4(1.0f);
-        lighting.lightDir = glm::vec4(1.f, 3.f, 2.f, 0.f);
+        lighting.lightDir = glm::vec4(0.2f, -1.0f, 0.3f, 0.0f);
 
         lighting.lightingEnabled = Utils::lightingEnabled;
         lighting.texturesEnabled = Utils::texturesEnabled;

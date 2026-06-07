@@ -16,8 +16,8 @@ layout(push_constant) uniform Push {
 } push;
 
 layout(location = 0) out vec3 fragNorm;
-layout(location = 1) out vec3 fragColor;
-layout(location = 2) out vec2 fragTexCoord;
+layout(location = 1) out vec2 fragTexCoord;
+layout(location = 2) out vec3 fragColor;
 layout(location = 3) out vec3 fragPos;
 
 void main() {

@@ -49,16 +49,16 @@ namespace le {
             throw std::runtime_error("failed to create compute descriptor set layout!");
         }
 
-        // max of 1000 chunks for now
+        // max of 2048 chunks for now
         VkDescriptorPoolSize poolSize{};
         poolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-        poolSize.descriptorCount = 1000;
+        poolSize.descriptorCount = 2048;
 
         VkDescriptorPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         poolInfo.poolSizeCount = 1;
         poolInfo.pPoolSizes = &poolSize;
-        poolInfo.maxSets = 1000;
+        poolInfo.maxSets = 2048;
 
         if (vkCreateDescriptorPool(leDevice.device(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
             throw std::runtime_error("failed to create compute descriptor pool!");
