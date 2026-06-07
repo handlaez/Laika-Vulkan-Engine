@@ -190,32 +190,49 @@ namespace le {
     void LeRenderSystemManager::updateFrameUBO(uint32_t frameIndex, const LeCamera& camera)
     {
         UniformBufferObject ubo{};
+        
         ubo.view = camera.getView();
         ubo.proj = camera.getProjection();
 
-        memcpy(
-            frameUniformBuffersMapped_[frameIndex],
-            &ubo,
-            sizeof(UniformBufferObject)
-        );
+        memcpy(frameUniformBuffersMapped_[frameIndex], &ubo, sizeof(UniformBufferObject));
     }
 
     void LeRenderSystemManager::sync(LeScene& scene)
     {
-        instancedRenderSystem->setModel(1);
-        instancedRenderSystem->setTexture(1);
-
-        basicRenderSystem->setModel(1);
-        basicRenderSystem->setTexture(1);
+        instancedRenderSystem->setModel(0);
+        instancedRenderSystem->setTexture(0);
     }
 
     void LeRenderSystemManager::render(LeScene& scene)
     {
         if (auto commandBuffer = renderer_.beginFrame()) {
 
-            renderer_.beginSwapChainRenderPass(commandBuffer);
-
             uint32_t currentFrame = renderer_.getFrameIndex();
+
+            // COMPUTE PASS
+            if (scene.hasTerrain())
+            {
+                glm::vec3 cameraWorldPos = scene.getCameraObject().transform.translation;
+                scene.getTerrain()->update(scene, cameraWorldPos, commandBuffer);
+
+                VkMemoryBarrier memoryBarrier{};
+                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                memoryBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+
+                vkCmdPipelineBarrier(
+                    commandBuffer,
+                    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, // wait for this 
+                    VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,   // before this
+                    0,
+                    1, &memoryBarrier,
+                    0, nullptr,
+                    0, nullptr
+                );
+            }
+
+            // GAPHICS PASS
+            renderer_.beginSwapChainRenderPass(commandBuffer);
 
             updateFrameUBO(currentFrame, scene.getCamera());
             updateLightingUBO(currentFrame);
@@ -235,28 +252,6 @@ namespace le {
             {
                 basicRenderSystem->render(frameData, actors);
             }
-
-            /*
-            if (scene.instanceDataPtr != nullptr && !scene.instanceDataPtr->empty())
-            {
-                if (Utils::instancingEnabled)
-                {
-                    instancedRenderSystem->updateInstances(*scene.instanceDataPtr, frameData);
-                    instancedRenderSystem->render(frameData);
-                }
-                else
-                {
-                    if (Utils::parallelEnabled.load())
-                    {
-                        basicRenderSystem->renderParallel(frameData, *scene.instanceDataPtr, renderer_.getSwapchainRenderPass());
-                    }
-                    else
-                    {
-                        basicRenderSystem->render(frameData, *scene.instanceDataPtr);
-                    }
-                }
-            }
-            */
 
             //skybox
             if (Utils::skyboxEnabled)

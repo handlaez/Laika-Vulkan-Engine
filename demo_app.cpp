@@ -15,8 +15,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <omp.h>
 #include <iostream>
+#include <memory>
 
 using namespace le;
 
@@ -25,11 +25,14 @@ class DemoApp : public ILaikaEngineApp {
 public:
     void onStart(le::LeScene& scene) override
     {
-        int max_threads = omp_get_max_threads();
-        std::cout << "OpenMP is using " << max_threads << " threads." << std::endl;
+        auto terrain = std::make_unique<ProceduralTerrain>(scene.getDevice(), 10, 12345.f, 64, 1.f);
 
-        glm::vec3 startPos = scene.getCameraObject().transform.translation;
-        m_terrain.init(scene, startPos);
+        // terrain init, using one-time cmdBuffer
+        VkCommandBuffer cmd = scene.getDevice().beginSingleTimeCommands();
+        terrain->init(scene, scene.getCameraObject().transform.translation, cmd);
+        scene.getDevice().endSingleTimeCommands(cmd);
+
+        scene.setTerrain(std::move(terrain));
     }
 
     void onUpdate(le::LeScene& scene, FrameInfo fi) override
@@ -44,8 +47,6 @@ public:
         camera.setPerspectiveProjection(glm::radians(45.f), fi.aspect, 1.f, 1024.f);
         camera.setView(camObj.transform.translation, camObj.transform.rotation);
 
-        m_terrain.update(scene, camObj.transform.translation);
-
         Utils::checkKeys(fi.window);
     }
 
@@ -54,5 +55,4 @@ public:
 
 private:
     KeyboardMovementController controller{};
-    ProceduralTerrain m_terrain{ 9 };
 };

@@ -6,10 +6,12 @@
 #include "le_device.hpp"
 #include "le_resource_manager.hpp"
 #include "instance_data.hpp"
+#include "procedural_terrain.hpp"
 
 // std
 #include <vector>
 #include <memory>
+#include <utility>
 
 namespace le {
 
@@ -38,8 +40,22 @@ namespace le {
             instanceDataPtr = &data;
         }
 
+        void setTerrain(std::unique_ptr<ProceduralTerrain> terrain) {
+            m_terrain = std::move(terrain);
+        }
+
+        ProceduralTerrain* getTerrain() const {
+            return m_terrain.get();
+        }
+
+        bool hasTerrain() const {
+            return m_terrain != nullptr;
+        }
+
     private:
         void createDefaultCamera();
+
+        std::unique_ptr<ProceduralTerrain> m_terrain = nullptr;
 
         LeDevice& leDevice;
         std::vector<LeActor> actors;

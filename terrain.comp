@@ -1,0 +1,92 @@
+#version 450
+
+// workgroup size (must match vkCmdDispatch)
+layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+
+struct Vertex {
+    vec3 position;
+    float pad0;
+    vec3 normal;
+    float pad1;
+    vec3 color;
+    float pad2;
+    vec2 uv;
+    vec2 pad3;
+};
+
+layout(std430, binding = 0) buffer VertexBuffer {
+    Vertex vertices[];
+};
+
+layout(push_constant) uniform PushConstants {
+    ivec2 chunkOffset;
+    float seed;
+} push;
+
+
+const float CELL_SIZE = 1.0;
+const int CHUNK_VERTEX_COUNT = 64;
+
+// simple hash and noise function
+float hash(vec2 p) {
+    p = 50.0 * fract(p * 0.3183099 + vec2(0.71, 0.113));
+    return -1.0 + 2.0 * fract(p.x * p.y * (p.x + p.y));
+}
+
+float noise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(hash(i + vec2(0.0,0.0)), hash(i + vec2(1.0,0.0)), u.x),
+               mix(hash(i + vec2(0.0,1.0)), hash(i + vec2(1.0,1.0)), u.x), u.y);
+}
+
+// FBM
+float getHeight(float x, float z) {
+    vec2 pos = vec2(x, z) * 0.02; // Scale the noise
+    float y = 0.0;
+    float amplitude = 15.0; // Max height
+    float frequency = 1.0;
+    
+    // Add 4 octaves of noise
+    for(int i = 0; i < 4; i++) {
+        y += noise(pos * frequency) * amplitude;
+        frequency *= 2.0;
+        amplitude *= 0.5;
+    }
+    return y;
+}
+
+void main() {
+    uint x = gl_GlobalInvocationID.x;
+    uint z = gl_GlobalInvocationID.y;
+
+    if (x >= CHUNK_VERTEX_COUNT || z >= CHUNK_VERTEX_COUNT) return;
+
+    uint index = z * CHUNK_VERTEX_COUNT + x;
+
+    float localX = x * CELL_SIZE;
+    float localZ = z * CELL_SIZE;
+
+    float worldX = (float(push.chunkOffset.x) * float(CHUNK_VERTEX_COUNT - 1) * CELL_SIZE) + localX;
+    float worldZ = (float(push.chunkOffset.y) * float(CHUNK_VERTEX_COUNT - 1) * CELL_SIZE) + localZ;
+
+    float height = getHeight(worldX, worldZ);
+
+    float left   = getHeight(worldX - CELL_SIZE, worldZ);
+    float right  = getHeight(worldX + CELL_SIZE, worldZ);
+    float down   = getHeight(worldX, worldZ - CELL_SIZE);
+    float up     = getHeight(worldX, worldZ + CELL_SIZE);
+
+    vec3 normal = normalize(vec3(left - right, 2.0 * CELL_SIZE, down - up));
+
+    vec2 uv = vec2(worldX, worldZ) * 0.1;
+
+    //vec3 color = mix(vec3(0.2, 0.6, 0.2), vec3(0.9, 0.9, 1.0), clamp((height + 60.0) / 20.0, 0.0, 1.0));
+
+    vertices[index].position = vec3(localX, height, localZ);
+    //vertices[index].color = color;
+    vertices[index].color = vec3(height * 0.1, 0.0, 0.0);
+    vertices[index].normal = normal;
+    vertices[index].uv = vec2(worldX, worldZ) * 0.1;
+}

@@ -11,10 +11,11 @@ namespace le {
 
 	struct Vertex 
 	{
-		glm::vec3 position;
-		glm::vec3 color;
-		glm::vec3 normal;
-		glm::vec2 texCoord;
+		alignas(16) glm::vec3 position;
+		alignas(16) glm::vec3 normal;
+		alignas(16) glm::vec3 color;
+		alignas(8) glm::vec2 texCoord;
+		glm::vec2 padding;
 
 		static std::vector<VkVertexInputBindingDescription> getBindingDescriptions();
 		static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();

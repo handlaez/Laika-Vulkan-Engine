@@ -1,6 +1,7 @@
 #ifndef LE_MODEL_HPP
 #define LE_MODEL_HPP
 
+#include "i_le_renderable.hpp"
 #include "le_device.hpp"
 #include "le_texture.hpp"
 #include "mesh_data.hpp"
@@ -13,14 +14,16 @@
 #include <vector>
 #include <memory>
 
-namespace le {
-	class LeModel {
+namespace le 
+{
+	class LeModel : public LeRenderable 
+	{
 	public:
 		LeModel(LeDevice &device, const MeshData &meshdata);
 		~LeModel();
 
-		void bind(VkCommandBuffer commandBuffer) const;
-		void draw(VkCommandBuffer commandBuffer) const;
+		void bind(VkCommandBuffer commandBuffer) const override;
+		void draw(VkCommandBuffer commandBuffer) const override;
 
 		static std::shared_ptr<LeModel> createModelFromFile(LeDevice& device, const std::string& filepath, glm::vec3 offset = {});
 		static std::shared_ptr<LeModel> createCube(LeDevice& device, glm::vec3 offset = {});

@@ -64,12 +64,27 @@ namespace le {
 		return id;
 	}
 
+	uint32_t LeResourceManager::addModel(std::shared_ptr<LeRenderable> renderable)
+	{
+		uint32_t id = nextModelID++;
+		models[id] = renderable;
+		return id;
+	}
+
 	void LeResourceManager::updateModel(const uint32_t id, const MeshData& newMeshData)
 	{
 		auto it = models.find(id);
 		if (it != models.end()) 
 		{
-			it->second->updateGeometry(newMeshData.vertices);
+			if (auto staticModel = std::dynamic_pointer_cast<LeModel>(it->second))
+			{
+				staticModel->updateGeometry(newMeshData.vertices);
+			}
+			else
+			{
+				std::cerr << "Warning: Cannot use CPU update on a procedural model! ID: " << id
+					<< ". Use compute shaders to update this buffer." << std::endl;
+			}
 		}
 		else 
 		{
@@ -87,7 +102,7 @@ namespace le {
 		return textures.at(0);
 	}
 
-	std::shared_ptr<LeModel> LeResourceManager::getModel(uint32_t id)
+	std::shared_ptr<LeRenderable> LeResourceManager::getModel(uint32_t id)
 	{
 		auto it = models.find(id);
 		if (it != models.end()) {

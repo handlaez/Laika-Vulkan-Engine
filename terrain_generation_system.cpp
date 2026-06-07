@@ -1,84 +1,130 @@
 #include "terrain_generation_system.hpp"
 
+#include <stdexcept>
+#include <array>
+
 namespace le {
 
-    float TerrainGenerator::getHeight(float worldX, float worldZ)
-    {
-        // parametry fali
-        float amplitude = 7.0f;   
-        float frequency = 0.07f;   
+    // struct to send the chunk coordinates to the compute shader
+    struct ComputePushConstantData {
+        glm::ivec2 chunkOffset;
+        float seed;
+    };
 
-        return amplitude * std::sin(worldX * frequency) +
-            amplitude * std::cos(worldZ * frequency);
+    TerrainGenerator::TerrainGenerator(LeDevice& device, uint32_t chunkSize, float cellSize, int renderDistance)
+        : leDevice(device), m_chunkSize(chunkSize), m_cellSize(cellSize), m_renderDistance(renderDistance), m_gridSize(renderDistance * 2 + 1)
+    {
+        createDescriptorLayout();
+        createPipelineLayout();
+        
+        createDescriptorSets(m_gridSize * m_gridSize);
+
+        computePipeline = std::make_unique<LeComputePipeline>(
+            leDevice, "shaders/terrain.comp.spv", pipelineLayout
+        );
     }
 
-    glm::vec3 TerrainGenerator::getNormal(float worldX, float worldZ)
+    TerrainGenerator::~TerrainGenerator()
     {
-        float amplitude = 7.0f;
-        float frequency = 0.07f;
-
-        float dx = amplitude * frequency * std::cos(worldX * frequency);
-        float dz = amplitude * frequency * -std::sin(worldZ * frequency);
-
-        glm::vec3 normal = glm::vec3(-dx, -1.0f, -dz);
-        return glm::normalize(normal);
+        vkDestroyDescriptorPool(leDevice.device(), descriptorPool, nullptr);
+        vkDestroyPipelineLayout(leDevice.device(), pipelineLayout, nullptr);
+        vkDestroyDescriptorSetLayout(leDevice.device(), descriptorSetLayout, nullptr);
     }
 
-    MeshData TerrainGenerator::generateChunk(int chunkX, int chunkZ)
+    void TerrainGenerator::createDescriptorLayout()
     {
-        MeshData meshData;
-        meshData.vertices.reserve(CHUNK_SIZE * CHUNK_SIZE);
-        meshData.indices.reserve((CHUNK_SIZE - 1) * (CHUNK_SIZE - 1) * 6);
+        // binding 0: storage buffer
+        VkDescriptorSetLayoutBinding storageLayoutBinding{};
+        storageLayoutBinding.binding = 0;
+        storageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        storageLayoutBinding.descriptorCount = 1;
+        storageLayoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 
-        float chunkOffset = (CHUNK_SIZE - 1) * CELL_SIZE;
+        VkDescriptorSetLayoutCreateInfo layoutInfo{};
+        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutInfo.bindingCount = 1;
+        layoutInfo.pBindings = &storageLayoutBinding;
 
-        // vertices gen
-        for (uint32_t z = 0; z < CHUNK_SIZE; ++z) {
-            for (uint32_t x = 0; x < CHUNK_SIZE; ++x) {
-                Vertex vertex{};
-
-                // local
-                float localX = x * CELL_SIZE;
-                float localZ = z * CELL_SIZE;
-
-                // world space
-                float worldX = (chunkX * chunkOffset) + localX;
-                float worldZ = (chunkZ * chunkOffset) + localZ;
-
-                vertex.position = { localX, getHeight(worldX, worldZ), localZ };
-                vertex.normal = getNormal(worldX, worldZ);
-
-                // mapping color and height (for funsies, for now)
-                float heightNorm = (vertex.position.y + 10.0f) / 20.0f;
-                vertex.color = { 0.2f + heightNorm * 0.3f, 0.6f + heightNorm * 0.4f, 0.3f };
-
-                vertex.texCoord = {
-                    static_cast<float>(x) / (CHUNK_SIZE - 1),
-                    static_cast<float>(z) / (CHUNK_SIZE - 1)
-                };
-
-                meshData.vertices.push_back(vertex);
-            }
+        if (vkCreateDescriptorSetLayout(leDevice.device(), &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create compute descriptor set layout!");
         }
 
-        // index gen
-        for (uint32_t z = 0; z < CHUNK_SIZE - 1; ++z) {
-            for (uint32_t x = 0; x < CHUNK_SIZE - 1; ++x) {
-                uint32_t topLeft = z * CHUNK_SIZE + x;
-                uint32_t topRight = topLeft + 1;
-                uint32_t bottomLeft = (z + 1) * CHUNK_SIZE + x;
-                uint32_t bottomRight = bottomLeft + 1;
+        // max of 1000 chunks for now
+        VkDescriptorPoolSize poolSize{};
+        poolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        poolSize.descriptorCount = 1000;
 
-                meshData.indices.push_back(topLeft);
-                meshData.indices.push_back(bottomLeft);
-                meshData.indices.push_back(topRight);
+        VkDescriptorPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolInfo.poolSizeCount = 1;
+        poolInfo.pPoolSizes = &poolSize;
+        poolInfo.maxSets = 1000;
 
-                meshData.indices.push_back(topRight);
-                meshData.indices.push_back(bottomLeft);
-                meshData.indices.push_back(bottomRight);
-            }
+        if (vkCreateDescriptorPool(leDevice.device(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create compute descriptor pool!");
         }
+    }
 
-        return meshData;
+    void TerrainGenerator::createPipelineLayout()
+    {
+        VkPushConstantRange pushConstantRange{};
+        pushConstantRange.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+        pushConstantRange.offset = 0;
+        pushConstantRange.size = sizeof(ComputePushConstantData);
+
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        pipelineLayoutInfo.setLayoutCount = 1;
+        pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
+        pipelineLayoutInfo.pushConstantRangeCount = 1;
+        pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+
+        if (vkCreatePipelineLayout(leDevice.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create compute pipeline layout!");
+        }
+    }
+
+    void TerrainGenerator::generateChunk(const LeChunk& chunk, VkCommandBuffer cmd, const float seed, int bufferIndex)
+    {
+        VkDescriptorSet descriptorSet = m_descriptorSets[bufferIndex];
+
+        VkDescriptorBufferInfo bufferInfo{};
+        bufferInfo.buffer = chunk.getVertexBuffer();
+        bufferInfo.offset = 0;
+        bufferInfo.range = VK_WHOLE_SIZE;
+
+        VkWriteDescriptorSet descriptorWrite{};
+        descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrite.dstSet = descriptorSet;
+        descriptorWrite.dstBinding = 0;
+        descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        descriptorWrite.descriptorCount = 1;
+        descriptorWrite.pBufferInfo = &bufferInfo;
+
+        vkUpdateDescriptorSets(leDevice.device(), 1, &descriptorWrite, 0, nullptr);
+
+        computePipeline->bind(cmd);
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+
+        ComputePushConstantData pushData{ {chunk.getChunkX(), chunk.getChunkZ()}, seed };
+        vkCmdPushConstants(cmd, pipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(ComputePushConstantData), &pushData);
+
+        vkCmdDispatch(cmd, m_chunkSize / 8, m_chunkSize / 8, 1);
+    }
+
+    void TerrainGenerator::createDescriptorSets(int totalChunks) {
+        m_descriptorSets.resize(totalChunks);
+
+        std::vector<VkDescriptorSetLayout> layouts(totalChunks, descriptorSetLayout);
+
+        VkDescriptorSetAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorPool = descriptorPool;
+        allocInfo.descriptorSetCount = static_cast<uint32_t>(totalChunks);
+        allocInfo.pSetLayouts = layouts.data();
+
+        if (vkAllocateDescriptorSets(leDevice.device(), &allocInfo, m_descriptorSets.data()) != VK_SUCCESS) {
+            throw std::runtime_error("failed to allocate pre-allocated descriptor sets!");
+        }
     }
 }

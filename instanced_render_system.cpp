@@ -3,6 +3,7 @@
 #include "le_utils.hpp"
 
 #include <iostream>
+#include <memory>
 
 namespace le
 {
@@ -127,12 +128,19 @@ namespace le
     void InstancedRenderSystem::setModel(uint32_t modelID)
     {
         modelID_ = modelID;
-        auto modelPtr = resourceManager_.getModel(modelID);
-        if (modelPtr) {
+        auto renderablePtr = resourceManager_.getModel(modelID);
+
+        // attempt to downcast the interface to LeModel
+        if (auto modelPtr = std::dynamic_pointer_cast<LeModel>(renderablePtr)) {
             cachedModel_ = modelPtr.get();
         }
         else {
-            std::cerr << "Vulkan Error: Model ID " << modelID << " not found in ResourceManager!\n";
+            if (renderablePtr) {
+                std::cerr << "Vulkan Error: Model ID " << modelID << " is not a standard LeModel. Instanced rendering requires a LeModel!\n";
+            }
+            else {
+                std::cerr << "Vulkan Error: Model ID " << modelID << " not found in ResourceManager!\n";
+            }
             cachedModel_ = nullptr;
         }
     }

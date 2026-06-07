@@ -124,7 +124,16 @@
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
     <ClCompile Include="procedural_terrain.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
+    <ClCompile Include="le_chunk.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="le_mutable_model.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="le_compute_pipeline.cpp">
+      <Filter>Source Files\Le_Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -213,7 +222,22 @@
       <Filter>Header Files\Le_Core</Filter>
     </ClInclude>
     <ClInclude Include="procedural_terrain.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="i_le_renderable.hpp">
+      <Filter>Header Files\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="le_chunk.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="i_terrain_generator.hpp">
+      <Filter>Header Files\Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="le_compute_pipeline.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_mutable_model.hpp">
+      <Filter>Header Files\Le_Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -230,8 +254,15 @@
     <None Include="instanced_shader.frag">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="skybox_shader.frag" />
-    <None Include="skybox_shader.vert" />
+    <None Include="skybox_shader.frag">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="skybox_shader.vert">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="terrain.comp">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="shaders\frag_shader.frag">

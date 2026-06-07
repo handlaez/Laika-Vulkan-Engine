@@ -69,5 +69,4 @@ namespace le {
             memcpy(memOffset, data, size);
         }
     }
-
 }

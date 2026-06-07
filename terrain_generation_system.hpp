@@ -1,24 +1,39 @@
 #ifndef TERRAIN_GENERATION_SYSTEM_HPP
 #define TERRAIN_GENERATION_SYSTEM_HPP
 
+#include "i_terrain_generator.hpp"
 #include "mesh_data.hpp"
+#include "le_compute_pipeline.hpp"
+
 #include <glm/glm.hpp>
 
 namespace le {
-
-    class TerrainGenerator {
+    class TerrainGenerator : public ITerrainGenerator {
     public:
-        static constexpr uint32_t CHUNK_SIZE = 64;
-        static constexpr float CELL_SIZE = 1.0f;
+        TerrainGenerator(LeDevice& device, uint32_t chunkSize, float cellSize, int renderDistance);
+        ~TerrainGenerator();
 
-        static MeshData generateChunk(int chunkX, int chunkZ);
+        void generateChunk(const LeChunk& chunk, VkCommandBuffer cmd, const float seed, int bufferIndex) override;
 
     private:
-        static float getHeight(float worldX, float worldZ);
+        LeDevice& leDevice;
 
-        static glm::vec3 getNormal(float worldX, float worldZ);
+        std::vector<VkDescriptorSet> m_descriptorSets;
+        void createDescriptorSets(int totalChunks);
+
+        const uint32_t m_chunkSize;
+        const float m_cellSize;
+        const int m_renderDistance;
+        const int m_gridSize;
+
+        std::unique_ptr<LeComputePipeline> computePipeline;
+        VkPipelineLayout pipelineLayout;
+        VkDescriptorSetLayout descriptorSetLayout;
+        VkDescriptorPool descriptorPool;
+
+        void createDescriptorLayout();
+        void createPipelineLayout();
     };
-
 }
 
 #endif

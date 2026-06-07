@@ -6,6 +6,7 @@
 
 #include "le_texture.hpp"
 #include "le_model.hpp"
+#include "i_le_renderable.hpp"
 
 namespace le {
 	class LeResourceManager
@@ -20,15 +21,16 @@ namespace le {
 
 		// loaders (they return an ID to a created item)
 		uint32_t loadTexture(const std::string& path);
-		uint32_t   loadModel(const std::string& path);
+		uint32_t loadModel(const std::string& path);
 
 		// adders (for models procedurally generated -- terrain for example)
 		uint32_t addModel(const MeshData& meshData);
+		uint32_t addModel(std::shared_ptr<LeRenderable> renderable);
 		void updateModel(const uint32_t id, const MeshData& newMeshData);
 
 		// accessors
 		std::shared_ptr<LeTexture> getTexture(uint32_t id);
-		std::shared_ptr<LeModel>     getModel(uint32_t id);
+		std::shared_ptr<LeRenderable> getModel(uint32_t id);
 
 		// descriptors 
 		VkDescriptorSetLayout getTextureDescriptorSetLayout() const { return textureSetLayout; }
@@ -54,7 +56,7 @@ namespace le {
 
 		// resource storage
 		std::unordered_map<uint32_t, std::shared_ptr<LeTexture>> textures;
-		std::unordered_map<uint32_t, std::shared_ptr<LeModel>>     models;
+		std::unordered_map<uint32_t, std::shared_ptr<LeRenderable>>	models;
 		// descriptorSet get their ids from textures
 		std::unordered_map<uint32_t, VkDescriptorSet> textureDescriptorSets;
 
@@ -67,7 +69,7 @@ namespace le {
 		// Used for all texture descriptor sets
 		VkDescriptorPool textureDescriptorPool = VK_NULL_HANDLE;
 		VkDescriptorSetLayout textureSetLayout = VK_NULL_HANDLE;
-		VkSampler                sharedSampler = VK_NULL_HANDLE;
+		VkSampler sharedSampler = VK_NULL_HANDLE;
 
 		// removal methods (just in Case)
 		void removeTexture(uint32_t id);

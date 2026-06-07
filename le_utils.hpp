@@ -14,7 +14,7 @@ public:
     inline static std::atomic<bool> parallelEnabled = false;
 
     inline static bool instancingEnabled = false;
-    inline static bool texturesEnabled = true;
+    inline static bool texturesEnabled = false;
     inline static bool lightingEnabled = true;
     inline static bool wireframeEnabled = false;
     inline static bool skyboxEnabled = true;
