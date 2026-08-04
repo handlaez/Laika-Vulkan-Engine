@@ -59,6 +59,10 @@ namespace le {
     }
 
     LeDevice::~LeDevice() {
+        if (device_ != VK_NULL_HANDLE) {
+            vkDeviceWaitIdle(device_);
+        }
+
         vkDestroyCommandPool(device_, commandPool, nullptr);
         vkDestroyDevice(device_, nullptr);
 
