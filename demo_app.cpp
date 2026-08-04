@@ -25,7 +25,7 @@ class DemoApp : public ILaikaEngineApp {
 public:
     void onStart(le::LeScene& scene) override
     {
-        auto terrain = std::make_unique<ProceduralTerrain>(scene.getDevice(), 21, 12345.f, 64, 1.f);
+        auto terrain = std::make_unique<ProceduralTerrain>(scene.getDevice(), 21, Utils::randf()+1.f*10000, 64, 1.f);
 
         // terrain init, using one-time cmdBuffer
         VkCommandBuffer cmd = scene.getDevice().beginSingleTimeCommands();

@@ -72,12 +72,16 @@ public:
         (hashCombine(seed, rest), ...);
     };
 
-    inline static unsigned int totallyRandomSeed = 51;
-
     static float randf()
     {
-        thread_local static std::mt19937 rng(totallyRandomSeed);
+        thread_local static std::mt19937 rng([]()
+        {
+            std::random_device rd;
+            return rd();
+        }());
+
         thread_local static std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
+
         return dist(rng);
     }
 };
