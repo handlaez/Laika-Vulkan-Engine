@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+
 # Header-only library paths
 set(LOCAL_THIRD_PARTY_INCLUDES
     "${CMAKE_CURRENT_SOURCE_DIR}/third_party/glm"
@@ -42,15 +44,15 @@ endfunction()
 
 # Target config
 
-file(GLOB SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-file(GLOB HEADERS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
 
 add_executable(VulkanTest ${SOURCES} ${HEADERS})
 
 compile_shader(VulkanTest "${CMAKE_CURRENT_SOURCE_DIR}/shaders/vert_shader.vert" "${CMAKE_CURRENT_SOURCE_DIR}/shaders/vert_shader.spv")
 compile_shader(VulkanTest "${CMAKE_CURRENT_SOURCE_DIR}/shaders/frag_shader.frag" "${CMAKE_CURRENT_SOURCE_DIR}/shaders/frag_shader.spv")
 
-target_include_directories(VulkanTest PRIVATE 
+target_include_directories(VulkanTest PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${LOCAL_THIRD_PARTY_INCLUDES}
 )
