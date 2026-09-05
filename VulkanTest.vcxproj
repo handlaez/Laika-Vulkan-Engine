@@ -24,6 +24,7 @@
     <ProjectGuid>{21850d23-c3b5-4419-9cc3-0a27c3328302}</ProjectGuid>
     <RootNamespace>VulkanTest</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -70,6 +71,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -128,6 +135,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\tiny_obj_loader;C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\stb_image;C:\VulkanSDK\1.4.321.1\Include;C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\glm;C:\Users\KOMP_JOUT8\Documents\Visual Studio 2022\Libraries\glfw-3.4.bin.WIN64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -145,11 +153,10 @@
   <ItemGroup>
     <ClCompile Include="basic_render_system.cpp" />
     <ClCompile Include="demo_app.cpp" />
-    <ClCompile Include="keyboard_movement_controller.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="keyboard_movement_controller.hpp" />
+    <ClCompile Include="keyboard_movement_controller.cpp" />
+    <ClCompile Include="le_aabbhitbox.cpp" />
+    <ClCompile Include="le_actor.cpp" />
+    <ClCompile Include="le_BVH.cpp" />
     <ClCompile Include="le_camera.cpp" />
     <ClCompile Include="le_core.cpp" />
     <ClCompile Include="le_device.cpp" />
@@ -157,7 +164,6 @@
     <ClCompile Include="le_pipeline.cpp" />
     <ClCompile Include="le_renderer.cpp" />
     <ClCompile Include="le_render_system_manager.cpp" />
-    <ClCompile Include="le_render_system_manager.hpp" />
     <ClCompile Include="le_resource_manager.cpp" />
     <ClCompile Include="le_scene.cpp" />
     <ClCompile Include="le_swapchain.cpp" />
@@ -169,7 +175,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="basic_render_system.hpp" />
+    <ClInclude Include="demo_app.hpp" />
     <ClInclude Include="i_laika_engine_app.hpp" />
+    <ClInclude Include="le_BVH.hpp" />
+    <ClInclude Include="le_render_system_manager.hpp" />
+    <ClInclude Include="le_aabbhitbox.hpp" />
+    <ClInclude Include="keyboard_movement_controller.hpp" />
     <ClInclude Include="le_actor.hpp" />
     <ClInclude Include="le_camera.hpp" />
     <ClInclude Include="le_core.hpp" />
@@ -211,6 +222,8 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)shaders\\%(Filename)%(Extension)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)shaders\\%(Filename)%(Extension)</AdditionalInputs>
     </CustomBuild>
+    <None Include="shaders\wireframe_shader.frag" />
+    <None Include="shaders\wireframe_shader.spv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,5 +1,5 @@
 #include "le_core.hpp"
-#include "demo_app.cpp"
+#include "demo_app.hpp"
 
 // std
 #include <cstdlib>
@@ -17,8 +17,9 @@ int main() {
 	catch (const std::exception &e) 
 	{
 		std::cerr << e.what() << "\n";
+		std::cin;
 		return EXIT_FAILURE;
 	}
-
+	std::cin;
 	return EXIT_SUCCESS;
 }

@@ -6,6 +6,7 @@ namespace le {
 
     LeScene::LeScene(LeDevice& device, LeResourceManager& resourceManager)
         : leDevice(device), leResourceManager(resourceManager) {
+        renderHitboxes_ = false;
         createDefaultCamera();
     }
 
@@ -13,27 +14,29 @@ namespace le {
         return leDevice;
     }
 
-    LeActor& LeScene::addActor(LeActor actor) {
-        actors.push_back(std::move(actor));
-        return actors.back();
-    }
-
-    LeActor& LeScene::addActor(int32_t model, int32_t texture)
+    std::shared_ptr<LeActor> LeScene::addActor(int32_t model, int32_t texture)
     {
-        actors.emplace_back(model, texture);
-        return actors.back();
+        auto actor = std::make_shared<LeActor>(model, texture);
+        actors.push_back(actor);
+        return actor;
     }
 
-    std::vector<LeActor>& LeScene::getActors() {
-        return actors;
+    void LeScene::toggleRenderHitboxes()
+    {
+        renderHitboxes_ = !renderHitboxes_;
     }
 
-    const std::vector<LeActor>& LeScene::getActors() const {
-        return actors;
+    bool LeScene::getRenderHitboxes() const
+    {
+        return renderHitboxes_;
     }
 
-    LeActor& LeScene::getActor(int index) {
+    std::shared_ptr<LeActor> LeScene::getActor(int index) {
         return actors.at(index);
+    }
+
+    std::vector<std::shared_ptr<LeActor>>& LeScene::getActors() {
+        return actors;
     }
 
     LeCamera& LeScene::getCamera() {

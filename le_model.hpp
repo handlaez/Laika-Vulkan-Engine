@@ -3,6 +3,7 @@
 
 #include "le_device.hpp"
 #include "le_texture.hpp"
+#include "le_BVH.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -13,6 +14,8 @@
 #include <memory>
 
 namespace le {
+	class BVH;
+
 	class LeModel {
 	public:
 		struct Vertex {
@@ -73,6 +76,10 @@ namespace le {
 		// disabling move assignment (because leDevice& cannot be reassigned)
 		LeModel& operator=(LeModel&&) = delete;
 
+		//BVH
+		const std::shared_ptr<BVH> getBVH() const { return std::make_shared<BVH>(bvh); }
+		const std::vector<glm::vec3>& getPositions() const { return positions; }
+		const std::vector<uint32_t>& getIndices() const { return indices; }
 
 	private: 
 		void createVertexBuffers(const std::vector<Vertex>& vertices);
@@ -85,6 +92,11 @@ namespace le {
 		VkBuffer vertexBuffer;
 		VkDeviceMemory vertexBufferMemory;
 		uint32_t vertexCount;
+
+		//BVH
+		BVH bvh;
+		std::vector<glm::vec3> positions; // CPU copy for physics/BVH
+		std::vector<uint32_t> indices;    // CPU copy for physics/BVH
 		
 		bool hasIndexBuffer = false;
 		VkBuffer indexBuffer;

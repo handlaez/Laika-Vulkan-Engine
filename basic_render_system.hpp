@@ -37,7 +37,8 @@ namespace le {
 
         void renderActors(
             VkCommandBuffer commandBuffer,
-            std::vector<LeActor>& actors,
+            std::vector<std::shared_ptr<LeActor>>& actors,
+            bool renderHitboxes,
             const LeCamera& camera,
             size_t currentFrame
         );
@@ -53,7 +54,8 @@ namespace le {
         LeDevice& device_;
         LeResourceManager& resourceManager_;
 
-        std::unique_ptr<LePipeline> pipeline_;
+        std::unique_ptr<LePipeline> pipeline_;           // the intended way of hot-swapping used shaders
+        std::unique_ptr<LePipeline> wireframePipeline_;  // this one is for rendering hitboxes (primarly)
         VkPipelineLayout pipelineLayout_{ VK_NULL_HANDLE };
 
         std::vector<VkBuffer> uniformBuffers_;

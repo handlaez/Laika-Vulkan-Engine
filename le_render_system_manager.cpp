@@ -18,6 +18,7 @@ namespace le {
             basicRenderSystem->renderActors(
                 commandBuffer,
                 scene.getActors(),
+                scene.getRenderHitboxes(),
                 scene.getCamera(),
                 leRenderer.getFrameIndex()
             );

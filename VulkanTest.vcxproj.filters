@@ -28,14 +28,14 @@
     <Filter Include="Resource Files\Shaders\Compiled">
       <UniqueIdentifier>{3aa3ccad-a9af-40c7-9619-b0264a53c964}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Le_Core">
+      <UniqueIdentifier>{60f1eaa8-49f3-4026-ba04-1ce9f7fc62d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Systems">
+      <UniqueIdentifier>{9bcb46e7-eb47-41c3-96cd-544345fc668f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="keyboard_movement_controller.hpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="le_render_system_manager.hpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="le_camera.cpp">
       <Filter>Source Files\Le_Core</Filter>
     </ClCompile>
@@ -49,9 +49,6 @@
       <Filter>Source Files\Le_Core</Filter>
     </ClCompile>
     <ClCompile Include="le_pipeline.cpp">
-      <Filter>Source Files\Le_Core</Filter>
-    </ClCompile>
-    <ClCompile Include="demo_app.cpp">
       <Filter>Source Files\Le_Core</Filter>
     </ClCompile>
     <ClCompile Include="le_render_system_manager.cpp">
@@ -90,55 +87,82 @@
     <ClCompile Include="tiny_obj_loader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="le_aabbhitbox.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="le_actor.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
+    <ClCompile Include="demo_app.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="le_BVH.cpp">
+      <Filter>Source Files\Le_Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="le_window.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_core.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_pipeline.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_device.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_swapchain.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_model.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="i_laika_engine_app.hpp">
+      <Filter>Header Files\Le_Core</Filter>
     </ClInclude>
     <ClInclude Include="le_actor.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_renderer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="basic_render_system.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Le_Core</Filter>
     </ClInclude>
     <ClInclude Include="le_camera.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Le_Core</Filter>
     </ClInclude>
-    <ClInclude Include="le_texture.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="le_core.hpp">
+      <Filter>Header Files\Le_Core</Filter>
     </ClInclude>
-    <ClInclude Include="i_laika_engine_app.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="le_scene.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="le_device.hpp">
+      <Filter>Header Files\Le_Core</Filter>
     </ClInclude>
     <ClInclude Include="le_frame_info.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_model.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_pipeline.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_renderer.hpp">
+      <Filter>Header Files\Le_Core</Filter>
     </ClInclude>
     <ClInclude Include="le_resource_manager.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_scene.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_swapchain.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_texture.hpp">
+      <Filter>Header Files\Le_Core</Filter>
     </ClInclude>
     <ClInclude Include="le_utils.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_window.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="basic_render_system.hpp">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="keyboard_movement_controller.hpp">
+      <Filter>Header Files\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="le_aabbhitbox.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="le_render_system_manager.hpp">
+      <Filter>Header Files\Le_Core</Filter>
+    </ClInclude>
+    <ClInclude Include="demo_app.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="le_BVH.hpp">
+      <Filter>Header Files\Le_Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -147,6 +171,12 @@
       <Filter>Resource Files\Shaders\Compiled</Filter>
     </None>
     <None Include="shaders\frag_shader.spv">
+      <Filter>Resource Files\Shaders\Compiled</Filter>
+    </None>
+    <None Include="shaders\wireframe_shader.frag">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\wireframe_shader.spv">
       <Filter>Resource Files\Shaders\Compiled</Filter>
     </None>
   </ItemGroup>

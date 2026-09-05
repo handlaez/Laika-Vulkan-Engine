@@ -19,12 +19,13 @@ namespace le {
         LeDevice& getDevice();
         LeResourceManager& leResourceManager;
 
-        LeActor& addActor(LeActor actor);
-        LeActor& addActor(int32_t model, int32_t texture);
+        std::shared_ptr<LeActor> addActor(int32_t model, int32_t texture);
 
-        std::vector<LeActor>& getActors();
-        const std::vector<LeActor>& getActors() const;
-        LeActor& getActor(int index);
+        void toggleRenderHitboxes();
+        bool getRenderHitboxes() const;
+
+        std::vector<std::shared_ptr<LeActor>>& getActors();
+        std::shared_ptr<LeActor> getActor(int index);
 
         LeCamera& getCamera();
         const LeCamera& getCamera() const;
@@ -34,8 +35,10 @@ namespace le {
     private:
         void createDefaultCamera();
 
+        bool renderHitboxes_;
+
         LeDevice& leDevice;
-        std::vector<LeActor> actors;
+        std::vector<std::shared_ptr<LeActor>> actors;
 
         std::unique_ptr<LeActor> cameraObject;
         LeCamera camera;

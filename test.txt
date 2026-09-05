@@ -1,1 +1,0 @@
-InputPath=, InputName=, FullPath=C:\Users\KOMP_JOUT8\source\repos\VulkanTest\frag_shader.frag, Filename=frag_shader 
