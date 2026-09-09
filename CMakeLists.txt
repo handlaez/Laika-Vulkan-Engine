@@ -42,12 +42,45 @@ function(compile_shader TARGET_NAME SHADER_SOURCE OUTPUT_SPV)
     target_sources(${TARGET_NAME} PRIVATE "${OUTPUT_SPV}")
 endfunction()
 
+# Dear ImGui
+set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/imgui")
+
+set(IMGUI_SOURCES
+    "${IMGUI_DIR}/imgui.cpp"
+    "${IMGUI_DIR}/imgui_demo.cpp"
+    "${IMGUI_DIR}/imgui_draw.cpp"
+    "${IMGUI_DIR}/imgui_tables.cpp"
+    "${IMGUI_DIR}/imgui_widgets.cpp"
+
+    "${IMGUI_DIR}/backends/imgui_impl_glfw.cpp"
+    "${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp"
+)
+
+set(IMGUI_HEADERS
+    "${IMGUI_DIR}/imgui.h"
+    "${IMGUI_DIR}/imconfig.h"
+    "${IMGUI_DIR}/imgui_internal.h"
+    "${IMGUI_DIR}/imstb_rectpack.h"
+    "${IMGUI_DIR}/imstb_textedit.h"
+    "${IMGUI_DIR}/imstb_truetype.h"
+
+    "${IMGUI_DIR}/backends/imgui_impl_glfw.h"
+    "${IMGUI_DIR}/backends/imgui_impl_vulkan.h"
+)
+
 # Target config
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
+list(FILTER SOURCES EXCLUDE REGEX ".*/third-party/imgui/.*")
+list(FILTER HEADERS EXCLUDE REGEX ".*/third-party/imgui/.*")
 
-add_executable(VulkanTest ${SOURCES} ${HEADERS})
+add_executable(VulkanTest
+    ${SOURCES}
+    ${HEADERS}
+    ${IMGUI_SOURCES}
+    ${IMGUI_HEADERS}
+)
 
 compile_shader(VulkanTest "${CMAKE_CURRENT_SOURCE_DIR}/shaders/vert_shader.vert" "${CMAKE_CURRENT_SOURCE_DIR}/shaders/vert_shader.spv")
 compile_shader(VulkanTest "${CMAKE_CURRENT_SOURCE_DIR}/shaders/frag_shader.frag" "${CMAKE_CURRENT_SOURCE_DIR}/shaders/frag_shader.spv")
@@ -55,6 +88,8 @@ compile_shader(VulkanTest "${CMAKE_CURRENT_SOURCE_DIR}/shaders/frag_shader.frag"
 target_include_directories(VulkanTest PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${LOCAL_THIRD_PARTY_INCLUDES}
+    ${IMGUI_DIR}
+    "${IMGUI_DIR}/backends"
 )
 
 target_link_libraries(VulkanTest PRIVATE 
