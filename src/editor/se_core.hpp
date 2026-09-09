@@ -20,13 +20,18 @@ namespace se {
 
         void createImGuiDescriptorPool();
         VkDescriptorPool imguiDescriptorPool_{ VK_NULL_HANDLE };
+        VkDescriptorSet sceneTextureDescriptorSet_{ VK_NULL_HANDLE };
 
         void initImGui();
         void shutdownImGui();
         void renderImGui(VkCommandBuffer commandBuffer);
+        void renderEditorWindows();
+        void initializeDockspace();
 
         void updateEditor();
         void renderEditor();
+
+        bool dockspaceInitialized_{ false };
     };
 }
 

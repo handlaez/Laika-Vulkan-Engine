@@ -5,7 +5,7 @@ namespace le {
 	{
         basicRenderSystem = std::make_unique<BasicRenderSystem>(
             device,
-            renderer.getSwapchainRenderPass(),
+            renderer.getSceneRenderTarget().getRenderPass(),
             resourceManager
         );
 	}
@@ -13,7 +13,10 @@ namespace le {
     void LeRenderSystemManager::render(LeScene& scene)
     {
         if (auto commandBuffer = leRenderer.beginFrame()) {
-            leRenderer.beginSwapChainRenderPass(commandBuffer);
+            auto& sceneRenderTarget = leRenderer.getSceneRenderTarget();
+
+            // render to the target
+            sceneRenderTarget.begin(commandBuffer);
 
             basicRenderSystem->renderActors(
                 commandBuffer,
@@ -22,6 +25,11 @@ namespace le {
                 scene.getCamera(),
                 leRenderer.getFrameIndex()
             );
+
+            sceneRenderTarget.end(commandBuffer);
+
+            // render into the swapchain
+            leRenderer.beginSwapChainRenderPass(commandBuffer);
 
             if (renderOverlay_) {
                 renderOverlay_(commandBuffer);

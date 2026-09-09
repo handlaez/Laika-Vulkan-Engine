@@ -17,26 +17,28 @@ namespace le {
 	void LeRenderer::recreateSwapchain()
 	{
 		auto extent = leWindow.getExtent();
-		while (extent.width == 0 || extent.height == 0)
-		{
+
+		while (extent.width == 0 || extent.height == 0) {
 			extent = leWindow.getExtent();
 			glfwWaitEvents();
 		}
-		vkDeviceWaitIdle(leDevice.device()); //waiting until current swapchain is no longer being used
 
-		if (leSwapchain == nullptr)
-		{
+		vkDeviceWaitIdle(leDevice.device());
+
+		if (leSwapchain == nullptr) {
 			leSwapchain = std::make_unique<LeSwapchain>(leDevice, extent);
 		}
-		else
-		{
-			std::shared_ptr<LeSwapchain> oldSwpachain = std::move(leSwapchain);
-			leSwapchain = std::make_unique<LeSwapchain>(leDevice, extent, oldSwpachain);
+		else {
+			std::shared_ptr<LeSwapchain> oldSwapchain = std::move(leSwapchain);
 
-			if(!oldSwpachain->compareSwapFormats(*leSwapchain.get())) {
+			leSwapchain = std::make_unique<LeSwapchain>(leDevice, extent, oldSwapchain);
+
+			if (!oldSwapchain->compareSwapFormats(*leSwapchain)) {
 				throw std::runtime_error("Swapchain image(and/or depth) format has changed!");
 			}
 		}
+
+		sceneRenderTarget_ = std::make_unique<LeSceneRenderTarget>(leDevice, leSwapchain->getSwapchainExtent());
 	}
 
 	void LeRenderer::createCommandBuffers()

@@ -8,10 +8,12 @@
 
 #include <array>
 #include <stdexcept>
+#include <imgui_internal.h>
 
 namespace se {
 
-    se::SeCore::SeCore() : leCore_{}, currentScene_ { leCore_.getDevice(), leCore_.getResources() }
+    se::SeCore::SeCore() 
+        : leCore_{}, currentScene_ { leCore_.getDevice(), leCore_.getResources() }
     {
         initImGui();
 
@@ -80,6 +82,7 @@ namespace se {
         ImGui::CreateContext();
 
         ImGuiIO& io = ImGui::GetIO();
+        io.IniFilename = "sputnik_imgui.ini";
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
         ImGui::StyleColorsDark();
@@ -123,10 +126,22 @@ namespace se {
         {
             throw std::runtime_error("Failed to initialize ImGui Vulkan backend!");
         }
+
+        sceneTextureDescriptorSet_ = ImGui_ImplVulkan_AddTexture(
+            leCore_.getRenderer().getSceneRenderTarget().getColorSampler(),
+            leCore_.getRenderer().getSceneRenderTarget().getColorImageView(),
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+        );
     }
 
     void SeCore::shutdownImGui()
     {
+        if (sceneTextureDescriptorSet_ != VK_NULL_HANDLE)
+        {
+            ImGui_ImplVulkan_RemoveTexture(sceneTextureDescriptorSet_);
+            sceneTextureDescriptorSet_ = VK_NULL_HANDLE;
+        }
+
         ImGui_ImplVulkan_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
@@ -138,19 +153,162 @@ namespace se {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("Sputnik Editor");
+        ImGuiIO& io = ImGui::GetIO();
 
-        ImGui::Text("Vulkan renderer active");
-        ImGui::Text("Frame index: %u", leCore_.getRenderer().getFrameIndex());
+        ImGuiWindowFlags windowFlags =
+            ImGuiWindowFlags_MenuBar |
+            ImGuiWindowFlags_NoDocking |
+            ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoBringToFrontOnFocus |
+            ImGuiWindowFlags_NoNavFocus;
+
+        const ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+        ImGui::SetNextWindowViewport(viewport->ID);
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+        ImGui::Begin("Sputnik Editor", nullptr, windowFlags);
+        ImGui::PopStyleVar(3);
+
+        ImGuiID dockspaceId = ImGui::GetID("SputnikDockspace");
+
+        ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+
+        if (!dockspaceInitialized_) {
+            initializeDockspace();
+            dockspaceInitialized_ = true;
+        }
+
+        if (ImGui::BeginMenuBar()) {
+            if (ImGui::BeginMenu("File")) {
+                if (ImGui::MenuItem("Exit")) {
+                    glfwSetWindowShouldClose(
+                        leCore_.getWindow().getGLFWwindow(),
+                        GLFW_TRUE
+                    );
+                }
+
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::BeginMenu("Window")) {
+                ImGui::MenuItem("Scene");
+                ImGui::MenuItem("Inspector");
+                ImGui::MenuItem("Hierarchy");
+                ImGui::MenuItem("Console");
+
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMenuBar();
+        }
 
         ImGui::End();
 
-        ImGui::Render();
+        renderEditorWindows();
 
-        ImGui_ImplVulkan_RenderDrawData(
-            ImGui::GetDrawData(),
-            commandBuffer
+        ImGui::Render();
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+    }
+
+    void SeCore::renderEditorWindows()
+    {
+        ImGui::Begin("Scene");
+
+        const ImVec2 availableSize = ImGui::GetContentRegionAvail();
+        const VkExtent2D sceneExtent = leCore_.getRenderer().getSceneRenderTarget().getExtent();
+
+        const float sceneAspect = static_cast<float>(sceneExtent.width) / static_cast<float>(sceneExtent.height);
+
+        ImVec2 imageSize = availableSize;
+
+        if (availableSize.x / availableSize.y > sceneAspect)
+        {
+            imageSize.x = availableSize.y * sceneAspect;
+        }
+        else
+        {
+            imageSize.y = availableSize.x / sceneAspect;
+        }
+
+        // Center the image in the Scene window.
+        const float offsetX = (availableSize.x - imageSize.x) * 0.5f;
+        const float offsetY = (availableSize.y - imageSize.y) * 0.5f;
+
+        ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + offsetX, ImGui::GetCursorPosY() + offsetY));
+
+        if (sceneTextureDescriptorSet_ != VK_NULL_HANDLE)
+        {
+            ImGui::Image(sceneTextureDescriptorSet_, imageSize, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f));
+        }
+
+        ImGui::End();
+
+        ImGui::Begin("Inspector");
+        ImGui::Text("No entity selected");
+        ImGui::End();
+
+        ImGui::Begin("Hierarchy");
+        ImGui::Text("Scene hierarchy");
+        ImGui::End();
+
+        ImGui::Begin("Console");
+        ImGui::Text("Console output");
+        ImGui::End();
+    }
+
+    void SeCore::initializeDockspace()
+    {
+        ImGuiID dockspaceId = ImGui::GetID("SputnikDockspace");
+
+        ImGui::DockBuilderRemoveNode(dockspaceId);
+        ImGui::DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags_DockSpace);
+
+        ImGui::DockBuilderSetNodeSize(dockspaceId, ImGui::GetMainViewport()->WorkSize);
+
+        ImGuiID mainDock = dockspaceId;
+        ImGuiID leftDock;
+        ImGuiID rightDock;
+        ImGuiID bottomDock;
+
+        leftDock = ImGui::DockBuilderSplitNode(
+            mainDock,
+            ImGuiDir_Left,
+            0.20f,
+            nullptr,
+            &mainDock
         );
+
+        rightDock = ImGui::DockBuilderSplitNode(
+            mainDock,
+            ImGuiDir_Right,
+            0.25f,
+            nullptr,
+            &mainDock
+        );
+
+        bottomDock = ImGui::DockBuilderSplitNode(
+            mainDock,
+            ImGuiDir_Down,
+            0.25f,
+            nullptr,
+            &mainDock
+        );
+
+        ImGui::DockBuilderDockWindow("Hierarchy", leftDock);
+        ImGui::DockBuilderDockWindow("Inspector", rightDock);
+        ImGui::DockBuilderDockWindow("Console", bottomDock);
+        ImGui::DockBuilderDockWindow("Scene", mainDock);
+
+        ImGui::DockBuilderFinish(dockspaceId);
     }
 
     void SeCore::updateEditor()

@@ -59,9 +59,17 @@ namespace le {
 
         // cleanup synchronization objects
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            vkDestroySemaphore(device.device(), renderFinishedSemaphores[i], nullptr);
-            vkDestroySemaphore(device.device(), imageAvailableSemaphores[i], nullptr);
-            vkDestroyFence(device.device(), inFlightFences[i], nullptr);
+            for (auto semaphore : renderFinishedSemaphores) {
+                vkDestroySemaphore(device.device(), semaphore, nullptr);
+            }
+
+            for (auto semaphore : imageAvailableSemaphores) {
+                vkDestroySemaphore(device.device(), semaphore, nullptr);
+            }
+
+            for (auto fence : inFlightFences) {
+                vkDestroyFence(device.device(), fence, nullptr);
+            }
         }
     }
 
@@ -99,11 +107,10 @@ namespace le {
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = waitSemaphores;
         submitInfo.pWaitDstStageMask = waitStages;
-
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = buffers;
 
-        VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currentFrame] };
+        VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[*imageIndex] };
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -350,26 +357,34 @@ namespace le {
         }
     }
 
-    void LeSwapchain::createSyncObjects() {
+    void LeSwapchain::createSyncObjects()
+    {
         imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-        renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+        renderFinishedSemaphores.resize(imageCount());
         inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
         imagesInFlight.resize(imageCount(), VK_NULL_HANDLE);
 
-        VkSemaphoreCreateInfo semaphoreInfo = {};
+        VkSemaphoreCreateInfo semaphoreInfo{};
         semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-        VkFenceCreateInfo fenceInfo = {};
+        VkFenceCreateInfo fenceInfo{};
         fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            if (vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) !=
-                VK_SUCCESS ||
-                vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) !=
-                VK_SUCCESS ||
-                vkCreateFence(device.device(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
-                throw std::runtime_error("failed to create synchronization objects for a frame!");
+            if (vkCreateSemaphore(
+                    device.device(), &semaphoreInfo, nullptr,  &imageAvailableSemaphores[i]) != VK_SUCCESS ||
+                vkCreateFence(
+                    device.device(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) 
+            {
+                throw std::runtime_error("failed to create frame synchronization objects!");
+            }
+        }
+
+        for (size_t i = 0; i < renderFinishedSemaphores.size(); i++) {
+            if (vkCreateSemaphore(device.device(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS) 
+            {
+                throw std::runtime_error("failed to create render finished semaphore!");
             }
         }
     }

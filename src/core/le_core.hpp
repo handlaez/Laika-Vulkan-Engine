@@ -24,8 +24,8 @@ namespace le {
 	public:
 		using RenderOverlay = std::function<void(VkCommandBuffer)>;
 
-		static constexpr int WIDTH = 800;
-		static constexpr int HEIGHT = 800;
+		static constexpr int WIDTH = 1600;
+		static constexpr int HEIGHT = 900;
 
 		LeCore();
 		~LeCore();

@@ -4,6 +4,7 @@
 #include "src/core/le_window.hpp"
 #include "src/render/le_swapchain.hpp"
 #include "src/core/le_device.hpp"
+#include "src/render/le_scene_render_target.hpp"
 
 // std
 #include <memory>
@@ -39,6 +40,8 @@ namespace le {
 		void beginSwapChainRenderPass(VkCommandBuffer commandBuffer);
 		void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
 
+		LeSceneRenderTarget& getSceneRenderTarget() { return *sceneRenderTarget_; }
+
 	private:
 		void createCommandBuffers();
 		void freeCommandBuffers();
@@ -48,6 +51,8 @@ namespace le {
 		LeDevice& leDevice;
 		std::unique_ptr<LeSwapchain> leSwapchain;
 		std::vector<VkCommandBuffer> commandBuffers;
+
+		std::unique_ptr<LeSceneRenderTarget> sceneRenderTarget_;
 
 		uint32_t currentImageIndex;
 		int currentFrameIndex{ 0 };
