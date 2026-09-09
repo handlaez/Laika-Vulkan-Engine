@@ -38,7 +38,14 @@ namespace le {
 			}
 		}
 
-		sceneRenderTarget_ = std::make_unique<LeSceneRenderTarget>(leDevice, leSwapchain->getSwapchainExtent());
+		auto newSceneRenderTarget = std::make_unique<LeSceneRenderTarget>(leDevice, leSwapchain->getSwapchainExtent() );
+
+		if (sceneRenderTargetRecreatedCallback_)
+		{
+			sceneRenderTargetRecreatedCallback_(*newSceneRenderTarget);
+		}
+
+		sceneRenderTarget_ = std::move(newSceneRenderTarget);
 	}
 
 	void LeRenderer::createCommandBuffers()
@@ -150,6 +157,11 @@ namespace le {
 		assert(commandBuffer == getCurrentCommandBuffer() && "Can't end render pass on command buffer from a diffrent frame");
 
 		vkCmdEndRenderPass(commandBuffer);
+	}
+
+	void LeRenderer::setSceneRenderTargetRecreatedCallback(std::function<void(LeSceneRenderTarget&)> callback)
+	{
+		sceneRenderTargetRecreatedCallback_ = std::move(callback);
 	}
 
 } // le

@@ -1,5 +1,4 @@
 #include "src/editor/se_core.hpp"
-
 #include "src/demo_app.hpp"
 
 #include "imgui.h"
@@ -16,6 +15,12 @@ namespace se {
         : leCore_{}, currentScene_ { leCore_.getDevice(), leCore_.getResources() }
     {
         initImGui();
+
+        leCore_.getRenderer().setSceneRenderTargetRecreatedCallback(
+            [this](LeSceneRenderTarget& sceneTarget)
+            {
+                recreateSceneTexture(sceneTarget);
+            });
 
         leCore_.setRenderOverlay(
             [this](VkCommandBuffer commandBuffer)
@@ -127,11 +132,7 @@ namespace se {
             throw std::runtime_error("Failed to initialize ImGui Vulkan backend!");
         }
 
-        sceneTextureDescriptorSet_ = ImGui_ImplVulkan_AddTexture(
-            leCore_.getRenderer().getSceneRenderTarget().getColorSampler(),
-            leCore_.getRenderer().getSceneRenderTarget().getColorImageView(),
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-        );
+        recreateSceneTexture(leCore_.getRenderer().getSceneRenderTarget());
     }
 
     void SeCore::shutdownImGui()
@@ -309,6 +310,21 @@ namespace se {
         ImGui::DockBuilderDockWindow("Scene", mainDock);
 
         ImGui::DockBuilderFinish(dockspaceId);
+    }
+
+    void SeCore::recreateSceneTexture(le::LeSceneRenderTarget& sceneTarget)
+    {
+        if (sceneTextureDescriptorSet_ != VK_NULL_HANDLE)
+        {
+            ImGui_ImplVulkan_RemoveTexture(sceneTextureDescriptorSet_);
+            sceneTextureDescriptorSet_ = VK_NULL_HANDLE;
+        }
+
+        sceneTextureDescriptorSet_ = ImGui_ImplVulkan_AddTexture(
+            sceneTarget.getColorSampler(),
+            sceneTarget.getColorImageView(),
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+        );
     }
 
     void SeCore::updateEditor()

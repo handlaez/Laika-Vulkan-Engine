@@ -3,6 +3,7 @@
 
 #include "src/core/le_core.hpp"
 #include "src/scene/le_scene.hpp"
+#include "src/render/le_scene_render_target.hpp"
 
 namespace se {
 
@@ -27,6 +28,7 @@ namespace se {
         void renderImGui(VkCommandBuffer commandBuffer);
         void renderEditorWindows();
         void initializeDockspace();
+        void recreateSceneTexture(le::LeSceneRenderTarget& sceneTarget);
 
         void updateEditor();
         void renderEditor();

@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 #include <cassert>
+#include <functional>
 
 namespace le {
 	class LeRenderer {
@@ -41,6 +42,7 @@ namespace le {
 		void endSwapChainRenderPass(VkCommandBuffer commandBuffer);
 
 		LeSceneRenderTarget& getSceneRenderTarget() { return *sceneRenderTarget_; }
+		void setSceneRenderTargetRecreatedCallback(std::function<void(LeSceneRenderTarget&)> callback);
 
 	private:
 		void createCommandBuffers();
@@ -53,6 +55,7 @@ namespace le {
 		std::vector<VkCommandBuffer> commandBuffers;
 
 		std::unique_ptr<LeSceneRenderTarget> sceneRenderTarget_;
+		std::function<void(LeSceneRenderTarget&)> sceneRenderTargetRecreatedCallback_;
 
 		uint32_t currentImageIndex;
 		int currentFrameIndex{ 0 };
