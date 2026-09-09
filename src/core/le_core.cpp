@@ -5,6 +5,8 @@ namespace le {
 
 	LeCore::LeCore() : currentTime_(std::chrono::high_resolution_clock::now()) {
         resourceManager_.startUp();
+        renderManager_ = std::make_unique<LeRenderSystemManager>(leDevice_, leRenderer_, resourceManager_);
+
         frameInfo_.window = leWindow_.getGLFWwindow();
     }
 
@@ -24,7 +26,7 @@ namespace le {
 
     void LeCore::render(LeScene& scene)
     {
-        renderManager_.render(scene);
+        renderManager_->render(scene);
     }
 
     void LeCore::endFrame()
@@ -57,5 +59,10 @@ namespace le {
     LeResourceManager& LeCore::getResources()
     {
         return resourceManager_;
+    }
+
+    FrameInfo& LeCore::getFrameInfo()
+    {
+        return frameInfo_;
     }
 } // le

@@ -15,7 +15,7 @@ namespace se {
         void run();
 
     private:
-        le::LeCore leCore_{};
+        le::LeCore leCore_;
         le::LeScene currentScene_;
 
         void updateEditor();

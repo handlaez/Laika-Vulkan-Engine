@@ -37,6 +37,7 @@ namespace le {
 		LeDevice& getDevice();
 		LeRenderer& getRenderer();
 		LeResourceManager& getResources();
+		FrameInfo& getFrameInfo();
 
 		LeCore(const LeCore&) = delete;
 		LeCore& operator=(const LeCore&) = delete;
@@ -47,13 +48,9 @@ namespace le {
 		LeWindow leWindow_{ WIDTH, HEIGHT, "Le_Core_Window" };
 		LeDevice leDevice_{ leWindow_ };
 		LeRenderer leRenderer_{ leWindow_, leDevice_ };
-
 		LeResourceManager resourceManager_{ leDevice_ };
-		LeRenderSystemManager renderManager_{
-			leDevice_,
-			leRenderer_,
-			resourceManager_
-		};
+
+		std::unique_ptr<LeRenderSystemManager> renderManager_;
 
 		FrameInfo frameInfo_{};
 
