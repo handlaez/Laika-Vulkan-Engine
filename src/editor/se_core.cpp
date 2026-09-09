@@ -25,6 +25,7 @@ namespace se {
 
     se::SeCore::~SeCore()
     {
+        vkDeviceWaitIdle(leCore_.getDevice().device());
         shutdownImGui();
     }
 
@@ -137,7 +138,12 @@ namespace se {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::ShowDemoWindow();
+        ImGui::Begin("Sputnik Editor");
+
+        ImGui::Text("Vulkan renderer active");
+        ImGui::Text("Frame index: %u", leCore_.getRenderer().getFrameIndex());
+
+        ImGui::End();
 
         ImGui::Render();
 
