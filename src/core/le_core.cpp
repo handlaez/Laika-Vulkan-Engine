@@ -3,43 +3,59 @@
 
 namespace le {
 
-	LeCore::LeCore() : currentTime(std::chrono::high_resolution_clock::now()) {}
+	LeCore::LeCore() : currentTime_(std::chrono::high_resolution_clock::now()) {
+        resourceManager_.startUp();
+        frameInfo_.window = leWindow_.getGLFWwindow();
+    }
 
-	LeCore::~LeCore() {}
+	LeCore::~LeCore() {
+        resourceManager_.shutDown();
+    }
+
+    void LeCore::beginFrame()
+    {
+        glfwPollEvents();
+        updateFrameInfo(frameInfo_);
+    }
+
+    void LeCore::update()
+    {
+    }
+
+    void LeCore::render(LeScene& scene)
+    {
+        renderManager_.render(scene);
+    }
+
+    void LeCore::endFrame()
+    {
+    }
 
     void LeCore::updateFrameInfo(FrameInfo& fi) {
         auto newTime = std::chrono::high_resolution_clock::now();
-        fi.deltaTime = std::chrono::duration<float>(newTime - currentTime).count();
-        currentTime = newTime;
+        fi.deltaTime = std::chrono::duration<float>(newTime - currentTime_).count();
+        currentTime_ = newTime;
 
-        fi.aspect = leRenderer.getAspectRatio();
+        fi.aspect = leRenderer_.getAspectRatio();
     }
 
-    void LeCore::run(ILaikaEngineApp& application) {
+    LeWindow& LeCore::getWindow()
+    {
+        return leWindow_;
+    }
 
-        LeResourceManager resourceManager{ leDevice }; // holds all the textures and models
-        resourceManager.startUp();
-        LeRenderSystemManager renderManager{ leDevice, leRenderer, resourceManager }; // actualy renders all the textures and models
-        LeScene scene{ leDevice, resourceManager }; // is an environment where models can be rendered
-        FrameInfo fi{};
-        fi.window = leWindow.getGLFWwindow();
+    LeDevice& LeCore::getDevice()
+    {
+        return leDevice_;
+    }
 
-        application.onStart(scene);
+    LeRenderer& LeCore::getRenderer()
+    {
+        return leRenderer_;
+    }
 
-        currentTime = std::chrono::high_resolution_clock::now();
-
-        while (!leWindow.shouldClose()) {
-
-            glfwPollEvents();
-
-            updateFrameInfo(fi);
-
-            application.onUpdate(scene, fi);
-
-            renderManager.render(scene);
-        }
-
-        application.onShutdown();
-        resourceManager.shutDown();
+    LeResourceManager& LeCore::getResources()
+    {
+        return resourceManager_;
     }
 } // le

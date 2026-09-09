@@ -28,19 +28,36 @@ namespace le {
 		LeCore();
 		~LeCore();
 
+		void beginFrame();
+		void update();
+		void render(LeScene& scene);
+		void endFrame();
+
+		LeWindow& getWindow();
+		LeDevice& getDevice();
+		LeRenderer& getRenderer();
+		LeResourceManager& getResources();
+
 		LeCore(const LeCore&) = delete;
 		LeCore& operator=(const LeCore&) = delete;
-
-		void run(ILaikaEngineApp& gameApp);
 
 	private:
 		void updateFrameInfo(FrameInfo& fi);
 
-		LeWindow leWindow{ WIDTH, HEIGHT, "Le_Core_Window" };
-		LeDevice leDevice{ leWindow };
-		LeRenderer leRenderer{ leWindow, leDevice };
+		LeWindow leWindow_{ WIDTH, HEIGHT, "Le_Core_Window" };
+		LeDevice leDevice_{ leWindow_ };
+		LeRenderer leRenderer_{ leWindow_, leDevice_ };
 
-		std::chrono::time_point<std::chrono::high_resolution_clock> currentTime;
+		LeResourceManager resourceManager_{ leDevice_ };
+		LeRenderSystemManager renderManager_{
+			leDevice_,
+			leRenderer_,
+			resourceManager_
+		};
+
+		FrameInfo frameInfo_{};
+
+		std::chrono::time_point<std::chrono::high_resolution_clock> currentTime_;
 	};
 }
 

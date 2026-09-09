@@ -5,10 +5,11 @@
         "msvc_x64"
       ],
       "name": "x64-Release",
-      "includePath": [
-        "${env.INCLUDE}",
-        "${workspaceRoot}\\**"
-      ],
+        "includePath": [
+            "${env.INCLUDE}",
+            "${workspaceRoot}\\**",
+            "${env.VULKAN_SDK}\\Include"
+        ],
       "defines": [
         "WIN32",
         "NDEBUG",

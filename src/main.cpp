@@ -1,25 +1,21 @@
-#include "src/core/le_core.hpp"
-#include "demo_app.hpp"
+#include "src/editor/se_core.hpp"
 
-// std
 #include <cstdlib>
 #include <iostream>
-#include <stdexcept>
+#include <exception>
 
-int main() {
-	le::LeCore engine{};
-	DemoApp demoApp;
+int main()
+{
+    try
+    {
+        se::SeCore editor{};
+        editor.run();
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+        return EXIT_FAILURE;
+    }
 
-	try 
-	{
-		engine.run(demoApp);
-	}
-	catch (const std::exception &e) 
-	{
-		std::cerr << e.what() << "\n";
-		std::cin;
-		return EXIT_FAILURE;
-	}
-	std::cin;
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
