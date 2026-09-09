@@ -14,6 +14,13 @@ namespace se {
     se::SeCore::SeCore() : leCore_{}, currentScene_ { leCore_.getDevice(), leCore_.getResources() }
     {
         initImGui();
+
+        leCore_.setRenderOverlay(
+            [this](VkCommandBuffer commandBuffer)
+            {
+                renderImGui(commandBuffer);
+            }
+        );
     }
 
     se::SeCore::~SeCore()
@@ -93,7 +100,7 @@ namespace se {
 
         // Let ImGui create its own descriptor pool.
         initInfo.DescriptorPool = VK_NULL_HANDLE;
-        initInfo.DescriptorPoolSize = 1000;
+        initInfo.DescriptorPoolSize = 512;
 
         initInfo.MinImageCount = 2;
         initInfo.ImageCount = LeSwapchain::MAX_FRAMES_IN_FLIGHT;
@@ -124,11 +131,27 @@ namespace se {
         ImGui::DestroyContext();
     }
 
-    void se::SeCore::updateEditor()
+    void SeCore::renderImGui(VkCommandBuffer commandBuffer)
+    {
+        ImGui_ImplVulkan_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::ShowDemoWindow();
+
+        ImGui::Render();
+
+        ImGui_ImplVulkan_RenderDrawData(
+            ImGui::GetDrawData(),
+            commandBuffer
+        );
+    }
+
+    void SeCore::updateEditor()
     {
     }
 
-    void se::SeCore::renderEditor()
+    void SeCore::renderEditor()
     {
     }
 } // se

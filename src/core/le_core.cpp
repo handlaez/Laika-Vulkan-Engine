@@ -65,4 +65,9 @@ namespace le {
     {
         return frameInfo_;
     }
+
+    void LeCore::setRenderOverlay(RenderOverlay overlay)
+    {
+        renderManager_->setRenderOverlay(std::move(overlay));
+    }
 } // le

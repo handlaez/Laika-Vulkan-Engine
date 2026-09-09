@@ -22,11 +22,16 @@ namespace le {
 	class LeCore {
 		// when core is created a window is created -> when core is destroyed, any window will be destroyed too.
 	public:
+		using RenderOverlay = std::function<void(VkCommandBuffer)>;
+
 		static constexpr int WIDTH = 800;
 		static constexpr int HEIGHT = 800;
 
 		LeCore();
 		~LeCore();
+
+		LeCore(const LeCore&) = delete;
+		LeCore& operator=(const LeCore&) = delete;
 
 		void beginFrame();
 		void update();
@@ -39,8 +44,7 @@ namespace le {
 		LeResourceManager& getResources();
 		FrameInfo& getFrameInfo();
 
-		LeCore(const LeCore&) = delete;
-		LeCore& operator=(const LeCore&) = delete;
+		void setRenderOverlay(RenderOverlay overlay);
 
 	private:
 		void updateFrameInfo(FrameInfo& fi);

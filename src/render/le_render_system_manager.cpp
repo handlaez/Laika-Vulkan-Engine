@@ -23,8 +23,17 @@ namespace le {
                 leRenderer.getFrameIndex()
             );
 
+            if (renderOverlay_) {
+                renderOverlay_(commandBuffer);
+            }
+
             leRenderer.endSwapChainRenderPass(commandBuffer);
             leRenderer.endFrame();
         }
+    }
+
+    void LeRenderSystemManager::setRenderOverlay(RenderOverlay overlay)
+    {
+        renderOverlay_ = std::move(overlay);
     }
 }

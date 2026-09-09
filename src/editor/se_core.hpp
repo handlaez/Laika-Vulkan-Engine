@@ -23,6 +23,7 @@ namespace se {
 
         void initImGui();
         void shutdownImGui();
+        void renderImGui(VkCommandBuffer commandBuffer);
 
         void updateEditor();
         void renderEditor();
