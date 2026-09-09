@@ -18,6 +18,12 @@ namespace se {
         le::LeCore leCore_;
         le::LeScene currentScene_;
 
+        void createImGuiDescriptorPool();
+        VkDescriptorPool imguiDescriptorPool_{ VK_NULL_HANDLE };
+
+        void initImGui();
+        void shutdownImGui();
+
         void updateEditor();
         void renderEditor();
     };
