@@ -12,7 +12,7 @@ using namespace le;
 class DemoApp : public ILaikaEngineApp {
 public:
     void onStart(LeScene& scene) override;
-    void onUpdate(LeScene& scene, FrameInfo fi) override;
+    void onUpdate(LeScene& scene, FrameInfo fi, bool viewportActive) override;
     void onShutdown() override;
 
 private:

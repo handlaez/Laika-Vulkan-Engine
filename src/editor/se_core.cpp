@@ -47,7 +47,7 @@ namespace se {
 
             Utils::checkKeys(leCore_.getWindow().getGLFWwindow());
 
-            demoApp.onUpdate(currentScene_, leCore_.getFrameInfo());
+            demoApp.onUpdate(currentScene_, leCore_.getFrameInfo(), sceneViewportActive_);
             updateEditor();
 
             leCore_.render(currentScene_);
@@ -202,6 +202,16 @@ namespace se {
                 ImGui::EndMenu();
             }
 
+            if (ImGui::BeginMenu("View")) {
+                ImGui::MenuItem("Lighting", "3", &Utils::lightingEnabled);
+                ImGui::MenuItem("Textures", "4", &Utils::texturesEnabled);
+                ImGui::MenuItem("Wireframe", "5", &Utils::wireframeEnabled);
+                ImGui::MenuItem("Skybox", "6", &Utils::skyboxEnabled);
+                ImGui::MenuItem("Hitboxes", "7", &Utils::hitboxesEnabled);
+
+                ImGui::EndMenu();
+            }
+
             if (ImGui::BeginMenu("Window")) {
                 ImGui::MenuItem("Scene");
                 ImGui::MenuItem("Inspector");
@@ -225,6 +235,15 @@ namespace se {
     void SeCore::renderEditorWindows()
     {
         ImGui::Begin("Scene");
+
+        // checking if scene viewport should capture the mouse
+        sceneViewportHovered_ = ImGui::IsWindowHovered();
+        const bool viewportClicked = sceneViewportHovered_ && ImGui::IsMouseClicked(ImGuiMouseButton_Left);
+        if (viewportClicked)
+            sceneViewportActive_ = true;
+
+        if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
+            sceneViewportActive_ = false;
 
         const ImVec2 availableSize = ImGui::GetContentRegionAvail();
         const VkExtent2D sceneExtent = leCore_.getRenderer().getSceneRenderTarget().getExtent();

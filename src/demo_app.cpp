@@ -46,9 +46,9 @@ void DemoApp::onStart(LeScene& scene) {
     modelActor2.setBVH(b);
 }
 
-void DemoApp::onUpdate(le::LeScene& scene, FrameInfo fi) {
+void DemoApp::onUpdate(le::LeScene& scene, FrameInfo fi, bool viewportActive) {
     // movement
-    controller.moveInPlaneXZ(fi.window, fi.deltaTime, scene.getCameraObject());
+    controller.moveInPlaneXZ(fi.window, fi.deltaTime, scene.getCameraObject(), viewportActive);
     sinfunc += 0.8f * fi.deltaTime;
 
     // camera update

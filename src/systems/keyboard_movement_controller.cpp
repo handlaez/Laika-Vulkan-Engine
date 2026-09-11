@@ -4,7 +4,7 @@
 #include <iostream>
 
 namespace le {
-    void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, float deltatime, LeActor& actor)
+    void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, float deltatime, LeActor& actor, bool viewportHovered)
     {
         float speed = moveSpeed;
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
@@ -25,6 +25,17 @@ namespace le {
 
         if (glm::length2(moveDir) > 0.0001f) {
             actor.transform.translation += speed * deltatime * glm::normalize(moveDir);
+        }
+
+        if (!viewportHovered)
+        {
+            firstClick = true;
+            glfwSetInputMode(
+                window,
+                GLFW_CURSOR,
+                GLFW_CURSOR_NORMAL
+            );
+            return;
         }
 
         // rot

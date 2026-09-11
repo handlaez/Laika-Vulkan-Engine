@@ -34,6 +34,8 @@ namespace se {
         void renderEditor();
 
         bool dockspaceInitialized_{ false };
+        bool sceneViewportHovered_{ false };
+        bool sceneViewportActive_{ false };
     };
 }
 

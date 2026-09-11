@@ -20,7 +20,7 @@ namespace le {
 
     class KeyboardMovementController {
     public:
-        void moveInPlaneXZ(GLFWwindow* window, float timestep, LeActor& actor);
+        void moveInPlaneXZ(GLFWwindow* window, float timestep, LeActor& actor, bool viewportHovered);
 
         KeyMappings keys{};
         float moveSpeed{ 6.f };
