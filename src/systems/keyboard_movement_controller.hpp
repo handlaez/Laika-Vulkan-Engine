@@ -27,7 +27,9 @@ namespace le {
         float mouseSensitivity{ 0.03f };
 
     private:
-        bool firstClick = true;
+        bool mouseCaptured_{ false };
+        bool firstClick{ false };
+        
         double lastMouseX = 0.0;
         double lastMouseY = 0.0;
 

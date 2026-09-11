@@ -47,7 +47,7 @@ namespace se {
 
             Utils::checkKeys(leCore_.getWindow().getGLFWwindow());
 
-            demoApp.onUpdate(currentScene_, leCore_.getFrameInfo(), sceneViewportActive_);
+            demoApp.onUpdate(currentScene_, leCore_.getFrameInfo(), sceneViewportHovered_);
             updateEditor();
 
             leCore_.render(currentScene_);
@@ -90,7 +90,7 @@ namespace se {
 
         ImGuiIO& io = ImGui::GetIO();
         io.IniFilename = "sputnik_imgui.ini";
-        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_NoMouseCursorChange;
 
         ImGui::StyleColorsDark();
 
@@ -238,12 +238,6 @@ namespace se {
 
         // checking if scene viewport should capture the mouse
         sceneViewportHovered_ = ImGui::IsWindowHovered();
-        const bool viewportClicked = sceneViewportHovered_ && ImGui::IsMouseClicked(ImGuiMouseButton_Left);
-        if (viewportClicked)
-            sceneViewportActive_ = true;
-
-        if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
-            sceneViewportActive_ = false;
 
         const ImVec2 availableSize = ImGui::GetContentRegionAvail();
         const VkExtent2D sceneExtent = leCore_.getRenderer().getSceneRenderTarget().getExtent();

@@ -11,9 +11,9 @@ namespace le {
             speed *= 4.0f;
         }
 
-        glm::vec3 forward = actor.transform.rotation * glm::vec3(0, 0, 1);
-        glm::vec3 right = actor.transform.rotation * glm::vec3(1, 0, 0);
-        glm::vec3 up = glm::vec3(0, 1, 0);
+        glm::vec3 forward = actor.transform.rotation * glm::vec3(0.f, 0.f, 1.f);
+        glm::vec3 right = actor.transform.rotation * glm::vec3(1.f, 0.f, 0.f);
+        glm::vec3 up = glm::vec3(0.f, 1.f, 0.f);
 
         glm::vec3 moveDir{ 0.f };
         if (glfwGetKey(window, keys.moveForward) == GLFW_PRESS)     moveDir += forward;
@@ -27,14 +27,39 @@ namespace le {
             actor.transform.translation += speed * deltatime * glm::normalize(moveDir);
         }
 
-        if (!viewportHovered)
+        const bool leftPressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+
+        // Start capture only if the cursor is currenly over the viewport
+        if (!mouseCaptured_ && viewportHovered && leftPressed)
         {
+            mouseCaptured_ = true;
             firstClick = true;
+
+            glfwSetInputMode(
+                window,
+                GLFW_CURSOR,
+                GLFW_CURSOR_DISABLED
+            );
+        }
+
+        // Stop capture when the mouse button is released.
+        if (mouseCaptured_ && !leftPressed)
+        {
+            mouseCaptured_ = false;
+            firstClick = true;
+
             glfwSetInputMode(
                 window,
                 GLFW_CURSOR,
                 GLFW_CURSOR_NORMAL
             );
+
+            return;
+        }
+
+        // Nothing else to do unless we own the mouse.
+        if (!mouseCaptured_)
+        {
             return;
         }
 
