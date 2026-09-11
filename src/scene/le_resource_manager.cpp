@@ -88,7 +88,7 @@ namespace le {
 		}
 		else 
 		{
-			std::cerr << "tried to update a model that doesn't exist! ID: " << id << std::endl;
+			std::cerr << "Tried to update a model that doesn't exist! ID: " << id << std::endl;
 		}
 	}
 
@@ -108,8 +108,19 @@ namespace le {
 		if (it != models.end()) {
 			return it->second;
 		}
+
 		// Fallback to model 0 if ID not found
 		return models.at(0);
+	}
+
+	std::shared_ptr<LeModel> LeResourceManager::getStaticModel(uint32_t id)
+	{
+		auto model = getModel(id);
+
+		if (typeid(*model) == typeid(LeModel))
+			return std::dynamic_pointer_cast<LeModel>(model);
+
+		return nullptr;
 	}
 	
 	void LeResourceManager::loadFallbackTexture()

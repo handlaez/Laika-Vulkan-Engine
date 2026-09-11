@@ -1,14 +1,14 @@
 #ifndef LE_SKYBOX_RENDER_SYSTEM_HPP
 #define LE_SKYBOX_RENDER_SYSTEM_HPP
 
-#include "i_render_system.hpp"
+#include "src/render/i_render_system.hpp"
 
-#include "le_device.hpp"
-#include "le_renderer.hpp"
-#include "le_pipeline.hpp"
-#include "le_camera.hpp"
-#include "le_buffer.hpp"
-#include "le_cubemap.hpp"
+#include "src/core/le_device.hpp"
+#include "src/render/le_renderer.hpp"
+#include "src/render/le_pipeline.hpp"
+#include "src/objects/le_camera.hpp"
+#include "src/objects/le_buffer.hpp"
+#include "src/scene/skybox/le_cubemap.hpp"
 
 #include <memory>
 #include <array>

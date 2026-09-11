@@ -4,7 +4,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#include "le_utils.hpp"
+#include "src/core/le_utils.hpp"
 
 struct BoidData {
     // boid data

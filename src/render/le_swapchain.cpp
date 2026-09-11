@@ -35,42 +35,47 @@ namespace le {
         createSyncObjects();
     }
 
-    LeSwapchain::~LeSwapchain() {
-        for (auto imageView : swapchainImageViews) {
+    LeSwapchain::~LeSwapchain()
+    {
+        for (auto imageView : swapchainImageViews)
+        {
             vkDestroyImageView(device.device(), imageView, nullptr);
         }
         swapchainImageViews.clear();
 
-        if (swapchain != nullptr) {
+        if (swapchain != VK_NULL_HANDLE)
+        {
             vkDestroySwapchainKHR(device.device(), swapchain, nullptr);
-            swapchain = nullptr;
+            swapchain = VK_NULL_HANDLE;
         }
 
-        for (int i = 0; i < depthImages.size(); i++) {
+        for (size_t i = 0; i < depthImages.size(); ++i)
+        {
             vkDestroyImageView(device.device(), depthImageViews[i], nullptr);
             vkDestroyImage(device.device(), depthImages[i], nullptr);
             vkFreeMemory(device.device(), depthImageMemorys[i], nullptr);
         }
 
-        for (auto framebuffer : swapchainFramebuffers) {
+        for (auto framebuffer : swapchainFramebuffers)
+        {
             vkDestroyFramebuffer(device.device(), framebuffer, nullptr);
         }
 
         vkDestroyRenderPass(device.device(), renderPass, nullptr);
 
-        // cleanup synchronization objects
-        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            for (auto semaphore : renderFinishedSemaphores) {
-                vkDestroySemaphore(device.device(), semaphore, nullptr);
-            }
+        for (auto semaphore : renderFinishedSemaphores)
+        {
+            vkDestroySemaphore(device.device(), semaphore, nullptr);
+        }
 
-            for (auto semaphore : imageAvailableSemaphores) {
-                vkDestroySemaphore(device.device(), semaphore, nullptr);
-            }
+        for (auto semaphore : imageAvailableSemaphores)
+        {
+            vkDestroySemaphore(device.device(), semaphore, nullptr);
+        }
 
-            for (auto fence : inFlightFences) {
-                vkDestroyFence(device.device(), fence, nullptr);
-            }
+        for (auto fence : inFlightFences)
+        {
+            vkDestroyFence(device.device(), fence, nullptr);
         }
     }
 
@@ -426,7 +431,7 @@ namespace le {
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D LeSwapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
+    VkExtent2D LeSwapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) const {
         if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
             return capabilities.currentExtent;
         }

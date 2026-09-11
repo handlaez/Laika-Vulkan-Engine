@@ -2,14 +2,14 @@
 
 namespace le
 {
-	SkyboxRenderSystem::SkyboxRenderSystem(LeDevice& device, LeRenderer& renderer, LeResourceManager& resourceManager, VkDescriptorSetLayout frameLayout)
-		: device_(device), renderer_(renderer), resourceManager_(resourceManager), frameLayout_(frameLayout)
-	{
+    SkyboxRenderSystem::SkyboxRenderSystem(LeDevice& device, LeRenderer& renderer, LeResourceManager& resourceManager, VkDescriptorSetLayout frameLayout)
+        : device_(device), renderer_(renderer), resourceManager_(resourceManager), frameLayout_(frameLayout)
+    {
         createCubemapDescriptorResources();
-		createPipelineLayout();
-		createPipeline(renderer_.getSwapchainRenderPass());
-		createCubeBuffers();
-	}
+        createPipelineLayout();
+        createPipeline(renderer_.getSceneRenderTarget().getRenderPass());
+        createCubeBuffers();
+    }
 
 	SkyboxRenderSystem::~SkyboxRenderSystem()
 	{

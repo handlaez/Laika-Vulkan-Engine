@@ -1,7 +1,7 @@
 #ifndef LE_CUBEMAP_HPP
 #define LE_CUBEMAP_HPP
 
-#include "le_device.hpp"
+#include "src/core/le_device.hpp"
 
 #include <stb_image.h>
 

@@ -9,7 +9,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include "le_swapchain.hpp"
+#include "src/render/le_swapchain.hpp"
 
 struct FrameMetrics {
     double cpuBoidUpdateTimeMs = 0.0;

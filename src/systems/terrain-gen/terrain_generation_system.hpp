@@ -2,8 +2,8 @@
 #define TERRAIN_GENERATION_SYSTEM_HPP
 
 #include "i_terrain_generator.hpp"
-#include "mesh_data.hpp"
-#include "le_compute_pipeline.hpp"
+#include "src/objects/mesh_data.hpp"
+#include "src/render/le_compute_pipeline.hpp"
 
 #include <glm/glm.hpp>
 

@@ -5,7 +5,7 @@
 #include <vector>
 #include <vulkan/vulkan.h>
 
-#include "le_utils.hpp"
+#include "src/core/le_utils.hpp"
 
 namespace le {
 

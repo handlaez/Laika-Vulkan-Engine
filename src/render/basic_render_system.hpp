@@ -1,4 +1,3 @@
-// basic_render_system.hpp
 #ifndef BASIC_RENDER_SYSTEM_HPP
 #define BASIC_RENDER_SYSTEM_HPP
 
@@ -37,6 +36,7 @@ namespace le {
             VkDescriptorSetLayout frameSetLayout,
             VkDescriptorSetLayout textureSetLayout
         );
+
         ~BasicRenderSystem();
 
         // Non-copyable
@@ -50,6 +50,9 @@ namespace le {
     private:
         void createPipelineLayout();
         void createPipeline(VkRenderPass renderPass);
+
+        void renderActors(const RenderFrameData& frameData, const std::vector<LeActor>& actors);
+        void renderHitboxes(const RenderFrameData& frameData, const std::vector<LeActor>& actors);
 
         LeDevice& device_;
         LeResourceManager& resourceManager_;

@@ -20,19 +20,19 @@ namespace le {
 		indexBufferMemory(VK_NULL_HANDLE),
 		indexCount(0)
 	{
-		// fixing export mismatch
-		const glm::quat bakeRotation = glm::quat(glm::vec3(1.5707f, 1.5707f, 0.0f));
+		// Convert OBJ/model coordinates to the engine's world-space convention.
+		const glm::quat bakeRotation = glm::quat(glm::vec3(-1.5707f, 1.5707f, 0.0f));
 
-		std::vector<Vertex> transformedVertices = builder.vertices;
+		std::vector<Vertex> transformedVertices = meshdata.vertices;
 
 		for (auto& v : transformedVertices)
 		{
 			v.position = bakeRotation * v.position;
 			v.normal = bakeRotation * v.normal;
 		}
-		//
+
 		createVertexBuffers(transformedVertices);
-		createIndexBuffers(builder.indices);
+		createIndexBuffers(meshdata.indices);
 
 		//BVH
 		std::vector<glm::vec3> positions;
@@ -40,7 +40,7 @@ namespace le {
 		BVH bvh;
 
 		this->positions.reserve(transformedVertices.size());
-		this->indices = builder.indices;
+		this->indices = meshdata.indices;
 		for (const auto& v : transformedVertices) {
 			this->positions.push_back(v.position);
 		}

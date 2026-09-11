@@ -15,32 +15,35 @@ namespace le {
     }
 
     uint32_t LeScene::addActor(LeActor actor) {
+        const uint32_t id = actor.getId();
         actors.push_back(std::move(actor));
-        return actors.size() - 1;
+        return id;
     }
 
-	std::shared_ptr<LeActor> LeScene::addActor(int32_t model, int32_t texture)
-    {
-        auto actor = std::make_shared<LeActor>(model, texture);
-        actors.push_back(actor);
-        return actor;
+    uint32_t LeScene::addActor(int32_t model, int32_t texture) {
+        LeActor actor(model, texture);
+        const uint32_t id = actor.getId();
+        actors.push_back(std::move(actor));
+        return id;
     }
 
-    void LeScene::toggleRenderHitboxes()
-    {
+    void LeScene::toggleRenderHitboxes() {
         renderHitboxes_ = !renderHitboxes_;
     }
 
-    bool LeScene::getRenderHitboxes() const
-    {
+    bool LeScene::getRenderHitboxes() const {
         return renderHitboxes_;
     }
 
-    std::shared_ptr<LeActor> LeScene::getActor(int index) {
+    LeActor& LeScene::getActor(size_t index) {
         return actors.at(index);
     }
 
-    std::vector<std::shared_ptr<LeActor>>& LeScene::getActors() {
+    const LeActor& LeScene::getActor(size_t index) const {
+        return actors.at(index);
+    }
+
+    const std::vector<LeActor>& LeScene::getActors() const {
         return actors;
     }
 
@@ -57,7 +60,7 @@ namespace le {
     }
 
     void LeScene::createDefaultCamera() {
-        cameraObject = std::make_unique<LeActor>(LeActor::createGameObject());
+        cameraObject = std::make_unique<LeActor>();
         cameraObject->transform.translation = { 0.f, 128.f, 0.f };
         cameraObject->transform.rotation = glm::quat(1.f, 0.f, 0.f, 0.f);
 

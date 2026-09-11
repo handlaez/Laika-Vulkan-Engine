@@ -1,5 +1,5 @@
 #include "procedural_terrain.hpp"
-#include "le_scene.hpp"
+#include "src/scene/le_scene.hpp"
 
 #include <cmath>
 #include <vector>

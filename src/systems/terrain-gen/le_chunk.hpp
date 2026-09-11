@@ -1,10 +1,10 @@
 #ifndef LE_CHUNK_HPP
 #define LE_CHUNK_HPP
 
-#include "i_le_renderable.hpp"
-#include "le_device.hpp"
-#include "mesh_data.hpp" 
-#include "le_buffer.hpp"
+#include "src/render/i_le_renderable.hpp"
+#include "src/core/le_device.hpp"
+#include "src/objects/mesh_data.hpp" 
+#include "src/objects/le_buffer.hpp"
 
 // std
 #include <memory>

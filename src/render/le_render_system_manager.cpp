@@ -1,25 +1,22 @@
-#include "le_render_system_manager.hpp"
-#include "le_utils.hpp"
-#include "profiler.hpp"
+#include "src/render/le_render_system_manager.hpp"
+#include "src/core/le_utils.hpp"
+#include "src/profiler.hpp"
 
 namespace le {
-	LeRenderSystemManager::LeRenderSystemManager(LeDevice& device, LeRenderer& renderer, LeResourceManager& resourceManager) : device_(device), renderer_(renderer), resourceManager_(resourceManager)
-	{
+    LeRenderSystemManager::LeRenderSystemManager(
+        LeDevice& device,
+        LeRenderer& renderer,
+        LeResourceManager& resourceManager)
+        : device_(device),
+        renderer_(renderer),
+        resourceManager_(resourceManager)
+    {
         createDescriptorSetLayouts();
-
         createFrameResources();
 
         basicRenderSystem = std::make_unique<BasicRenderSystem>(
             device,
-            renderer.getSwapchainRenderPass(),
-            resourceManager,
-            frameSetLayout_,
-            textureSetLayout_
-        );
-
-        instancedRenderSystem = std::make_unique<InstancedRenderSystem>(
-            device,
-            renderer,
+            renderer.getSceneRenderTarget().getRenderPass(),
             resourceManager,
             frameSetLayout_,
             textureSetLayout_
@@ -31,25 +28,38 @@ namespace le {
             resourceManager,
             frameSetLayout_
         );
-
-        instancedRenderSystem->setModel(0);   //just so it's not empty later on
-        instancedRenderSystem->setTexture(0); //exactly the same here
-	}
+    }
 
     LeRenderSystemManager::~LeRenderSystemManager()
     {
-        for (size_t i = 0; i < LeSwapchain::MAX_FRAMES_IN_FLIGHT; i++)
+        skyboxRenderSystem.reset();
+        instancedRenderSystem.reset();
+        basicRenderSystem.reset();
+
+        for (size_t i = 0; i < LeSwapchain::MAX_FRAMES_IN_FLIGHT; ++i)
         {
             if (frameUniformBuffersMapped_[i])
             {
                 vkUnmapMemory(device_.device(), frameUniformBuffersMemory_[i]);
+                frameUniformBuffersMapped_[i] = nullptr;
+            }
+
+            if (lightingUniformBuffersMapped_[i])
+            {
+                vkUnmapMemory(device_.device(), lightingUniformBuffersMemory_[i]
+                );
+                lightingUniformBuffersMapped_[i] = nullptr;
             }
 
             vkDestroyBuffer(device_.device(), frameUniformBuffers_[i], nullptr);
             vkFreeMemory(device_.device(), frameUniformBuffersMemory_[i], nullptr);
+
+            vkDestroyBuffer(device_.device(), lightingUniformBuffers_[i], nullptr);
+            vkFreeMemory(device_.device(), lightingUniformBuffersMemory_[i], nullptr);
         }
 
         vkDestroyDescriptorPool(device_.device(), frameDescriptorPool_, nullptr);
+        vkDestroyDescriptorSetLayout(device_.device(), frameSetLayout_, nullptr);
     }
 
     // monstrously huge func
@@ -205,14 +215,15 @@ namespace le {
 
     void LeRenderSystemManager::render(LeScene& scene)
     {
-        if (auto commandBuffer = renderer_.beginFrame()) {
-
-            uint32_t currentFrame = renderer_.getFrameIndex();
+        if (auto commandBuffer = renderer_.beginFrame())
+        {
+            const uint32_t currentFrame = renderer_.getFrameIndex();
 
             // COMPUTE PASS
             if (scene.hasTerrain())
             {
                 glm::vec3 cameraWorldPos = scene.getCameraObject().transform.translation;
+
                 scene.getTerrain()->update(scene, cameraWorldPos, commandBuffer);
 
                 VkMemoryBarrier memoryBarrier{};
@@ -222,41 +233,53 @@ namespace le {
 
                 vkCmdPipelineBarrier(
                     commandBuffer,
-                    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, // wait for this 
-                    VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,   // before this
+                    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                    VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
                     0,
-                    1, &memoryBarrier,
-                    0, nullptr,
-                    0, nullptr
+                    1,
+                    &memoryBarrier,
+                    0,
+                    nullptr,
+                    0,
+                    nullptr
                 );
             }
 
-            // GAPHICS PASS
-            renderer_.beginSwapChainRenderPass(commandBuffer);
+            // SCENE RENDER TARGET
+            auto& sceneRenderTarget = renderer_.getSceneRenderTarget();
+
+            sceneRenderTarget.begin(commandBuffer);
 
             updateFrameUBO(currentFrame, scene.getCamera());
-            updateLightingUBO(currentFrame);
-
-            VkDescriptorSet frameSet = getFrameDescriptorSet(currentFrame);
+            updateLightingUBO(currentFrame, scene.getCameraObject());
 
             RenderFrameData frameData{
                 commandBuffer,
                 scene.getCamera(),
                 currentFrame,
-                frameSet
+                getFrameDescriptorSet(currentFrame)
             };
 
-            // actors
-            auto& actors = scene.getActors();
+            const auto& actors = scene.getActors();
+
             if (!actors.empty())
             {
                 basicRenderSystem->render(frameData, actors);
             }
 
-            //skybox
             if (Utils::skyboxEnabled)
             {
                 skyboxRenderSystem->render(frameData);
+            }
+
+            sceneRenderTarget.end(commandBuffer);
+
+            // SWAPCHAIN / EDITOR OVERLAY
+            renderer_.beginSwapChainRenderPass(commandBuffer);
+
+            if (renderOverlay_)
+            {
+                renderOverlay_(commandBuffer);
             }
 
             renderer_.endSwapChainRenderPass(commandBuffer);
@@ -264,21 +287,23 @@ namespace le {
         }
     }
 
-    void LeRenderSystemManager::updateLightingUBO(uint32_t frameIndex)
+    void LeRenderSystemManager::updateLightingUBO(uint32_t frameIndex, const LeActor& camera)
     {
         LightingUBO lighting{};
 
         lighting.lightColor = glm::vec4(1.0f);
         lighting.lightDir = glm::vec4(0.2f, -1.0f, 0.3f, 0.0f);
+        lighting.cameraPos = glm::vec4(camera.transform.translation, 1.0f);
 
         lighting.lightingEnabled = Utils::lightingEnabled;
         lighting.texturesEnabled = Utils::texturesEnabled;
 
-        memcpy(
-            lightingUniformBuffersMapped_[frameIndex],
-            &lighting,
-            sizeof(LightingUBO)
-        );
+        memcpy(lightingUniformBuffersMapped_[frameIndex], &lighting, sizeof(LightingUBO));
+    }
+
+    void LeRenderSystemManager::setRenderOverlay(RenderOverlay overlay)
+    {
+        renderOverlay_ = std::move(overlay);
     }
 
     void LeRenderSystemManager::createDescriptorSetLayouts()
@@ -287,15 +312,13 @@ namespace le {
         cameraBinding.binding = 0;
         cameraBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         cameraBinding.descriptorCount = 1;
-        cameraBinding.stageFlags =
-            VK_SHADER_STAGE_VERTEX_BIT;
+        cameraBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
         VkDescriptorSetLayoutBinding lightingBinding{};
         lightingBinding.binding = 1;
         lightingBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         lightingBinding.descriptorCount = 1;
-        lightingBinding.stageFlags =
-            VK_SHADER_STAGE_FRAGMENT_BIT;
+        lightingBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
         std::array<VkDescriptorSetLayoutBinding, 2> bindings = {
             cameraBinding,
@@ -307,12 +330,7 @@ namespace le {
         layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
         layoutInfo.pBindings = bindings.data();
 
-        if (vkCreateDescriptorSetLayout(
-            device_.device(),
-            &layoutInfo,
-            nullptr,
-            &frameSetLayout_
-        ) != VK_SUCCESS)
+        if (vkCreateDescriptorSetLayout(device_.device(), &layoutInfo, nullptr, &frameSetLayout_) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create frame descriptor set layout!");
         }

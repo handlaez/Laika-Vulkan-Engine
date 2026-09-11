@@ -3,8 +3,8 @@
 
 #include "terrain_generation_system.hpp"
 #include "le_chunk.hpp"
-#include "le_buffer.hpp"
-#include "le_mutable_model.hpp"
+#include "src/objects/le_buffer.hpp"
+#include "src/objects/le_mutable_model.hpp"
 
 #include <glm/glm.hpp>
 #include <vector>

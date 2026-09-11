@@ -23,13 +23,14 @@ namespace le {
         LeResourceManager& leResourceManager;
 
         uint32_t addActor(LeActor actor);
-        std::shared_ptr<LeActor> addActor(int32_t model, int32_t texture);
+        uint32_t addActor(int32_t model, int32_t texture);
 
         void toggleRenderHitboxes();
         bool getRenderHitboxes() const;
 
-        std::vector<std::shared_ptr<LeActor>>& getActors();
-        std::shared_ptr<LeActor> getActor(int index);
+        LeActor& getActor(size_t index);
+        const LeActor& getActor(size_t index) const;
+        const std::vector<LeActor>& getActors() const;
 
         LeCamera& getCamera();
         const LeCamera& getCamera() const;
@@ -43,26 +44,25 @@ namespace le {
         }
 
         void setTerrain(std::unique_ptr<ProceduralTerrain> terrain) {
-            m_terrain = std::move(terrain);
+            terrain_ = std::move(terrain);
         }
 
         ProceduralTerrain* getTerrain() const {
-            return m_terrain.get();
+            return terrain_.get();
         }
 
         bool hasTerrain() const {
-            return m_terrain != nullptr;
+            return terrain_ != nullptr;
         }
 
     private:
         void createDefaultCamera();
-        bool renderHitboxes_;
 
-        std::unique_ptr<ProceduralTerrain> m_terrain = nullptr;
+        bool renderHitboxes_ = false;
+        std::unique_ptr<ProceduralTerrain> terrain_ = nullptr;
 
         LeDevice& leDevice;
-        std::vector<std::shared_ptr<LeActor>> actors;
-
+        std::vector<LeActor> actors;
         std::unique_ptr<LeActor> cameraObject;
         LeCamera camera;
     };

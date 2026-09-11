@@ -45,6 +45,8 @@ namespace se {
         {
             leCore_.beginFrame();
 
+            Utils::checkKeys(leCore_.getWindow().getGLFWwindow());
+
             demoApp.onUpdate(currentScene_, leCore_.getFrameInfo());
             updateEditor();
 

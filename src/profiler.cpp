@@ -1,7 +1,5 @@
 #include "profiler.hpp"
 
-#include "le_swapchain.hpp"
-
 namespace 
 {
     using Clock = std::chrono::high_resolution_clock;

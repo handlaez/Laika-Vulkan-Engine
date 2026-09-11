@@ -31,6 +31,7 @@ namespace le {
 		// accessors
 		std::shared_ptr<LeTexture> getTexture(uint32_t id);
 		std::shared_ptr<LeRenderable> getModel(uint32_t id);
+		std::shared_ptr<LeModel> getStaticModel(uint32_t id);
 
 		// descriptors 
 		VkDescriptorSetLayout getTextureDescriptorSetLayout() const { return textureSetLayout; }

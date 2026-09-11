@@ -1,7 +1,7 @@
 #ifndef I_LAIKA_ENGINE_APP_HPP
 #define I_LAIKA_ENGINE_APP_HPP
 
-#include "le_scene.hpp"
+#include "src/scene/le_scene.hpp"
 
 namespace le {
     struct RenderFrameData {

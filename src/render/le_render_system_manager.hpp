@@ -1,19 +1,21 @@
 #ifndef LE_RENDER_SYSTEM_MANAGER_RENDERER_HPP
 #define LE_RENDER_SYSTEM_MANAGER_RENDERER_HPP
 
-#include "le_renderer.hpp"
-#include "basic_render_system.hpp"
-#include "instanced_render_system.hpp"
-#include "le_scene.hpp"
-#include "le_texture.hpp"
-#include "le_device.hpp"
-#include "le_camera.hpp"
-#include "le_swapchain.hpp"
-#include "skybox_render_system.hpp"
+#include "src/render/le_renderer.hpp"
+#include "src/render/basic_render_system.hpp"
+#include "src/render/instanced_render_system.hpp"
+#include "src/scene/le_scene.hpp"
+#include "src/objects/le_texture.hpp"
+#include "src/core/le_device.hpp"
+#include "src/objects/le_camera.hpp"
+#include "src/render/le_swapchain.hpp"
+#include "src/scene/skybox/skybox_render_system.hpp"
 
 #include <array>
 #include <stdexcept>
 #include <memory>
+
+using namespace le;
 
 namespace le {
     struct LightingUBO
@@ -30,11 +32,9 @@ namespace le {
 
     class LeRenderSystemManager {
     public:
-        LeRenderSystemManager(
-            LeDevice& device,
-            LeRenderer& renderer,
-            LeResourceManager& resourceManager
-        );
+        using RenderOverlay = std::function<void(VkCommandBuffer)>;
+
+        LeRenderSystemManager(LeDevice& device, LeRenderer& renderer, LeResourceManager& resourceManager);
         ~LeRenderSystemManager();
 
         void sync(LeScene& scene);
@@ -47,7 +47,8 @@ namespace le {
         VkDescriptorSetLayout getFrameSetLayout() const { return frameSetLayout_; }
         VkDescriptorSetLayout getTextureSetLayout() const { return textureSetLayout_; }
 
-        void updateLightingUBO(uint32_t frameIndex);
+        void updateLightingUBO(uint32_t frameIndex, const LeActor& camera);
+        void setRenderOverlay(RenderOverlay overlay);
 
     private:
         void createDescriptorSetLayouts();
@@ -76,6 +77,8 @@ namespace le {
         std::vector<VkDescriptorSet> frameDescriptorSets_;
 
         LeResourceManager& resourceManager_;
+        RenderOverlay renderOverlay_{};
+
     };
 
 }

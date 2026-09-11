@@ -18,8 +18,6 @@
 namespace le {
 	class BVH;
 
-namespace le 
-{
 	class LeModel : public LeRenderable 
 	{
 	public:

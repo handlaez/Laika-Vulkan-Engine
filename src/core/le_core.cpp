@@ -11,6 +11,9 @@ namespace le {
     }
 
 	LeCore::~LeCore() {
+        vkDeviceWaitIdle(leDevice_.device());
+
+        renderManager_.reset();
         resourceManager_.shutDown();
     }
 

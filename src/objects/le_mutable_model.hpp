@@ -1,8 +1,8 @@
 #ifndef LE_MUTABLE_MODEL_HPP
 #define LE_MUTABLE_MODEL_HPP
 
-#include "i_le_renderable.hpp"
-#include "le_device.hpp"
+#include "src/render/i_le_renderable.hpp"
+#include "src/core/le_device.hpp"
 
 namespace le {
     class LeMutableModel : public LeRenderable {

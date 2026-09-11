@@ -1,8 +1,8 @@
 #ifndef KEYBOARD_MOVEMENT_CONTROLLER_HPP
 #define KEYBOARD_MOVEMENT_CONTROLLER_HPP
 
-#include "le_actor.hpp"
-#include "le_window.hpp"
+#include "src/objects/le_actor.hpp"
+#include "src/core/le_window.hpp"
 
 namespace le {
     struct KeyMappings {
@@ -23,7 +23,7 @@ namespace le {
         void moveInPlaneXZ(GLFWwindow* window, float timestep, LeActor& actor);
 
         KeyMappings keys{};
-        float moveSpeed{ 64.f };
+        float moveSpeed{ 6.f };
         float mouseSensitivity{ 0.03f };
 
     private:

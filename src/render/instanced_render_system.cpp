@@ -1,6 +1,6 @@
 #include "instanced_render_system.hpp"
-#include "le_frame_info.hpp"
-#include "le_utils.hpp"
+#include "src/core/le_frame_info.hpp"
+#include "src/core/le_utils.hpp"
 
 #include <iostream>
 #include <memory>

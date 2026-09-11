@@ -1,20 +1,20 @@
 #ifndef LE_INSTANCED_RENDER_SYSTEM_HPP
 #define LE_INSTANCED_RENDER_SYSTEM_HPP
 
-#include "i_render_system.hpp"
-#include "instance_data.hpp"
+#include "src/render/i_render_system.hpp"
+#include "src/systems/boids/instance_data.hpp"
 
-#include "le_device.hpp"
-#include "le_renderer.hpp"
-#include "le_pipeline.hpp"
-#include "le_model.hpp"
-#include "le_resource_manager.hpp"
-#include "le_camera.hpp"
-#include "le_buffer.hpp"
+#include "src/core/le_device.hpp"
+#include "src/render/le_renderer.hpp"
+#include "src/render/le_pipeline.hpp"
+#include "src/objects/le_model.hpp"
+#include "src/scene/le_resource_manager.hpp"
+#include "src/objects/le_camera.hpp"
+#include "src/objects/le_buffer.hpp"
 
-#include <memory>
 #include <array>
 #include <vector>
+#include <memory>
 
 namespace le {
     const int MAX_INSTANCES = 10000;
