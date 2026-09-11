@@ -55,14 +55,61 @@ namespace le {
 		return id;
 	}
 
-	std::shared_ptr<LeTexture> LeResourceManager::getTexture(uint32_t id)
+	uint32_t LeResourceManager::addModel(const MeshData& meshData)
 	{
-		return textures.at(id);
+		uint32_t id = nextModelID++;
+
+		models[id] = std::make_shared<LeModel>(device, meshData);
+
+		return id;
 	}
 
-	std::shared_ptr<LeModel> LeResourceManager::getModel(uint32_t id)
+	uint32_t LeResourceManager::addModel(std::shared_ptr<LeRenderable> renderable)
 	{
-		return models.at(id);
+		uint32_t id = nextModelID++;
+		models[id] = renderable;
+		return id;
+	}
+
+	void LeResourceManager::updateModel(const uint32_t id, const MeshData& newMeshData)
+	{
+		auto it = models.find(id);
+		if (it != models.end()) 
+		{
+			if (auto staticModel = std::dynamic_pointer_cast<LeModel>(it->second))
+			{
+				staticModel->updateGeometry(newMeshData.vertices);
+			}
+			else
+			{
+				std::cerr << "Warning: Cannot use CPU update on a procedural model! ID: " << id
+					<< ". Use compute shaders to update this buffer." << std::endl;
+			}
+		}
+		else 
+		{
+			std::cerr << "tried to update a model that doesn't exist! ID: " << id << std::endl;
+		}
+	}
+
+	std::shared_ptr<LeTexture> LeResourceManager::getTexture(uint32_t id)
+	{
+		auto it = textures.find(id);
+		if (it != textures.end()) {
+			return it->second;
+		}
+		// fallback to texture 0 if ID not found
+		return textures.at(0);
+	}
+
+	std::shared_ptr<LeRenderable> LeResourceManager::getModel(uint32_t id)
+	{
+		auto it = models.find(id);
+		if (it != models.end()) {
+			return it->second;
+		}
+		// Fallback to model 0 if ID not found
+		return models.at(0);
 	}
 	
 	void LeResourceManager::loadFallbackTexture()

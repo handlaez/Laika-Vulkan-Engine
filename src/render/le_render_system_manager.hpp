@@ -1,32 +1,83 @@
 #ifndef LE_RENDER_SYSTEM_MANAGER_RENDERER_HPP
 #define LE_RENDER_SYSTEM_MANAGER_RENDERER_HPP
 
-#include "src/render/le_renderer.hpp"
+#include "le_renderer.hpp"
 #include "basic_render_system.hpp"
-#include "src/scene/le_scene.hpp"
-#include "src/objects/le_texture.hpp"
+#include "instanced_render_system.hpp"
+#include "le_scene.hpp"
+#include "le_texture.hpp"
+#include "le_device.hpp"
+#include "le_camera.hpp"
+#include "le_swapchain.hpp"
+#include "skybox_render_system.hpp"
 
+#include <array>
+#include <stdexcept>
 #include <memory>
-#include <functional>
 
 namespace le {
-	class LeRenderSystemManager {
-	public:
-		using RenderOverlay = std::function<void(VkCommandBuffer)>;
+    struct LightingUBO
+    {
+        glm::vec4 lightColor;
+        glm::vec4 lightDir;
+        glm::vec4 cameraPos;
 
-		LeRenderSystemManager(LeDevice& device, LeRenderer& renderer, LeResourceManager& resourceManager);
-		
-		void render(LeScene& scene);
+        int lightingEnabled;
+        int texturesEnabled;
 
-		void setRenderOverlay(RenderOverlay overlay);
-	private:
-		LeDevice& leDevice;
-		LeRenderer& leRenderer;
+        alignas(8) glm::ivec2 padding;
+    };
 
-		std::unique_ptr<BasicRenderSystem> basicRenderSystem;
+    class LeRenderSystemManager {
+    public:
+        LeRenderSystemManager(
+            LeDevice& device,
+            LeRenderer& renderer,
+            LeResourceManager& resourceManager
+        );
+        ~LeRenderSystemManager();
 
-		RenderOverlay renderOverlay_{};
-	};
+        void sync(LeScene& scene);
+        void render(LeScene& scene);
+        
+        void createFrameResources();
+        void updateFrameUBO(uint32_t frameIndex, const LeCamera& camera);
+
+        VkDescriptorSet getFrameDescriptorSet(uint32_t frameIndex) const;
+        VkDescriptorSetLayout getFrameSetLayout() const { return frameSetLayout_; }
+        VkDescriptorSetLayout getTextureSetLayout() const { return textureSetLayout_; }
+
+        void updateLightingUBO(uint32_t frameIndex);
+
+    private:
+        void createDescriptorSetLayouts();
+
+        LeDevice& device_;
+        LeRenderer& renderer_;
+
+        std::unique_ptr<BasicRenderSystem> basicRenderSystem;
+        std::unique_ptr<InstancedRenderSystem> instancedRenderSystem;
+        std::unique_ptr<SkyboxRenderSystem> skyboxRenderSystem;
+
+        VkDescriptorSetLayout frameSetLayout_{ VK_NULL_HANDLE };
+        VkDescriptorSetLayout textureSetLayout_{ VK_NULL_HANDLE };
+
+        // frame buffer
+        std::vector<VkBuffer> frameUniformBuffers_;
+        std::vector<VkDeviceMemory> frameUniformBuffersMemory_;
+        std::vector<void*> frameUniformBuffersMapped_;
+
+        // lighting buffer
+        std::vector<VkBuffer> lightingUniformBuffers_;
+        std::vector<VkDeviceMemory> lightingUniformBuffersMemory_;
+        std::vector<void*> lightingUniformBuffersMapped_;
+
+        VkDescriptorPool frameDescriptorPool_{ VK_NULL_HANDLE };
+        std::vector<VkDescriptorSet> frameDescriptorSets_;
+
+        LeResourceManager& resourceManager_;
+    };
+
 }
 
 #endif

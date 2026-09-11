@@ -4,6 +4,8 @@
 #include "src/core/le_device.hpp"
 #include "src/objects/le_texture.hpp"
 #include "src/objects/le_BVH.hpp"
+#include "src/render/i_le_renderable.hpp"
+#include "src/objects/mesh_data.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -16,34 +18,16 @@
 namespace le {
 	class BVH;
 
-	class LeModel {
+namespace le 
+{
+	class LeModel : public LeRenderable 
+	{
 	public:
-		struct Vertex {
-			glm::vec3 position;
-			glm::vec3 color;
-			glm::vec3 normal;
-			glm::vec2 texCoord;
-
-			static std::vector<VkVertexInputBindingDescription> getBindingDescriptions();
-			static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
-
-			bool operator==(const Vertex& other) const {
-				return position == other.position && color == other.color && normal == other.normal && texCoord == other.texCoord;
-			}
-		};
-
-		struct Builder {
-			std::vector<Vertex> vertices{};
-			std::vector<uint32_t> indices{};
-
-			void loadModel(const std::string& filepath);
-		};
-
-		LeModel(LeDevice &device, const LeModel::Builder &builder);
+		LeModel(LeDevice &device, const MeshData &meshdata);
 		~LeModel();
 
-		void bind(VkCommandBuffer commandBuffer);
-		void draw(VkCommandBuffer commandBuffer);
+		void bind(VkCommandBuffer commandBuffer) const override;
+		void draw(VkCommandBuffer commandBuffer) const override;
 
 		static std::shared_ptr<LeModel> createModelFromFile(LeDevice& device, const std::string& filepath, glm::vec3 offset = {});
 		static std::shared_ptr<LeModel> createCube(LeDevice& device, glm::vec3 offset = {});
@@ -80,6 +64,15 @@ namespace le {
 		const std::shared_ptr<BVH> getBVH() const { return std::make_shared<BVH>(bvh); }
 		const std::vector<glm::vec3>& getPositions() const { return positions; }
 		const std::vector<uint32_t>& getIndices() const { return indices; }
+
+		// modifying is sometimes cool
+		void updateGeometry(const std::vector<Vertex>& newVertices);
+
+		VkBuffer getVertexBuffer() const { return vertexBuffer; }
+		VkBuffer getIndexBuffer() const { return indexBuffer; }
+		uint32_t getIndexCount() const { return indexCount; }
+
+		void bindIndexBuffer(VkCommandBuffer commandBuffer);
 
 	private: 
 		void createVertexBuffers(const std::vector<Vertex>& vertices);

@@ -65,6 +65,8 @@ namespace le {
         void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
         void copyBufferToImage(
             VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount);
+        void copyBufferToCubemap(
+            VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
         void createImageWithInfo(
             const VkImageCreateInfo& imageInfo,

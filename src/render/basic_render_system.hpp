@@ -1,3 +1,4 @@
+// basic_render_system.hpp
 #ifndef BASIC_RENDER_SYSTEM_HPP
 #define BASIC_RENDER_SYSTEM_HPP
 
@@ -8,6 +9,7 @@
 #include "src/objects/le_texture.hpp"
 #include "src/render/le_swapchain.hpp"
 #include "src/scene/le_resource_manager.hpp"
+#include "src/render/i_render_system.hpp"
 
 #include <memory>
 #include <vector>
@@ -22,50 +24,43 @@ namespace le {
     };
 
     struct SimplePushConstantData {
-        glm::mat4 transform{ 1.f };
-        alignas(16) glm::vec3 color;
+        glm::mat4 model;
+        glm::vec4 color;
     };
 
-    class BasicRenderSystem {
+    class BasicRenderSystem : public IRenderSystem {
     public:
-        BasicRenderSystem(LeDevice& device, VkRenderPass renderPass, LeResourceManager& resourceManager);
+        BasicRenderSystem(
+            LeDevice& device,
+            VkRenderPass renderPass,
+            LeResourceManager& resourceManager,
+            VkDescriptorSetLayout frameSetLayout,
+            VkDescriptorSetLayout textureSetLayout
+        );
         ~BasicRenderSystem();
 
         // Non-copyable
         BasicRenderSystem(const BasicRenderSystem&) = delete;
         BasicRenderSystem& operator=(const BasicRenderSystem&) = delete;
+        BasicRenderSystem(BasicRenderSystem&&) = delete;
+        BasicRenderSystem& operator=(BasicRenderSystem&&) = delete;
 
-        void renderActors(
-            VkCommandBuffer commandBuffer,
-            std::vector<std::shared_ptr<LeActor>>& actors,
-            bool renderHitboxes,
-            const LeCamera& camera,
-            size_t currentFrame
-        );
+        void render(const RenderFrameData& frameData, const std::vector<LeActor>& actors) override;
 
     private:
-        void createDescriptorSetLayout();
         void createPipelineLayout();
         void createPipeline(VkRenderPass renderPass);
-        void createUniformBuffers();
-        void createDescriptorPool();
-        void createDescriptorSets();
 
         LeDevice& device_;
         LeResourceManager& resourceManager_;
 
-        std::unique_ptr<LePipeline> pipeline_;           // the intended way of hot-swapping used shaders
-        std::unique_ptr<LePipeline> wireframePipeline_;  // this one is for rendering hitboxes (primarly)
+        std::unique_ptr<LePipeline> pipeline_;
+        std::unique_ptr<LePipeline> wireframePipeline_;
+
         VkPipelineLayout pipelineLayout_{ VK_NULL_HANDLE };
 
-        std::vector<VkBuffer> uniformBuffers_;
-        std::vector<VkDeviceMemory> uniformBuffersMemory_;
-        std::vector<void*> uniformBuffersMapped_;
-
-        VkDescriptorPool descriptorPool_{ VK_NULL_HANDLE };
-        VkDescriptorSetLayout frameSetLayout_{ VK_NULL_HANDLE };    // UBO
-        VkDescriptorSetLayout materialSetLayout_{ VK_NULL_HANDLE }; // Textures from le_resource_manager
-        std::vector<VkDescriptorSet> descriptorSets_;
+        VkDescriptorSetLayout frameSetLayout_;
+        VkDescriptorSetLayout textureSetLayout_;
     };
 
 }

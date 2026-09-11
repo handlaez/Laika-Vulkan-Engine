@@ -1,5 +1,4 @@
-#ifndef I_LAIKA_ENGINE_APP_HPP
-#define I_LAIKA_ENGINE_APP_HPP
+#pragma once
 
 #include "src/core/le_frame_info.hpp"
 #include "src/scene/le_scene.hpp"
@@ -14,4 +13,3 @@ namespace le {
 		virtual void onShutdown() {};
 	};
 }
-#endif

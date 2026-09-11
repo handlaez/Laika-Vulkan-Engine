@@ -1,48 +1,67 @@
-#include "src/systems/keyboard_movement_controller.hpp"
+#include "keyboard_movement_controller.hpp"
+
+#include <glm/gtx/norm.hpp>
 #include <iostream>
 
 namespace le {
-	void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, float timestep, LeActor& actor)
-	{
-		if (!window) {
-			std::cerr << "Window is NULL\n";
-		}
+    void KeyboardMovementController::moveInPlaneXZ(GLFWwindow* window, float deltatime, LeActor& actor)
+    {
+        float speed = moveSpeed;
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+            speed *= 4.0f;
+        }
 
-		glm::vec3 rotation{ 0 };
-		if (glfwGetKey(window, keys.lookRight) == GLFW_PRESS) rotation.y += 1.f;
-		if (glfwGetKey(window, keys.lookLeft) == GLFW_PRESS) rotation.y -= 1.f;
-		if (glfwGetKey(window, keys.lookUp) == GLFW_PRESS) rotation.x += 1.f;
-		if (glfwGetKey(window, keys.lookDown) == GLFW_PRESS) rotation.x -= 1.f;
+        glm::vec3 forward = actor.transform.rotation * glm::vec3(0, 0, 1);
+        glm::vec3 right = actor.transform.rotation * glm::vec3(1, 0, 0);
+        glm::vec3 up = glm::vec3(0, 1, 0);
 
-		if (glm::dot(rotation, rotation) > std::numeric_limits<float>::epsilon()) {
-			actor.transform.rotation += lookSpeed * timestep * glm::normalize(rotation);
-		}
+        glm::vec3 moveDir{ 0.f };
+        if (glfwGetKey(window, keys.moveForward) == GLFW_PRESS)     moveDir += forward;
+        if (glfwGetKey(window, keys.moveBackwards) == GLFW_PRESS)   moveDir -= forward;
+        if (glfwGetKey(window, keys.moveRight) == GLFW_PRESS)       moveDir += right;
+        if (glfwGetKey(window, keys.moveLeft) == GLFW_PRESS)        moveDir -= right;
+        if (glfwGetKey(window, keys.moveUp) == GLFW_PRESS)          moveDir += up;
+        if (glfwGetKey(window, keys.moveDown) == GLFW_PRESS)        moveDir -= up;
 
-		// limiting up/down pitch between +/- 85 degrees
-		actor.transform.rotation.x = glm::clamp(actor.transform.rotation.x, -1.5f, 1.5f);
-		// variable overflow prevention from spinning
-		actor.transform.rotation.y = glm::mod(actor.transform.rotation.y, glm::two_pi<float>());
+        if (glm::length2(moveDir) > 0.0001f) {
+            actor.transform.translation += speed * deltatime * glm::normalize(moveDir);
+        }
 
-		float yaw = actor.transform.rotation.y;
-		const glm::vec3 forwardDir{ sin(yaw), 0.f, cos(yaw) };
-		const glm::vec3 rightDir{ forwardDir.z, 0.f, -forwardDir.x };
-		const glm::vec3 upDir{ 0.f, -1.f, 0.f };
+        // rot
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
-		glm::vec3 moveDir{ 0.f };
-		if (glfwGetKey(window, keys.moveForward) == GLFW_PRESS) moveDir += forwardDir;
-		if (glfwGetKey(window, keys.moveBackwards) == GLFW_PRESS) moveDir -= forwardDir;
-		if (glfwGetKey(window, keys.moveRight) == GLFW_PRESS) moveDir += rightDir;
-		if (glfwGetKey(window, keys.moveLeft) == GLFW_PRESS) moveDir -= rightDir;
-		if (glfwGetKey(window, keys.moveUp) == GLFW_PRESS) moveDir += upDir;
-		if (glfwGetKey(window, keys.moveDown) == GLFW_PRESS) moveDir -= upDir;
+            int width, height;
+            glfwGetWindowSize(window, &width, &height);
 
-		if (glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon()) {
-			actor.transform.translation += moveSpeed * timestep * glm::normalize(moveDir);
-		}
-	}
+            double mouseX, mouseY;
+            glfwGetCursorPos(window, &mouseX, &mouseY);
 
-	bool KeyboardMovementController::getToggleHitboxPressed(GLFWwindow* window) const
-	{
-		return (glfwGetKey(window, keys.toggleHitboxes) == GLFW_PRESS);
-	}
+            float centerX = (float)width / 2.0f;
+            float centerY = (float)height / 2.0f;
+
+            float deltaX = (float)mouseX - centerX;
+            float deltaY = (float)mouseY - centerY;
+
+            if (firstClick || std::abs(deltaX) > width || std::abs(deltaY) > height) {
+                glfwSetCursorPos(window, (double)centerX, (double)centerY);
+                firstClick = false;
+                return;
+            }
+
+            float sensitivityMultiplier = mouseSensitivity * 100.0f;
+            pitch += (deltaY / height) * sensitivityMultiplier;
+            yaw += (deltaX / width) * sensitivityMultiplier;
+
+            pitch = glm::clamp(pitch, -glm::half_pi<float>() + 0.1f, glm::half_pi<float>() - 0.1f);
+            actor.transform.rotation = glm::quat(glm::vec3(pitch, yaw, 0.0f));
+
+            glfwSetCursorPos(window, (double)centerX, (double)centerY);
+        }
+        else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            firstClick = true;
+        }
+    }
 }

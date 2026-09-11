@@ -4,6 +4,7 @@
 #include <cstring>
 #include <iostream>
 #include <set>
+#include <array>
 #include <unordered_set>
 
 namespace le {
@@ -507,6 +508,39 @@ namespace le {
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             1,
             &region);
+        endSingleTimeCommands(commandBuffer);
+    }
+
+    void LeDevice::copyBufferToCubemap(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
+    {
+        VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+
+        std::array<VkBufferImageCopy, 6> regions{};
+
+        VkDeviceSize layerSize = width * height * 4;
+
+        for (uint32_t i = 0; i < 6; i++)
+        {
+            regions[i].bufferOffset = layerSize * i;
+            regions[i].bufferRowLength = 0;
+            regions[i].bufferImageHeight = 0;
+            regions[i].imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            regions[i].imageSubresource.mipLevel = 0;
+            regions[i].imageSubresource.baseArrayLayer = i;
+            regions[i].imageSubresource.layerCount = 1;
+            regions[i].imageOffset = { 0, 0, 0 };
+            regions[i].imageExtent = { width, height, 1};
+        }
+
+        vkCmdCopyBufferToImage(
+            commandBuffer,
+            buffer,
+            image,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            static_cast<uint32_t>(regions.size()),
+            regions.data()
+        );
+
         endSingleTimeCommands(commandBuffer);
     }
 
