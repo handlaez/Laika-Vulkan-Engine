@@ -1,6 +1,8 @@
 #include "src/editor/se_core.hpp"
 #include "src/demo_app.hpp"
 
+#include "src/editor/se_scene_panel.hpp"
+
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_vulkan.h"
@@ -15,6 +17,8 @@ namespace se {
         : leCore_{}, currentScene_ { leCore_.getDevice(), leCore_.getResources() }
     {
         initImGui();
+
+        editorPanels_.push_back(std::make_unique<ScenePanel>(leCore_, &sceneTextureDescriptorSet_, &sceneViewportHovered_));
 
         leCore_.getRenderer().setSceneRenderTargetRecreatedCallback(
             [this](LeSceneRenderTarget& sceneTarget)
@@ -234,39 +238,9 @@ namespace se {
 
     void SeCore::renderEditorWindows()
     {
-        ImGui::Begin("Scene");
-
-        // checking if scene viewport should capture the mouse
-        sceneViewportHovered_ = ImGui::IsWindowHovered();
-
-        const ImVec2 availableSize = ImGui::GetContentRegionAvail();
-        const VkExtent2D sceneExtent = leCore_.getRenderer().getSceneRenderTarget().getExtent();
-
-        const float sceneAspect = static_cast<float>(sceneExtent.width) / static_cast<float>(sceneExtent.height);
-
-        ImVec2 imageSize = availableSize;
-
-        if (availableSize.x / availableSize.y > sceneAspect)
-        {
-            imageSize.x = availableSize.y * sceneAspect;
+        for (auto& panel : editorPanels_) {
+            panel->onImGuiRender();
         }
-        else
-        {
-            imageSize.y = availableSize.x / sceneAspect;
-        }
-
-        // Center the image in the Scene window.
-        const float offsetX = (availableSize.x - imageSize.x) * 0.5f;
-        const float offsetY = (availableSize.y - imageSize.y) * 0.5f;
-
-        ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + offsetX, ImGui::GetCursorPosY() + offsetY));
-
-        if (sceneTextureDescriptorSet_ != VK_NULL_HANDLE)
-        {
-            ImGui::Image(sceneTextureDescriptorSet_, imageSize, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f));
-        }
-
-        ImGui::End();
 
         ImGui::Begin("Inspector");
         ImGui::Text("No entity selected");
@@ -344,6 +318,9 @@ namespace se {
 
     void SeCore::updateEditor()
     {
+        for (auto& panel : editorPanels_) {
+            panel->onUpdate();
+        }
     }
 
     void SeCore::renderEditor()

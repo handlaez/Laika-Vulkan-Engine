@@ -89,6 +89,7 @@ compile_shader(VulkanTest "${CMAKE_CURRENT_SOURCE_DIR}/shaders/instanced_shader.
 compile_shader(VulkanTest "${CMAKE_CURRENT_SOURCE_DIR}/shaders/instanced_shader.frag"    "${CMAKE_CURRENT_SOURCE_DIR}/shaders/instanced_frag_shader.spv")
 compile_shader(VulkanTest "${CMAKE_CURRENT_SOURCE_DIR}/shaders/skybox_shader.vert"       "${CMAKE_CURRENT_SOURCE_DIR}/shaders/skybox_vert_shader.spv")
 compile_shader(VulkanTest "${CMAKE_CURRENT_SOURCE_DIR}/shaders/skybox_shader.frag"       "${CMAKE_CURRENT_SOURCE_DIR}/shaders/skybox_frag_shader.spv")
+compile_shader(VulkanTest "${CMAKE_CURRENT_SOURCE_DIR}/shaders/wireframe_shader.frag"    "${CMAKE_CURRENT_SOURCE_DIR}/shaders/wireframe_shader.spv")
 
 target_include_directories(VulkanTest PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}

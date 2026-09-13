@@ -4,6 +4,7 @@
 #include "src/core/le_core.hpp"
 #include "src/scene/le_scene.hpp"
 #include "src/render/le_scene_render_target.hpp"
+#include "src/editor/i_editor_panel.hpp"
 
 namespace se {
 
@@ -18,6 +19,8 @@ namespace se {
     private:
         le::LeCore leCore_;
         le::LeScene currentScene_;
+
+        std::vector<std::unique_ptr<IEditorPanel>> editorPanels_;
 
         void createImGuiDescriptorPool();
         VkDescriptorPool imguiDescriptorPool_{ VK_NULL_HANDLE };
