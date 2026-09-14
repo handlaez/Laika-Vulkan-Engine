@@ -2,6 +2,10 @@
 #include "src/demo_app.hpp"
 
 #include "src/editor/se_scene_panel.hpp"
+#include "src/editor/se_hierarchy_panel.hpp"
+#include "src/editor/se_console_panel.hpp"
+#include "src/editor/se_inspector_panel.hpp"
+#include "src/editor/se_explorer_panel.hpp"
 
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
@@ -19,6 +23,10 @@ namespace se {
         initImGui();
 
         editorPanels_.push_back(std::make_unique<ScenePanel>(leCore_, &sceneTextureDescriptorSet_, &sceneViewportHovered_));
+        // editorPanels_.push_back(std::make_unique<HierarchyPanel>());
+        editorPanels_.push_back(std::make_unique<ConsolePanel>());
+        // editorPanels_.push_back(std::make_unique<InspectorPanel>());
+        editorPanels_.push_back(std::make_unique<ExplorerPanel>());
 
         leCore_.getRenderer().setSceneRenderTargetRecreatedCallback(
             [this](LeSceneRenderTarget& sceneTarget)
@@ -241,18 +249,6 @@ namespace se {
         for (auto& panel : editorPanels_) {
             panel->onImGuiRender();
         }
-
-        ImGui::Begin("Inspector");
-        ImGui::Text("No entity selected");
-        ImGui::End();
-
-        ImGui::Begin("Hierarchy");
-        ImGui::Text("Scene hierarchy");
-        ImGui::End();
-
-        ImGui::Begin("Console");
-        ImGui::Text("Console output");
-        ImGui::End();
     }
 
     void SeCore::initializeDockspace()
