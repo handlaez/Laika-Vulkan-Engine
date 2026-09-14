@@ -6,20 +6,20 @@
 
 namespace se {
 
-    ExplorerPanel::ExplorerPanel() : m_rootDirectory("assets")
+    ExplorerPanel::ExplorerPanel(const std::filesystem::path& rootDirectory) : rootDirectory_(rootDirectory)
     {
-        if (!std::filesystem::exists(m_rootDirectory))
+        if (!std::filesystem::exists(rootDirectory_))
         {
-            m_rootDirectory = std::filesystem::current_path();
+            rootDirectory_ = std::filesystem::current_path();
         }
     }
 
     void ExplorerPanel::onUpdate()
     {
-        if (m_shouldRefresh)
+        if (shouldRefresh_)
         {
             refresh();
-            m_shouldRefresh = false;
+            shouldRefresh_ = false;
         }
     }
 
@@ -30,19 +30,19 @@ namespace se {
         // toolbar
         if (ImGui::Button("Refresh"))
         {
-            m_shouldRefresh = true;
+            shouldRefresh_ = true;
         }
 
         ImGui::SameLine();
 
-        ImGui::TextUnformatted(m_rootDirectory.string().c_str());
+        ImGui::TextUnformatted(rootDirectory_.string().c_str());
 
         ImGui::Separator();
 
         // root dir
-        if (std::filesystem::exists(m_rootDirectory))
+        if (std::filesystem::exists(rootDirectory_))
         {
-            drawDirectory(m_rootDirectory);
+            drawDirectory(rootDirectory_);
         }
         else
         {
@@ -91,7 +91,7 @@ namespace se {
 
                     if (ImGui::IsItemClicked())
                     {
-                        m_selectedPath = entryPath;
+                        selectedPath_ = entryPath;
                     }
 
                     if (isOpen)
@@ -102,11 +102,11 @@ namespace se {
                 }
                 else
                 {
-                    const bool selected = m_selectedPath == entryPath;
+                    const bool selected = selectedPath_ == entryPath;
 
                     if (ImGui::Selectable(name.c_str(), selected, ImGuiSelectableFlags_SpanAllColumns))
                     {
-                        m_selectedPath = entryPath;
+                        selectedPath_ = entryPath;
                     }
 
                     // fouble-click hook.

@@ -3,8 +3,6 @@
 
 #include "i_editor_panel.hpp"
 
-#include <vulkan/vulkan.h>
-
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -13,7 +11,7 @@ namespace se {
 
     class ExplorerPanel : public IEditorPanel {
     public:
-        ExplorerPanel();
+        explicit ExplorerPanel(const std::filesystem::path& rootDirectory);
 
         void onImGuiRender() override;
         void onUpdate() override;
@@ -23,10 +21,10 @@ namespace se {
         void refresh();
 
     private:
-        std::filesystem::path m_rootDirectory;
-        std::filesystem::path m_selectedPath;
+        std::filesystem::path rootDirectory_;
+        std::filesystem::path selectedPath_;
 
-        bool m_shouldRefresh = false;
+        bool shouldRefresh_ = false;
     };
 
 }
