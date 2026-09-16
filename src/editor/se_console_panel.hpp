@@ -2,16 +2,25 @@
 #define CONSOLE_PANEL_HPP
 
 #include "i_editor_panel.hpp"
+#include "src/logger/le_log_record.hpp"
 
-#include <vulkan/vulkan.h>
+#include <memory>
+#include <vector>
 
-namespace se {
-    class ConsolePanel : public IEditorPanel {
+namespace se
+{
+    class ConsolePanel : public IEditorPanel
+    {
     public:
-        ConsolePanel();
+        using Records = std::shared_ptr<std::vector<le::log::Record>>;
+
+        explicit ConsolePanel(Records records);
 
         void onImGuiRender() override;
         void onUpdate() override;
+
+    private:
+        Records records_;
     };
 }
 

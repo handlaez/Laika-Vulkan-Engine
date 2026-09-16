@@ -2,6 +2,7 @@
 #include "src/demo_app.hpp"
 #include "src/logger/le_logger.hpp"
 #include "src/logger/le_console_sink.hpp"
+#include "src/logger/se_panel_sink.hpp"
 
 #include "src/editor/se_scene_panel.hpp"
 #include "src/editor/se_hierarchy_panel.hpp"
@@ -19,15 +20,15 @@
 
 namespace se {
 
-    se::SeCore::SeCore() 
-        : leCore_{}, currentScene_ { leCore_.getDevice(), leCore_.getResources() }
+    SeCore::SeCore()
+        : leCore_{},
+        currentScene_{ leCore_.getDevice(), leCore_.getResources() },
+        consoleLogRecords_{ std::make_shared<std::vector<le::log::Record>>() }
     {
         initImGui();
 
         editorPanels_.push_back(std::make_unique<ScenePanel>(leCore_, &sceneTextureDescriptorSet_, &sceneViewportHovered_));
-        // editorPanels_.push_back(std::make_unique<HierarchyPanel>());
-        editorPanels_.push_back(std::make_unique<ConsolePanel>());
-        // editorPanels_.push_back(std::make_unique<InspectorPanel>());
+        editorPanels_.push_back(std::make_unique<ConsolePanel>(consoleLogRecords_));
         editorPanels_.push_back(std::make_unique<ExplorerPanel>("."));
 
         leCore_.getRenderer().setSceneRenderTargetRecreatedCallback(
@@ -57,11 +58,16 @@ namespace se {
 
         ::le::log::Logger logger;
         logger.addSink(std::make_unique<::le::log::ConsoleSink>());
+        logger.addSink(std::make_unique<::se::PanelSink>(consoleLogRecords_));
 
         logger.write(::le::log::Level::info, ::le::log::Category::editor, "Poyekhali!");
 
+        int i = 0;
         while (!leCore_.getWindow().shouldClose())
         {
+            logger.write(::le::log::Level::info, ::le::log::Category::editor, "hello{}" + i);
+            ++i;
+
             leCore_.beginFrame();
 
             Utils::checkKeys(leCore_.getWindow().getGLFWwindow());

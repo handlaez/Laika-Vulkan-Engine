@@ -5,6 +5,7 @@
 #include "src/scene/le_scene.hpp"
 #include "src/render/le_scene_render_target.hpp"
 #include "src/editor/i_editor_panel.hpp"
+#include "src/logger/le_log_record.hpp"
 
 namespace se {
 
@@ -21,6 +22,7 @@ namespace se {
         le::LeScene currentScene_;
 
         std::vector<std::unique_ptr<IEditorPanel>> editorPanels_;
+        std::shared_ptr<std::vector<le::log::Record>> consoleLogRecords_;
 
         void createImGuiDescriptorPool();
         VkDescriptorPool imguiDescriptorPool_{ VK_NULL_HANDLE };

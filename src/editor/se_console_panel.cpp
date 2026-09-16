@@ -1,22 +1,37 @@
 #include "se_console_panel.hpp"
+
 #include "imgui.h"
 
-se::ConsolePanel::ConsolePanel()
+#include <utility>
+
+se::ConsolePanel::ConsolePanel(Records records)
+    : records_(std::move(records))
 {
-	// make sure only one exists.
 }
 
 void se::ConsolePanel::onImGuiRender()
 {
-	ImGui::Begin("Console");
+    ImGui::Begin("Console");
 
-	//render
-	ImGui::Text("Console output");
+    if (ImGui::Button("Clear"))
+    {
+        records_->clear();
+    }
 
-	ImGui::End();
+    ImGui::Separator();
+
+    ImGui::BeginChild("LogScroll");
+
+    for (const auto& record : *records_)
+    {
+        ImGui::TextUnformatted(record.message.c_str());
+    }
+
+    ImGui::EndChild();
+
+    ImGui::End();
 }
 
 void se::ConsolePanel::onUpdate()
 {
-	// update output
 }
