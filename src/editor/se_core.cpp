@@ -62,12 +62,8 @@ namespace se {
 
         logger.write(::le::log::Level::info, ::le::log::Category::editor, "Poyekhali!");
 
-        int i = 0;
         while (!leCore_.getWindow().shouldClose())
         {
-            logger.write(::le::log::Level::info, ::le::log::Category::editor, "hello{}" + i);
-            ++i;
-
             leCore_.beginFrame();
 
             Utils::checkKeys(leCore_.getWindow().getGLFWwindow());

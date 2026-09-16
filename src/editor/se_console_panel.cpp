@@ -22,13 +22,19 @@ void se::ConsolePanel::onImGuiRender()
 
     ImGui::BeginChild("LogScroll");
 
+    const bool atBottom = ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 5.0f;
+
     for (const auto& record : *records_)
     {
         ImGui::TextUnformatted(record.message.c_str());
     }
 
-    ImGui::EndChild();
+    if (atBottom && !records_->empty())
+    {
+        ImGui::SetScrollHereY(1.0f);
+    }
 
+    ImGui::EndChild();
     ImGui::End();
 }
 
