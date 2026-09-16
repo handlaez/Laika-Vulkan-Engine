@@ -15,8 +15,6 @@
 #include <stdexcept>
 #include <memory>
 
-using namespace le;
-
 namespace le {
     struct LightingUBO
     {
