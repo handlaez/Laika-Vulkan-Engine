@@ -4,12 +4,12 @@
 
 namespace le::log
 {
-    void logger::addSink(std::unique_ptr<Sink> sink)
+    void Logger::addSink(std::unique_ptr<Sink> sink)
     {
         sinks_.push_back(std::move(sink));
     }
 
-    void logger::write(
+    void Logger::write(
         Level level,
         Category category,
         std::string_view message,

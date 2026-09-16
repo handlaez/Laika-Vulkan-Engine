@@ -7,16 +7,14 @@
 #include "src/core/le_frame_info.hpp"
 #include "src/scene/le_scene.hpp"
 
-using namespace le;
-
-class DemoApp : public ILaikaEngineApp {
+class DemoApp : public le::ILaikaEngineApp {
 public:
-    void onStart(LeScene& scene) override;
-    void onUpdate(LeScene& scene, FrameInfo fi, bool viewportActive) override;
+    void onStart(le::LeScene& scene) override;
+    void onUpdate(le::LeScene& scene, le::FrameInfo fi, bool viewportActive) override;
     void onShutdown() override;
 
 private:
-    KeyboardMovementController controller{};
+    le::KeyboardMovementController controller{};
 };
 
 #endif

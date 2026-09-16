@@ -6,11 +6,9 @@
 
 #include <iostream>
 
-using namespace le;
-
 float sinfunc = 0.0f;
 
-void DemoApp::onStart(LeScene& scene) {
+void DemoApp::onStart(le::LeScene& scene) {
     // loading models
     uint32_t model1 = scene.leResourceManager.loadModel("models/viking_room.obj");
     uint32_t texture1 = scene.leResourceManager.loadTexture("textures/viking_room.png");
@@ -39,14 +37,14 @@ void DemoApp::onStart(LeScene& scene) {
     cubeActor1.addHitbox(glm::vec3(0.f), glm::vec3(0.25f));
     cubeActor2.addHitbox(glm::vec3(0.f), glm::vec3(0.25f));
 
-    std::shared_ptr<LeModel> m = scene.leResourceManager.getStaticModel(model1);
-    std::shared_ptr<BVH> b = m->getBVH();
+    std::shared_ptr<le::LeModel> m = scene.leResourceManager.getStaticModel(model1);
+    std::shared_ptr<le::BVH> b = m->getBVH();
     b->build(m->getPositions(), m->getIndices());
     modelActor1.setBVH(b);
     modelActor2.setBVH(b);
 }
 
-void DemoApp::onUpdate(le::LeScene& scene, FrameInfo fi, bool viewportActive) {
+void DemoApp::onUpdate(le::LeScene& scene, le::FrameInfo fi, bool viewportActive) {
     // movement
     controller.moveInPlaneXZ(fi.window, fi.deltaTime, scene.getCameraObject(), viewportActive);
     sinfunc += 0.8f * fi.deltaTime;
@@ -95,8 +93,6 @@ void DemoApp::onShutdown() {
 
 #include <iostream>
 #include <memory>
-
-using namespace le;
 
 class DemoApp : public ILaikaEngineApp {
 

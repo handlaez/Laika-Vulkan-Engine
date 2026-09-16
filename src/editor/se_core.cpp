@@ -1,5 +1,7 @@
 #include "src/editor/se_core.hpp"
 #include "src/demo_app.hpp"
+#include "src/logger/le_logger.hpp"
+#include "src/logger/le_console_sink.hpp"
 
 #include "src/editor/se_scene_panel.hpp"
 #include "src/editor/se_hierarchy_panel.hpp"
@@ -29,7 +31,7 @@ namespace se {
         editorPanels_.push_back(std::make_unique<ExplorerPanel>("."));
 
         leCore_.getRenderer().setSceneRenderTargetRecreatedCallback(
-            [this](LeSceneRenderTarget& sceneTarget)
+            [this](le::LeSceneRenderTarget& sceneTarget)
             {
                 recreateSceneTexture(sceneTarget);
             });
@@ -52,6 +54,11 @@ namespace se {
     {
         DemoApp demoApp;
         demoApp.onStart(currentScene_);
+
+        ::le::log::Logger logger;
+        logger.addSink(std::make_unique<::le::log::ConsoleSink>());
+
+        logger.write(::le::log::Level::info, ::le::log::Category::editor, "Poyekhali!");
 
         while (!leCore_.getWindow().shouldClose())
         {
@@ -124,19 +131,13 @@ namespace se {
         // Let ImGui create its own descriptor pool.
         initInfo.DescriptorPool = VK_NULL_HANDLE;
         initInfo.DescriptorPoolSize = 512;
-
         initInfo.MinImageCount = 2;
-        initInfo.ImageCount = LeSwapchain::MAX_FRAMES_IN_FLIGHT;
-
+        initInfo.ImageCount = le::LeSwapchain::MAX_FRAMES_IN_FLIGHT;
         initInfo.PipelineCache = VK_NULL_HANDLE;
-
         initInfo.PipelineInfoMain.RenderPass = leCore_.getRenderer().getSwapchainRenderPass();
-
         initInfo.PipelineInfoMain.Subpass = 0;
         initInfo.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-
         initInfo.UseDynamicRendering = false;
-
         initInfo.Allocator = nullptr;
         initInfo.CheckVkResultFn = nullptr;
         initInfo.MinAllocationSize = 1024 * 1024;

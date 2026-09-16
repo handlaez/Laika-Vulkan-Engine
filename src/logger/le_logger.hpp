@@ -12,7 +12,7 @@
 
 namespace le::log
 {
-    class logger
+    class Logger
     {
     public:
         void addSink(std::unique_ptr<Sink> sink);
