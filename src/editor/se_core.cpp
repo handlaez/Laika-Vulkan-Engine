@@ -22,7 +22,7 @@ namespace se {
 
     SeCore::SeCore()
         : leCore_{},
-        currentScene_{ leCore_.getDevice(), leCore_.getResources() },
+        editorScene_{ leCore_.getDevice(), leCore_.getResources() },
         consoleLogRecords_{ std::make_shared<std::vector<le::log::Record>>() }
     {
         initImGui();
@@ -54,7 +54,7 @@ namespace se {
     void se::SeCore::run()
     {
         DemoApp demoApp;
-        demoApp.onStart(currentScene_);
+        demoApp.onStart(editorScene_);
 
         ::le::log::Logger logger;
         logger.addSink(std::make_unique<::le::log::ConsoleSink>());
@@ -68,10 +68,10 @@ namespace se {
 
             Utils::checkKeys(leCore_.getWindow().getGLFWwindow());
 
-            demoApp.onUpdate(currentScene_, leCore_.getFrameInfo(), sceneViewportHovered_);
+            demoApp.onUpdate(editorScene_, leCore_.getFrameInfo(), sceneViewportHovered_);
             updateEditor();
 
-            leCore_.render(currentScene_);
+            leCore_.render(editorScene_);
             renderEditor();
 
             leCore_.endFrame();

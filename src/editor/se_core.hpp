@@ -6,6 +6,7 @@
 #include "src/render/le_scene_render_target.hpp"
 #include "src/editor/i_editor_panel.hpp"
 #include "src/logger/le_log_record.hpp"
+#include "src/editor/se_mode_controller.hpp"
 
 namespace se {
 
@@ -19,7 +20,8 @@ namespace se {
 
     private:
         le::LeCore leCore_;
-        le::LeScene currentScene_;
+        le::LeScene editorScene_;
+        std::unique_ptr<le::LeScene> runtimeScene;
 
         std::vector<std::unique_ptr<IEditorPanel>> editorPanels_;
         std::shared_ptr<std::vector<le::log::Record>> consoleLogRecords_;
