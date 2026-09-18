@@ -7,6 +7,7 @@
 #include "src/editor/i_editor_panel.hpp"
 #include "src/logger/le_log_record.hpp"
 #include "src/editor/se_mode_controller.hpp"
+#include "src/laika_app.hpp"
 
 namespace se {
 
@@ -21,7 +22,9 @@ namespace se {
     private:
         le::LeCore leCore_;
         le::LeScene editorScene_;
-        std::unique_ptr<le::LeScene> runtimeScene;
+
+        LaikaApp laikaApp_;
+        ModeController modeController_;
 
         std::vector<std::unique_ptr<IEditorPanel>> editorPanels_;
         std::shared_ptr<std::vector<le::log::Record>> consoleLogRecords_;
@@ -39,6 +42,8 @@ namespace se {
 
         void updateEditor();
         void renderEditor();
+
+        void renderPlayToolbar();
 
         bool dockspaceInitialized_{ false };
         bool sceneViewportHovered_{ false };

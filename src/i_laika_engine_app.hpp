@@ -10,6 +10,6 @@ namespace le {
 
 		virtual void onStart(LeScene& scene) = 0;
 		virtual void onUpdate(LeScene& scene, FrameInfo fi, bool viewportActive) = 0;
-		virtual void onShutdown() {};
+		virtual void onShutdown(LeScene& scene) {};
 	};
 }

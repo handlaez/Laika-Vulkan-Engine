@@ -47,7 +47,7 @@ namespace se {
 			return;
 		}
 
-		app_.onShutdown();
+		app_.onShutdown(*runtimeScene_);
 
 		runtimeScene_.reset();
 		state_ = PlayState::Edit;

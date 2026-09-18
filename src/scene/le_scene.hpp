@@ -31,6 +31,8 @@ namespace le {
         LeActor& getActor(size_t index);
         const LeActor& getActor(size_t index) const;
         const std::vector<LeActor>& getActors() const;
+        LeActor& getActorById(LeActor::id_t id);
+        const LeActor& getActorById(LeActor::id_t id) const;
 
         LeCamera& getCamera();
         const LeCamera& getCamera() const;
@@ -39,10 +41,13 @@ namespace le {
 
         const std::vector<InstanceData>* instanceDataPtr = nullptr;
 
+        std::unique_ptr<LeScene> clone() const;
+
         void setInstanceData(const std::vector<InstanceData>& data) {
             instanceDataPtr = &data;
         }
 
+        //terrain
         void setTerrain(std::unique_ptr<ProceduralTerrain> terrain) {
             terrain_ = std::move(terrain);
         }

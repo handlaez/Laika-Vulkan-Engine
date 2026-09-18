@@ -2,7 +2,7 @@
 #define SE_MODE_CONTROLLER_HPP
 
 #include "src/scene/le_scene.hpp"
-#include "src/demo_app.hpp"
+#include "src/laika_app.hpp"
 
 #include <memory>
 
@@ -16,7 +16,7 @@ namespace se {
 
     class ModeController {
     public:
-        ModeController(le::LeScene& editorScene, DemoApp& app)
+        ModeController(le::LeScene& editorScene, LaikaApp& app)
             : editorScene_(editorScene), app_(app)
         {
         }
@@ -63,7 +63,7 @@ namespace se {
 
     private:
         le::LeScene& editorScene_;
-        DemoApp& app_;
+        LaikaApp& app_;
 
         std::unique_ptr<le::LeScene> runtimeScene_;
         PlayState state_ = PlayState::Edit;

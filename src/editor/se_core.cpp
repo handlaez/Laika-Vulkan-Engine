@@ -1,5 +1,5 @@
 #include "src/editor/se_core.hpp"
-#include "src/demo_app.hpp"
+#include "src/laika_app.hpp"
 #include "src/logger/le_logger.hpp"
 #include "src/logger/le_console_sink.hpp"
 #include "src/logger/se_panel_sink.hpp"
@@ -23,6 +23,8 @@ namespace se {
     SeCore::SeCore()
         : leCore_{},
         editorScene_{ leCore_.getDevice(), leCore_.getResources() },
+        laikaApp_{},
+        modeController_{ editorScene_, laikaApp_ },
         consoleLogRecords_{ std::make_shared<std::vector<le::log::Record>>() }
     {
         initImGui();
@@ -53,8 +55,7 @@ namespace se {
 
     void se::SeCore::run()
     {
-        DemoApp demoApp;
-        demoApp.onStart(editorScene_);
+        laikaApp_.onStart(editorScene_);
 
         ::le::log::Logger logger;
         logger.addSink(std::make_unique<::le::log::ConsoleSink>());
@@ -68,16 +69,18 @@ namespace se {
 
             Utils::checkKeys(leCore_.getWindow().getGLFWwindow());
 
-            demoApp.onUpdate(editorScene_, leCore_.getFrameInfo(), sceneViewportHovered_);
+            modeController_.update(leCore_.getFrameInfo(), sceneViewportHovered_);
+
             updateEditor();
 
-            leCore_.render(editorScene_);
+            leCore_.render(modeController_.getActiveScene());
+
             renderEditor();
 
             leCore_.endFrame();
         }
 
-        demoApp.onShutdown();
+        modeController_.stop();
     }
 
     void SeCore::createImGuiDescriptorPool()
@@ -239,6 +242,8 @@ namespace se {
             ImGui::EndMenuBar();
         }
 
+        renderPlayToolbar();
+
         ImGui::End();
 
         renderEditorWindows();
@@ -251,6 +256,63 @@ namespace se {
     {
         for (auto& panel : editorPanels_) {
             panel->onImGuiRender();
+        }
+    }
+
+    void SeCore::renderPlayToolbar()
+    {
+        const auto state = modeController_.getState();
+
+        if (ImGui::BeginMenuBar()) {
+
+            if (state == PlayState::Edit)
+            {
+                if (ImGui::Button("Run"))
+                {
+                    modeController_.run();
+                }
+            }
+            else
+            {
+                if (state == PlayState::Run)
+                {
+                    if (ImGui::Button("Pause"))
+                    {
+                        modeController_.pause();
+                    }
+                }
+                else
+                {
+                    if (ImGui::Button("Resume"))
+                    {
+                        modeController_.resume();
+                    }
+                }
+
+                ImGui::SameLine();
+
+                if (ImGui::Button("Restart"))
+                {
+                    modeController_.restart();
+                }
+
+                ImGui::SameLine();
+
+                if (ImGui::Button("Stop"))
+                {
+                    modeController_.stop();
+                }
+            }
+
+            ImGui::SameLine();
+            ImGui::Text(
+                "[%s]",
+                state == PlayState::Edit ? "Editing" :
+                state == PlayState::Run ? "Running" :
+                "Paused"
+            );
+
+            ImGui::EndMenuBar();
         }
     }
 

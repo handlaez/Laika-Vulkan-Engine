@@ -4,6 +4,19 @@
 #include <iostream> // temp
 
 namespace le {
+
+    // clone for a runtime scene;
+    LeActor LeActor::clone() const
+    {
+        LeActor result{ modelID, textureID, color, transform };
+
+        result.id = id;
+        result.hitboxes = hitboxes;
+        result.bvh = bvh;
+
+        return result;
+    }
+
     void LeActor::addHitbox(const glm::vec3& offset, const glm::vec3 halfExtents)
     {
         AABBHitbox h(offset, halfExtents);
