@@ -13,6 +13,8 @@ void LaikaApp::onStart(le::LeScene& scene) {
     uint32_t model1 = scene.leResourceManager.loadModel("models/viking_room.obj");
     uint32_t texture1 = scene.leResourceManager.loadTexture("textures/viking_room.png");
 
+    sinfunc = 0.0f;
+
     scene.getCameraObject().transform.translation.z = -3.0f;
     scene.getCameraObject().transform.translation.y = 2.5f;
     scene.getCameraObject().transform.rotation.x = 0.3736f;
