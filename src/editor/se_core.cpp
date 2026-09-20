@@ -1,5 +1,5 @@
 #include "src/editor/se_core.hpp"
-#include "src/demo_app.hpp"
+#include "src/laika_app.hpp"
 #include "src/logger/le_logger.hpp"
 #include "src/logger/le_console_sink.hpp"
 #include "src/logger/se_panel_sink.hpp"
@@ -22,7 +22,9 @@ namespace se {
 
     SeCore::SeCore()
         : leCore_{},
-        currentScene_{ leCore_.getDevice(), leCore_.getResources() },
+        editorScene_{ leCore_.getDevice(), leCore_.getResources() },
+        laikaApp_{},
+        modeController_{ editorScene_, laikaApp_ },
         consoleLogRecords_{ std::make_shared<std::vector<le::log::Record>>() }
     {
         initImGui();
@@ -53,8 +55,8 @@ namespace se {
 
     void se::SeCore::run()
     {
-        DemoApp demoApp;
-        demoApp.onStart(currentScene_);
+        laikaApp_.onLoad(editorScene_);
+        laikaApp_.onStart(editorScene_);
 
         ::le::log::Logger logger;
         logger.addSink(std::make_unique<::le::log::ConsoleSink>());
@@ -68,16 +70,19 @@ namespace se {
 
             Utils::checkKeys(leCore_.getWindow().getGLFWwindow());
 
-            demoApp.onUpdate(currentScene_, leCore_.getFrameInfo(), sceneViewportHovered_);
+            modeController_.update(leCore_.getFrameInfo(), sceneViewportHovered_);
+
+            updateEditorCamera();
             updateEditor();
 
-            leCore_.render(currentScene_);
+            leCore_.render(modeController_.getActiveScene());
+
             renderEditor();
 
             leCore_.endFrame();
         }
 
-        demoApp.onShutdown();
+        modeController_.stop();
     }
 
     void SeCore::createImGuiDescriptorPool()
@@ -236,6 +241,7 @@ namespace se {
                 ImGui::EndMenu();
             }
 
+            renderPlayToolbar();
             ImGui::EndMenuBar();
         }
 
@@ -252,6 +258,88 @@ namespace se {
         for (auto& panel : editorPanels_) {
             panel->onImGuiRender();
         }
+    }
+
+    void SeCore::renderPlayToolbar()
+    {
+        const auto state = modeController_.getState();
+
+        const char* primaryLabel =
+            state == PlayState::Edit ? "Run" :
+            state == PlayState::Run ? "Pause" :
+            "Resume";
+
+        const char* statusLabel =
+            state == PlayState::Edit ? "[Editing]" :
+            state == PlayState::Run ? "[Running]" :
+            "[Paused]";
+
+        const bool showRestartStop = state != PlayState::Edit;
+
+        const ImGuiStyle& style = ImGui::GetStyle();
+
+        auto buttonWidth = [&](const char* label)
+            {
+                return ImGui::CalcTextSize(label).x + style.FramePadding.x * 2.0f;
+            };
+
+        float totalWidth = buttonWidth(primaryLabel);
+
+        if (showRestartStop)
+        {
+            totalWidth += style.ItemSpacing.x;
+            totalWidth += buttonWidth("Restart");
+
+            totalWidth += style.ItemSpacing.x;
+            totalWidth += buttonWidth("Stop");
+        }
+
+        totalWidth += style.ItemSpacing.x;
+        totalWidth += ImGui::CalcTextSize(statusLabel).x;
+
+        const float availableWidth = ImGui::GetWindowWidth();
+        const float centeredX = (availableWidth - totalWidth) * 0.5f;
+
+        ImGui::SetCursorPosX(centeredX);
+
+        // Primary button
+        if (ImGui::Button(primaryLabel))
+        {
+            switch (state)
+            {
+            case PlayState::Edit:
+                modeController_.run();
+                break;
+
+            case PlayState::Run:
+                modeController_.pause();
+                break;
+
+            case PlayState::Pause:
+                modeController_.resume();
+                break;
+            }
+        }
+
+        if (showRestartStop)
+        {
+            ImGui::SameLine();
+
+            if (ImGui::Button("Restart"))
+            {
+                modeController_.restart();
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Stop"))
+            {
+                modeController_.stop();
+            }
+        }
+
+        ImGui::SameLine();
+        ImGui::TextUnformatted(statusLabel);
     }
 
     void SeCore::initializeDockspace()
@@ -324,5 +412,27 @@ namespace se {
 
     void SeCore::renderEditor()
     {
+    }
+
+    void SeCore::updateEditorCamera()
+    {
+        if (modeController_.getState() != PlayState::Edit)
+        {
+            return;
+        }
+
+        auto& frameInfo = leCore_.getFrameInfo();
+        auto& cameraObject = editorScene_.getCameraObject();
+        auto& camera = editorScene_.getCamera();
+
+        editorCameraController_.moveInPlaneXZ(
+            frameInfo.window,
+            frameInfo.deltaTime,
+            cameraObject,
+            sceneViewportHovered_
+        );
+
+        camera.setPerspectiveProjection(glm::radians(50.f), frameInfo.aspect, 0.1f, 100.f);
+        camera.setView(cameraObject.transform.translation, cameraObject.transform.rotation);
     }
 } // se

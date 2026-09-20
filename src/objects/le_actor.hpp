@@ -29,8 +29,7 @@ namespace le {
         using id_t = unsigned int;
 
         static LeActor createGameObject() {
-            static id_t currentId = 0;
-            return LeActor{ currentId++ };
+            return LeActor{};
         }
 
         LeActor(uint32_t modelID = 0, uint32_t textureID = 0, const glm::vec3& color = { 1.0f, 1.0f, 1.0f },
@@ -46,6 +45,7 @@ namespace le {
         LeActor& operator=(LeActor&&) = default;
 
         const id_t getId() const { return id; }
+        LeActor clone() const;
 
         uint32_t modelID = 0;        // assuming model 0 is "missing model"
         uint32_t textureID = 0;      // assuming texture 0 is "missing texture"

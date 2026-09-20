@@ -1,4 +1,4 @@
-#include "demo_app.hpp"
+#include "laika_app.hpp"
 
 #include "src/objects/le_model.hpp"
 #include "src/objects/le_camera.hpp"
@@ -8,8 +8,8 @@
 
 float sinfunc = 0.0f;
 
-void DemoApp::onStart(le::LeScene& scene) {
-    // loading models
+void LaikaApp::onLoad(le::LeScene& scene)
+{
     uint32_t model1 = scene.leResourceManager.loadModel("models/viking_room.obj");
     uint32_t texture1 = scene.leResourceManager.loadTexture("textures/viking_room.png");
 
@@ -27,7 +27,7 @@ void DemoApp::onStart(le::LeScene& scene) {
     auto& modelActor2 = scene.getActor(2);
     auto& cubeActor2 = scene.getActor(3);
 
-    cubeActor1.transform.translation = glm::vec3{-1.f, 0.6f, 0.f };
+    cubeActor1.transform.translation = glm::vec3{ -1.f, 0.6f, 0.f };
     modelActor2.transform.translation = glm::vec3{ 1.f,  0.f,  2.f };
     cubeActor1.transform.scale = glm::vec3(0.5f);
     cubeActor2.transform.scale = glm::vec3(0.5f);
@@ -44,7 +44,12 @@ void DemoApp::onStart(le::LeScene& scene) {
     modelActor2.setBVH(b);
 }
 
-void DemoApp::onUpdate(le::LeScene& scene, le::FrameInfo fi, bool viewportActive) {
+void LaikaApp::onStart(le::LeScene& scene) 
+{
+    sinfunc = 0.0f;
+}
+
+void LaikaApp::onUpdate(le::LeScene& scene, le::FrameInfo fi, bool viewportActive) {
     // movement
     controller.moveInPlaneXZ(fi.window, fi.deltaTime, scene.getCameraObject(), viewportActive);
     sinfunc += 0.8f * fi.deltaTime;
@@ -69,7 +74,8 @@ void DemoApp::onUpdate(le::LeScene& scene, le::FrameInfo fi, bool viewportActive
     modelActor2.checkCollision(cubeActor2);
 }
 
-void DemoApp::onShutdown() {
+void LaikaApp::onShutdown(le::LeScene&)
+{
     // Cleanup if necessary
 }
 

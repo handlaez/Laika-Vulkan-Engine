@@ -51,7 +51,7 @@ namespace le {
 		const std::string FALLBACK_TEXTURE = "textures/missing_texture.jpg";
 		// fallback model will be a cube for now.
 
-		// atomic id counters
+		// id counters (not atomic)
 		uint32_t nextTextureID = 0;
 		uint32_t nextModelID = 0;
 

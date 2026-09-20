@@ -1,4 +1,5 @@
 #include "src/scene/le_scene.hpp"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -47,6 +48,32 @@ namespace le {
         return actors;
     }
 
+    LeActor& LeScene::getActorById(LeActor::id_t id)
+    {
+        for (auto& actor : actors)
+        {
+            if (actor.getId() == id)
+            {
+                return actor;
+            }
+        }
+
+        // log error here
+    }
+
+    const LeActor& LeScene::getActorById(LeActor::id_t id) const
+    {
+        for (const auto& actor : actors)
+        {
+            if (actor.getId() == id)
+            {
+                return actor;
+            }
+        }
+
+        // log error here
+    }
+
     LeCamera& LeScene::getCamera() {
         return camera;
     }
@@ -57,6 +84,32 @@ namespace le {
 
     LeActor& LeScene::getCameraObject() {
         return *cameraObject;
+    }
+
+    std::unique_ptr<LeScene> LeScene::clone() const
+    {
+        auto result = std::make_unique<LeScene>(leDevice, leResourceManager);
+
+        result->renderHitboxes_ = renderHitboxes_;
+        result->actors.reserve(actors.size());
+
+        for (const auto& actor : actors)
+        {
+            result->actors.push_back(actor.clone());
+        }
+
+        result->camera = camera;
+
+        if (cameraObject)
+        {
+            result->cameraObject = std::make_unique<LeActor>(cameraObject->clone());
+        }
+
+        // This is external state and must not be blindly copied.
+        result->instanceDataPtr = nullptr;
+        result->terrain_ = nullptr;
+
+        return result;
     }
 
     void LeScene::createDefaultCamera() {
