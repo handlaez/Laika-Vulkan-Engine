@@ -8,6 +8,7 @@
 #include "src/logger/le_log_record.hpp"
 #include "src/editor/se_mode_controller.hpp"
 #include "src/laika_app.hpp"
+#include "src/systems/keyboard_movement_controller.hpp"
 
 namespace se {
 
@@ -25,6 +26,7 @@ namespace se {
 
         LaikaApp laikaApp_;
         ModeController modeController_;
+        le::KeyboardMovementController editorCameraController_;
 
         std::vector<std::unique_ptr<IEditorPanel>> editorPanels_;
         std::shared_ptr<std::vector<le::log::Record>> consoleLogRecords_;
@@ -42,6 +44,7 @@ namespace se {
 
         void updateEditor();
         void renderEditor();
+        void updateEditorCamera();
 
         void renderPlayToolbar();
 

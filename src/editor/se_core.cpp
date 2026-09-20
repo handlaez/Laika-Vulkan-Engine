@@ -71,6 +71,7 @@ namespace se {
 
             modeController_.update(leCore_.getFrameInfo(), sceneViewportHovered_);
 
+            updateEditorCamera();
             updateEditor();
 
             leCore_.render(modeController_.getActiveScene());
@@ -386,5 +387,27 @@ namespace se {
 
     void SeCore::renderEditor()
     {
+    }
+
+    void SeCore::updateEditorCamera()
+    {
+        if (modeController_.getState() != PlayState::Edit)
+        {
+            return;
+        }
+
+        auto& frameInfo = leCore_.getFrameInfo();
+        auto& cameraObject = editorScene_.getCameraObject();
+        auto& camera = editorScene_.getCamera();
+
+        editorCameraController_.moveInPlaneXZ(
+            frameInfo.window,
+            frameInfo.deltaTime,
+            cameraObject,
+            sceneViewportHovered_
+        );
+
+        camera.setPerspectiveProjection(glm::radians(50.f), frameInfo.aspect, 0.1f, 100.f);
+        camera.setView(cameraObject.transform.translation, cameraObject.transform.rotation);
     }
 } // se
