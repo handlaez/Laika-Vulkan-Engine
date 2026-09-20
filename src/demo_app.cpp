@@ -8,12 +8,10 @@
 
 float sinfunc = 0.0f;
 
-void LaikaApp::onStart(le::LeScene& scene) {
-    // loading models
+void LaikaApp::onLoad(le::LeScene& scene)
+{
     uint32_t model1 = scene.leResourceManager.loadModel("models/viking_room.obj");
     uint32_t texture1 = scene.leResourceManager.loadTexture("textures/viking_room.png");
-
-    sinfunc = 0.0f;
 
     scene.getCameraObject().transform.translation.z = -3.0f;
     scene.getCameraObject().transform.translation.y = 2.5f;
@@ -29,7 +27,7 @@ void LaikaApp::onStart(le::LeScene& scene) {
     auto& modelActor2 = scene.getActor(2);
     auto& cubeActor2 = scene.getActor(3);
 
-    cubeActor1.transform.translation = glm::vec3{-1.f, 0.6f, 0.f };
+    cubeActor1.transform.translation = glm::vec3{ -1.f, 0.6f, 0.f };
     modelActor2.transform.translation = glm::vec3{ 1.f,  0.f,  2.f };
     cubeActor1.transform.scale = glm::vec3(0.5f);
     cubeActor2.transform.scale = glm::vec3(0.5f);
@@ -44,6 +42,11 @@ void LaikaApp::onStart(le::LeScene& scene) {
     b->build(m->getPositions(), m->getIndices());
     modelActor1.setBVH(b);
     modelActor2.setBVH(b);
+}
+
+void LaikaApp::onStart(le::LeScene& scene) 
+{
+    sinfunc = 0.0f;
 }
 
 void LaikaApp::onUpdate(le::LeScene& scene, le::FrameInfo fi, bool viewportActive) {

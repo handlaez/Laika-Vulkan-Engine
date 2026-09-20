@@ -55,6 +55,7 @@ namespace se {
 
     void se::SeCore::run()
     {
+        laikaApp_.onLoad(editorScene_);
         laikaApp_.onStart(editorScene_);
 
         ::le::log::Logger logger;

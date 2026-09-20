@@ -8,6 +8,7 @@
 
 class LaikaApp : public le::ILaikaEngineApp {
 public:
+    void onLoad(le::LeScene& scene) override;
     void onStart(le::LeScene& scene) override;
     void onUpdate(le::LeScene& scene, le::FrameInfo fi, bool viewportActive) override;
     void onShutdown(le::LeScene&) override;

@@ -8,6 +8,7 @@ namespace le {
 	public:
 		virtual ~ILaikaEngineApp() = default;
 
+		virtual void onLoad(LeScene& scene) = 0;
 		virtual void onStart(LeScene& scene) = 0;
 		virtual void onUpdate(LeScene& scene, FrameInfo fi, bool viewportActive) = 0;
 		virtual void onShutdown(LeScene& scene) {};
