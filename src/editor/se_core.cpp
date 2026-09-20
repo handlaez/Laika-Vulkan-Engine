@@ -241,10 +241,9 @@ namespace se {
                 ImGui::EndMenu();
             }
 
+            renderPlayToolbar();
             ImGui::EndMenuBar();
         }
-
-        renderPlayToolbar();
 
         ImGui::End();
 
@@ -265,57 +264,82 @@ namespace se {
     {
         const auto state = modeController_.getState();
 
-        if (ImGui::BeginMenuBar()) {
+        const char* primaryLabel =
+            state == PlayState::Edit ? "Run" :
+            state == PlayState::Run ? "Pause" :
+            "Resume";
 
-            if (state == PlayState::Edit)
+        const char* statusLabel =
+            state == PlayState::Edit ? "[Editing]" :
+            state == PlayState::Run ? "[Running]" :
+            "[Paused]";
+
+        const bool showRestartStop = state != PlayState::Edit;
+
+        const ImGuiStyle& style = ImGui::GetStyle();
+
+        auto buttonWidth = [&](const char* label)
             {
-                if (ImGui::Button("Run"))
-                {
-                    modeController_.run();
-                }
+                return ImGui::CalcTextSize(label).x + style.FramePadding.x * 2.0f;
+            };
+
+        float totalWidth = buttonWidth(primaryLabel);
+
+        if (showRestartStop)
+        {
+            totalWidth += style.ItemSpacing.x;
+            totalWidth += buttonWidth("Restart");
+
+            totalWidth += style.ItemSpacing.x;
+            totalWidth += buttonWidth("Stop");
+        }
+
+        totalWidth += style.ItemSpacing.x;
+        totalWidth += ImGui::CalcTextSize(statusLabel).x;
+
+        const float availableWidth = ImGui::GetWindowWidth();
+        const float centeredX = (availableWidth - totalWidth) * 0.5f;
+
+        ImGui::SetCursorPosX(centeredX);
+
+        // Primary button
+        if (ImGui::Button(primaryLabel))
+        {
+            switch (state)
+            {
+            case PlayState::Edit:
+                modeController_.run();
+                break;
+
+            case PlayState::Run:
+                modeController_.pause();
+                break;
+
+            case PlayState::Pause:
+                modeController_.resume();
+                break;
             }
-            else
+        }
+
+        if (showRestartStop)
+        {
+            ImGui::SameLine();
+
+            if (ImGui::Button("Restart"))
             {
-                if (state == PlayState::Run)
-                {
-                    if (ImGui::Button("Pause"))
-                    {
-                        modeController_.pause();
-                    }
-                }
-                else
-                {
-                    if (ImGui::Button("Resume"))
-                    {
-                        modeController_.resume();
-                    }
-                }
-
-                ImGui::SameLine();
-
-                if (ImGui::Button("Restart"))
-                {
-                    modeController_.restart();
-                }
-
-                ImGui::SameLine();
-
-                if (ImGui::Button("Stop"))
-                {
-                    modeController_.stop();
-                }
+                modeController_.restart();
             }
 
             ImGui::SameLine();
-            ImGui::Text(
-                "[%s]",
-                state == PlayState::Edit ? "Editing" :
-                state == PlayState::Run ? "Running" :
-                "Paused"
-            );
 
-            ImGui::EndMenuBar();
+            if (ImGui::Button("Stop"))
+            {
+                modeController_.stop();
+            }
         }
+
+        ImGui::SameLine();
+        ImGui::TextUnformatted(statusLabel);
     }
 
     void SeCore::initializeDockspace()
