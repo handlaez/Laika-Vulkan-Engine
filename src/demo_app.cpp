@@ -28,7 +28,7 @@ void LaikaApp::onLoad(le::LeScene& scene)
     auto& cubeActor2 = scene.getActor(3);
 
     cubeActor1.transform.translation = glm::vec3{ -1.f, 0.6f, 0.f };
-    modelActor2.transform.translation = glm::vec3{ 1.f,  0.f,  2.f };
+    modelActor2.transform.translation = glm::vec3{ 1.f, 0.0f, 2.f };
     cubeActor1.transform.scale = glm::vec3(0.5f);
     cubeActor2.transform.scale = glm::vec3(0.5f);
 
