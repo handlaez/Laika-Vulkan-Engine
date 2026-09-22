@@ -31,8 +31,10 @@ namespace le {
         LeActor& getActor(size_t index);
         const LeActor& getActor(size_t index) const;
         const std::vector<LeActor>& getActors() const;
-        LeActor& getActorById(LeActor::id_t id);
-        const LeActor& getActorById(LeActor::id_t id) const;
+
+        LeActor* getActorById(LeActor::id_t id);
+        const LeActor* getActorById(LeActor::id_t id) const;
+        bool removeActorById(LeActor::id_t id);
 
         LeCamera& getCamera();
         const LeCamera& getCamera() const;

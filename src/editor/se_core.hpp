@@ -9,6 +9,7 @@
 #include "src/editor/se_mode_controller.hpp"
 #include "src/laika_app.hpp"
 #include "src/systems/keyboard_movement_controller.hpp"
+#include "src/editor/se_editor_selection.hpp"
 
 namespace se {
 
@@ -23,6 +24,7 @@ namespace se {
     private:
         le::LeCore leCore_;
         le::LeScene editorScene_;
+        EditorSelection editorSelection_;
 
         LaikaApp laikaApp_;
         ModeController modeController_;

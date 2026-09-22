@@ -3,6 +3,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <algorithm>
+
 namespace le {
 
     LeScene::LeScene(LeDevice& device, LeResourceManager& resourceManager)
@@ -48,30 +50,49 @@ namespace le {
         return actors;
     }
 
-    LeActor& LeScene::getActorById(LeActor::id_t id)
+    LeActor* LeScene::getActorById(LeActor::id_t id)
     {
         for (auto& actor : actors)
         {
             if (actor.getId() == id)
             {
-                return actor;
+                return &actor;
             }
         }
 
-        // log error here
+        return nullptr;
     }
 
-    const LeActor& LeScene::getActorById(LeActor::id_t id) const
+    const LeActor* LeScene::getActorById(LeActor::id_t id) const
     {
         for (const auto& actor : actors)
         {
             if (actor.getId() == id)
             {
-                return actor;
+                return &actor;
             }
         }
 
-        // log error here
+        return nullptr;
+    }
+
+    bool LeScene::removeActorById(LeActor::id_t id)
+    {
+        const auto it = std::find_if(
+            actors.begin(),
+            actors.end(),
+            [id](const LeActor& actor)
+            {
+                return actor.getId() == id;
+            });
+
+        if (it == actors.end())
+        {
+            return false;
+        }
+
+        actors.erase(it);
+        return true;
     }
 
     LeCamera& LeScene::getCamera() {
