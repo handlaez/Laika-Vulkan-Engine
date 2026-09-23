@@ -32,6 +32,7 @@ namespace se {
         editorPanels_.push_back(std::make_unique<ScenePanel>(leCore_, &sceneTextureDescriptorSet_, &sceneViewportHovered_));
         editorPanels_.push_back(std::make_unique<ConsolePanel>(consoleLogRecords_));
         editorPanels_.push_back(std::make_unique<ExplorerPanel>("."));
+        editorPanels_.push_back(std::make_unique<InspectorPanel>(editorScene_, editorSelection_, modeController_));
         editorPanels_.push_back(std::make_unique<HierarchyPanel>(editorScene_, editorSelection_, modeController_));
 
         leCore_.getRenderer().setSceneRenderTargetRecreatedCallback(
