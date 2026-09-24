@@ -6,6 +6,9 @@
 #include "src/editor/se_editor_selection.hpp"
 #include "src/editor/se_mode_controller.hpp"
 
+#include "src/render/i_le_renderable.hpp"
+#include "src/objects/le_texture.hpp"
+
 namespace se {
     class InspectorPanel : public IEditorPanel {
     public:
@@ -18,6 +21,9 @@ namespace se {
         le::LeScene& editorScene_;
         EditorSelection& selection_;
         ModeController& modeController_;
+
+        const std::unordered_map<uint32_t, std::shared_ptr<le::LeRenderable>>& getModels() const;
+        const std::unordered_map<uint32_t, std::shared_ptr<le::LeTexture>>& getTextures() const;
     };
 }
 

@@ -55,7 +55,6 @@ namespace le {
 			other.indexCount = 0;
 		}
 
-		void setName(std::string name);
 		void setPath(std::string path);
 
 		// disabling move assignment (because leDevice& cannot be reassigned)
@@ -82,8 +81,6 @@ namespace le {
 		LeDevice& leDevice;
 
 		std::shared_ptr<LeTexture> texture{};
-		
-		std::string name_ = "";
 		std::string path_ = "";
 
 		VkBuffer vertexBuffer;

@@ -18,6 +18,7 @@ namespace le {
 
 		void setName(const std::string name);
 		void setPath(const std::string path);
+		const std::string& getName() const;
 
 		VkImageView getImageView() const { return imageView; }
 

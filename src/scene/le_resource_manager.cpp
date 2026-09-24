@@ -132,6 +132,36 @@ namespace le {
 
 		return nullptr;
 	}
+
+	std::shared_ptr<LeTexture> LeResourceManager::findTexture(uint32_t id) const {
+		auto it = textures.find(id);
+
+		if (it == textures.end()) {
+			return nullptr;
+		}
+
+		return it->second;
+	}
+
+	std::shared_ptr<LeRenderable> LeResourceManager::findModel(uint32_t id) const {
+		auto it = models.find(id);
+
+		if (it == models.end()) {
+			return nullptr;
+		}
+
+		return it->second;
+	}
+
+	const std::unordered_map<uint32_t, std::shared_ptr<LeTexture>>& LeResourceManager::getTextures() const
+	{
+		return textures;
+	}
+
+	const std::unordered_map<uint32_t, std::shared_ptr<LeRenderable>>& LeResourceManager::getModels() const
+	{
+		return models;
+	}
 	
 	void LeResourceManager::loadFallbackTexture()
 	{

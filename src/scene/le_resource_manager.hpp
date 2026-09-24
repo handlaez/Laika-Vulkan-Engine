@@ -32,6 +32,12 @@ namespace le {
 		std::shared_ptr<LeRenderable> getModel(uint32_t id);
 		std::shared_ptr<LeModel> getStaticModel(uint32_t id);
 
+		std::shared_ptr<LeTexture> findTexture(uint32_t id) const;
+		std::shared_ptr<LeRenderable> findModel(uint32_t id) const;
+
+		const std::unordered_map<uint32_t, std::shared_ptr<LeTexture>>& getTextures() const;
+		const std::unordered_map<uint32_t, std::shared_ptr<LeRenderable>>& getModels() const;
+
 		// descriptors 
 		VkDescriptorSetLayout getTextureDescriptorSetLayout() const { return textureSetLayout; }
 		VkSampler getSharedSampler() const { return sharedSampler; }

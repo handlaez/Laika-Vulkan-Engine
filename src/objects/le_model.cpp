@@ -251,11 +251,6 @@ namespace le {
 		return attributeDescriptions;
 	}
 
-	void LeModel::setName(std::string name)
-	{
-		name_ = name;
-	}
-
 	void LeModel::setPath(std::string path)
 	{
 		path_ = path;

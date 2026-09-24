@@ -27,6 +27,11 @@ namespace le {
 		name_ = name;
 	}
 
+	const std::string& LeTexture::getName() const
+	{
+		return name_;
+	}
+
 	void LeTexture::setPath(const std::string path)
 	{
 		path_ = path;
