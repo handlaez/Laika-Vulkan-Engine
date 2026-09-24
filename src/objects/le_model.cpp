@@ -251,6 +251,11 @@ namespace le {
 		return attributeDescriptions;
 	}
 
+	void LeModel::setPath(std::string path)
+	{
+		path_ = path;
+	}
+
 	void LeModel::updateGeometry(const std::vector<Vertex>& newVertices)
 	{
 		assert(newVertices.size() == vertexCount && "New model geometry cannot exceed the size of current geometry!");

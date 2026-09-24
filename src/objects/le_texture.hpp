@@ -16,6 +16,10 @@ namespace le {
 		LeTexture(LeDevice& device, std::string path);
 		~LeTexture();
 
+		void setName(const std::string name);
+		void setPath(const std::string path);
+		const std::string& getName() const;
+
 		VkImageView getImageView() const { return imageView; }
 
 		VkDescriptorImageInfo getDescriptorInfo(VkSampler sampler) const;
@@ -28,6 +32,9 @@ namespace le {
 			VkImageLayout newLayout);
 
 		LeDevice& leDevice;
+
+		std::string name_;
+		std::string path_;
 
 		VkImage textureImage;
 		VkImageView imageView;

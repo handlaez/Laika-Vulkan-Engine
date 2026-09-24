@@ -10,8 +10,8 @@ float sinfunc = 0.0f;
 
 void LaikaApp::onLoad(le::LeScene& scene)
 {
-    uint32_t model1 = scene.leResourceManager.loadModel("models/viking_room.obj");
-    uint32_t texture1 = scene.leResourceManager.loadTexture("textures/viking_room.png");
+    uint32_t model1 = scene.leResourceManager.loadModel("models/viking_room.obj", "Viking Room");
+    uint32_t texture1 = scene.leResourceManager.loadTexture("textures/viking_room.png", "Viking Room texture");
 
     scene.getCameraObject().transform.translation.z = -3.0f;
     scene.getCameraObject().transform.translation.y = 2.5f;

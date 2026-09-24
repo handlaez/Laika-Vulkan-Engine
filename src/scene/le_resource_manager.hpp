@@ -11,7 +11,6 @@
 namespace le {
 	class LeResourceManager
 	{
-		// Manager class as described in "Game Engine Architecture ed.3" (chapter 6.1.2)
 	public: 
 		 LeResourceManager(LeDevice& device); // do nothing
 		~LeResourceManager(); // do nothing
@@ -20,8 +19,8 @@ namespace le {
 		void shutDown(); // shut down thy manager
 
 		// loaders (they return an ID to a created item)
-		uint32_t loadTexture(const std::string& path);
-		uint32_t loadModel(const std::string& path);
+		uint32_t loadTexture(const std::string& path, const std::string& name = "");
+		uint32_t loadModel(const std::string& path, const std::string& name = "");
 
 		// adders (for models procedurally generated -- terrain for example)
 		uint32_t addModel(const MeshData& meshData);
@@ -32,6 +31,12 @@ namespace le {
 		std::shared_ptr<LeTexture> getTexture(uint32_t id);
 		std::shared_ptr<LeRenderable> getModel(uint32_t id);
 		std::shared_ptr<LeModel> getStaticModel(uint32_t id);
+
+		std::shared_ptr<LeTexture> findTexture(uint32_t id) const;
+		std::shared_ptr<LeRenderable> findModel(uint32_t id) const;
+
+		const std::unordered_map<uint32_t, std::shared_ptr<LeTexture>>& getTextures() const;
+		const std::unordered_map<uint32_t, std::shared_ptr<LeRenderable>>& getModels() const;
 
 		// descriptors 
 		VkDescriptorSetLayout getTextureDescriptorSetLayout() const { return textureSetLayout; }

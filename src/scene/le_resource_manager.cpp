@@ -1,5 +1,7 @@
 #include "src/scene/le_resource_manager.hpp"
+
 #include <iostream>
+#include <filesystem>
 
 namespace le {
 	LeResourceManager::LeResourceManager(LeDevice& device) : device{ device }
@@ -32,11 +34,15 @@ namespace le {
 		models.clear();
 	}
 
-	uint32_t LeResourceManager::loadTexture(const std::string& path)
+	uint32_t LeResourceManager::loadTexture(const std::string& path, const std::string& name)
 	{
 		uint32_t id = nextTextureID++;
 
+		const std::string resourceName = name.empty() ? std::filesystem::path(path).stem().string() : name;
+
 		auto tex = std::make_shared<LeTexture>(device, path);
+		tex->setName(resourceName);
+		tex->setPath(path);
 		textures[id] = tex;
 
 		allocateTextureDescriptor(id);
@@ -45,11 +51,15 @@ namespace le {
 		return id;
 	}
 
-	uint32_t LeResourceManager::loadModel(const std::string& path)
+	uint32_t LeResourceManager::loadModel(const std::string& path, const std::string& name)
 	{
 		uint32_t id = nextModelID++;
 
+		const std::string resourceName = name.empty() ? std::filesystem::path(path).stem().string() : name;
+
 		auto model = LeModel::createModelFromFile(device, path);
+		model->setName(resourceName);
+		model->setPath(path);
 		models[id] = model;
 
 		return id;
@@ -122,16 +132,48 @@ namespace le {
 
 		return nullptr;
 	}
+
+	std::shared_ptr<LeTexture> LeResourceManager::findTexture(uint32_t id) const {
+		auto it = textures.find(id);
+
+		if (it == textures.end()) {
+			return nullptr;
+		}
+
+		return it->second;
+	}
+
+	std::shared_ptr<LeRenderable> LeResourceManager::findModel(uint32_t id) const {
+		auto it = models.find(id);
+
+		if (it == models.end()) {
+			return nullptr;
+		}
+
+		return it->second;
+	}
+
+	const std::unordered_map<uint32_t, std::shared_ptr<LeTexture>>& LeResourceManager::getTextures() const
+	{
+		return textures;
+	}
+
+	const std::unordered_map<uint32_t, std::shared_ptr<LeRenderable>>& LeResourceManager::getModels() const
+	{
+		return models;
+	}
 	
 	void LeResourceManager::loadFallbackTexture()
 	{
-		loadTexture(FALLBACK_TEXTURE);
+		loadTexture(FALLBACK_TEXTURE, "FALLBACK TEXTURE");
 	}
 
 	void LeResourceManager::loadFallbackModel()
 	{
 		uint32_t id = nextModelID++;
-		models[id] = LeModel::createCube(device);
+		auto model = LeModel::createCube(device);
+		model->setName("FALLBACK MODEL");
+		models[id] = model;
 	}
 
 	// assuming here that texture and model class' destructors will handle the rest (as they should)
