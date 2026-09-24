@@ -22,6 +22,16 @@ namespace le {
 		}
 	}
 
+	void LeTexture::setName(const std::string name)
+	{
+		name_ = name;
+	}
+
+	void LeTexture::setPath(const std::string path)
+	{
+		path_ = path;
+	}
+
 	void LeTexture::createTextureImage(std::string path)
 	{
 		int texWidth, texHeight, texChannels;

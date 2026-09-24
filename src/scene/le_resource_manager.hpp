@@ -11,7 +11,6 @@
 namespace le {
 	class LeResourceManager
 	{
-		// Manager class as described in "Game Engine Architecture ed.3" (chapter 6.1.2)
 	public: 
 		 LeResourceManager(LeDevice& device); // do nothing
 		~LeResourceManager(); // do nothing
@@ -20,8 +19,8 @@ namespace le {
 		void shutDown(); // shut down thy manager
 
 		// loaders (they return an ID to a created item)
-		uint32_t loadTexture(const std::string& path);
-		uint32_t loadModel(const std::string& path);
+		uint32_t loadTexture(const std::string& path, const std::string& name = "");
+		uint32_t loadModel(const std::string& path, const std::string& name = "");
 
 		// adders (for models procedurally generated -- terrain for example)
 		uint32_t addModel(const MeshData& meshData);

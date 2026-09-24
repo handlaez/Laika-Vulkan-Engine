@@ -91,4 +91,9 @@ namespace le {
 
         bvh = newBVH;
     }
+
+    void LeActor::clearBVH()
+    {
+        bvh.reset();
+    }
 }

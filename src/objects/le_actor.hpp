@@ -57,6 +57,7 @@ namespace le {
         void addHitbox(const glm::vec3& offset, const glm::vec3 halfExtents);
         bool checkCollision(LeActor& other);
         void setBVH(std::shared_ptr<BVH> newBVH);
+        void clearBVH();
         bool hasBVH() const { return bvh != nullptr; }
 
     private:
