@@ -1,9 +1,11 @@
 #include "se_scene_panel.hpp"
+#include "src/core/le_core.hpp"
+
 #include "imgui.h"
 
 namespace se {
-	ScenePanel::ScenePanel(le::LeCore& leCore, const VkDescriptorSet* textureSet, bool* isHovered)
-		: leCore_(leCore), textureSet_(textureSet), isHovered_(isHovered) {}
+	ScenePanel::ScenePanel(EditorContext& context, const VkDescriptorSet* textureSet, bool* isHovered)
+		: context_(context), textureSet_(textureSet), isHovered_(isHovered) {}
 
     void ScenePanel::onImGuiRender() {
         ImGui::Begin("Scene");
@@ -12,8 +14,15 @@ namespace se {
             *isHovered_ = ImGui::IsWindowHovered();
         }
 
+        if (!context_.scene)
+        {
+            ImGui::TextUnformatted("No project loaded.");
+            ImGui::End();
+            return;
+        }
+
         const ImVec2 availableSize = ImGui::GetContentRegionAvail();
-        const VkExtent2D sceneExtent = leCore_.getRenderer().getSceneRenderTarget().getExtent();
+        const VkExtent2D sceneExtent = context_.core.getRenderer().getSceneRenderTarget().getExtent();
 
         if (availableSize.x > 0.0f && availableSize.y > 0.0f && sceneExtent.width > 0 && sceneExtent.height > 0) {
             const float sceneAspect = static_cast<float>(sceneExtent.width) / static_cast<float>(sceneExtent.height);
@@ -32,7 +41,7 @@ namespace se {
 
             ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + offsetX, ImGui::GetCursorPosY() + offsetY));
 
-            if (textureSet_ != VK_NULL_HANDLE) {
+            if (textureSet_ != nullptr) {
                 ImGui::Image(*textureSet_, imageSize, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f));
             }
         }

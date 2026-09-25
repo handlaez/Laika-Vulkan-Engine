@@ -16,6 +16,7 @@ namespace le {
 		~LeResourceManager(); // do nothing
 
 		void startUp(); // start up the manager
+		void reset(); // cleanup the manager
 		void shutDown(); // shut down thy manager
 
 		// loaders (they return an ID to a created item)

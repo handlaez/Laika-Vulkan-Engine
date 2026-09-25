@@ -4,12 +4,17 @@
 #include "src/core/le_core.hpp"
 #include "src/scene/le_scene.hpp"
 #include "src/render/le_scene_render_target.hpp"
-#include "src/editor/i_editor_panel.hpp"
+#include "src/editor/panel/i_editor_panel.hpp"
 #include "src/logger/le_log_record.hpp"
 #include "src/editor/se_mode_controller.hpp"
 #include "src/laika_app.hpp"
 #include "src/systems/keyboard_movement_controller.hpp"
 #include "src/editor/se_editor_selection.hpp"
+#include "src/editor/project/se_project_manager.hpp"
+#include "src/editor/se_editor_context.hpp"
+#include "src/editor/se_editor_session.hpp"
+
+#include <filesystem>
 
 namespace se {
 
@@ -23,11 +28,12 @@ namespace se {
 
     private:
         le::LeCore leCore_;
-        le::LeScene editorScene_;
-        EditorSelection editorSelection_;
 
-        LaikaApp laikaApp_;
-        ModeController modeController_;
+        EditorSelection editorSelection_;
+        ProjectManager projectManager_;
+        EditorContext editorContext_;
+        EditorSession editorSession_;
+
         le::KeyboardMovementController editorCameraController_;
 
         std::vector<std::unique_ptr<IEditorPanel>> editorPanels_;
@@ -49,9 +55,17 @@ namespace se {
         void updateEditorCamera();
 
         void renderPlayToolbar();
+        void renderProjectPopups();
 
         bool dockspaceInitialized_{ false };
         bool sceneViewportHovered_{ false };
+
+        bool openNewProjectPopup_{ false };
+        bool openOpenProjectPopup_{ false };
+
+        std::array<char, 256> newProjectName_{};
+        std::array<char, 512> newProjectDirectory_{};
+        std::array<char, 512> openProjectFile_{};
     };
 }
 
