@@ -1,15 +1,28 @@
 #include "se_hierarchy_panel.hpp"
 #include "imgui.h"
+#include "src/scene/le_scene.hpp"
+#include "src/editor/se_editor_selection.hpp"
+#include "src/editor/se_mode_controller.hpp"
 
 namespace se {
-    HierarchyPanel::HierarchyPanel(le::LeScene& scene, EditorSelection& selection, ModeController& modeController)
-        : editorScene_(scene), selection_(selection), modeController_(modeController)
+    HierarchyPanel::HierarchyPanel(EditorContext& context)
+        : context_(context)
     {
     }
 
     void HierarchyPanel::onImGuiRender()
     {
         ImGui::Begin("Hierarchy");
+
+        if (!context_.scene || !context_.modeController)
+        {
+            ImGui::TextUnformatted("No project loaded.");
+            ImGui::End();
+            return;
+        }
+
+        auto& editorScene = *context_.scene;
+        auto& selection = context_.selection;
 
         if (!canEdit_)
         {
@@ -18,13 +31,13 @@ namespace se {
 
         if (ImGui::Button("Add Cube"))
         {
-            const auto id = editorScene_.addActor(0, 0);
-            selection_.select(id);
+            const auto id = editorScene.addActor(0, 0);
+            selection.select(id);
         }
 
         ImGui::SameLine();
 
-        const bool hasSelection = selection_.hasSelection();
+        const bool hasSelection = selection.hasSelection();
 
         if (!hasSelection)
         {
@@ -33,14 +46,11 @@ namespace se {
 
         if (ImGui::Button("Delete"))
         {
-            const auto id = selection_.getSelectedActor();
+            const auto id = selection.getSelectedActor();
 
-            if (id)
+            if (id && editorScene.removeActorById(*id))
             {
-                if (editorScene_.removeActorById(*id))
-                {
-                    selection_.clear();
-                }
+                selection.clear();
             }
         }
 
@@ -51,14 +61,15 @@ namespace se {
 
         ImGui::Separator();
 
-        for (const auto& actor : editorScene_.getActors())
+        for (const auto& actor : editorScene.getActors())
         {
-            const bool selected = selection_.getSelectedActor() == actor.getId();
+            const bool selected = selection.getSelectedActor() == actor.getId();
+
             const std::string label = "Actor " + std::to_string(actor.getId());
 
             if (ImGui::Selectable(label.c_str(), selected))
             {
-                selection_.select(actor.getId());
+                selection.select(actor.getId());
             }
         }
 
@@ -72,6 +83,12 @@ namespace se {
 
     void HierarchyPanel::onUpdate()
     {
-        canEdit_ = modeController_.getState() == PlayState::Edit;
+        if (!context_.modeController)
+        {
+            canEdit_ = false;
+            return;
+        }
+
+        canEdit_ = context_.modeController->getState() == PlayState::Edit;
     }
 }

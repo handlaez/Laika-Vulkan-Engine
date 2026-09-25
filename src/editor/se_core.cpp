@@ -22,6 +22,9 @@ namespace se {
 
     SeCore::SeCore()
         : leCore_{},
+        projectManager_{},
+        editorSelection_{},
+        editorContext_{ leCore_, projectManager_, leCore_.getResources(), editorSelection_},
         editorScene_{ std::make_unique<le::LeScene>(leCore_.getDevice(), leCore_.getResources()) },
         laikaApp_{},
         modeController_{ std::make_unique<ModeController>(*editorScene_, laikaApp_) },
@@ -29,11 +32,11 @@ namespace se {
     {
         initImGui();
 
-        editorPanels_.push_back(std::make_unique<ScenePanel>(leCore_, &sceneTextureDescriptorSet_, &sceneViewportHovered_));
+        editorPanels_.push_back(std::make_unique<ScenePanel>(editorContext_, &sceneTextureDescriptorSet_, &sceneViewportHovered_));
         editorPanels_.push_back(std::make_unique<ConsolePanel>(consoleLogRecords_));
-        editorPanels_.push_back(std::make_unique<ExplorerPanel>("."));
-        editorPanels_.push_back(std::make_unique<InspectorPanel>(*editorScene_, editorSelection_, *modeController_));
-        editorPanels_.push_back(std::make_unique<HierarchyPanel>(*editorScene_, editorSelection_, *modeController_));
+        editorPanels_.push_back(std::make_unique<ExplorerPanel>(editorContext_));
+        editorPanels_.push_back(std::make_unique<InspectorPanel>(editorContext_));
+        editorPanels_.push_back(std::make_unique<HierarchyPanel>(editorContext_));
 
         leCore_.getRenderer().setSceneRenderTargetRecreatedCallback(
             [this](le::LeSceneRenderTarget& sceneTarget)
@@ -450,6 +453,9 @@ namespace se {
         editorScene_ = std::make_unique<le::LeScene>(leCore_.getDevice(), leCore_.getResources());
         modeController_ = std::make_unique<ModeController>(*editorScene_, laikaApp_);
 
+        editorContext_.scene = editorScene_.get();
+        editorContext_.modeController = modeController_.get();
+
         editorSelection_.clear();
 
         laikaApp_.onLoad(*editorScene_);
@@ -480,6 +486,9 @@ namespace se {
         if (modeController_) {
             modeController_->stop();
         }
+
+        editorContext_.modeController = nullptr;
+        editorContext_.scene = nullptr;
 
         editorSelection_.clear();
 

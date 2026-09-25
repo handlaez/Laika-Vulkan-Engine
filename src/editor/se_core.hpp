@@ -11,6 +11,7 @@
 #include "src/systems/keyboard_movement_controller.hpp"
 #include "src/editor/se_editor_selection.hpp"
 #include "src/editor/project/se_project_manager.hpp"
+#include "src/editor/se_editor_context.hpp"
 
 #include <filesystem>
 
@@ -29,6 +30,7 @@ namespace se {
         std::unique_ptr<le::LeScene> editorScene_;
         EditorSelection editorSelection_;
         ProjectManager projectManager_;
+        EditorContext editorContext_;
 
         LaikaApp laikaApp_;
         std::unique_ptr<ModeController> modeController_;

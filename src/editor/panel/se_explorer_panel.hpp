@@ -2,6 +2,7 @@
 #define EXPLORER_PANEL_HPP
 
 #include "i_editor_panel.hpp"
+#include "src/editor/se_editor_context.hpp"
 
 #include <filesystem>
 #include <string>
@@ -11,7 +12,7 @@ namespace se {
 
     class ExplorerPanel : public IEditorPanel {
     public:
-        explicit ExplorerPanel(const std::filesystem::path& rootDirectory);
+        explicit ExplorerPanel(EditorContext& context);
 
         void onImGuiRender() override;
         void onUpdate() override;
@@ -21,7 +22,8 @@ namespace se {
         void refresh();
 
     private:
-        std::filesystem::path rootDirectory_;
+        EditorContext& context_;
+
         std::filesystem::path selectedPath_;
 
         bool shouldRefresh_ = false;

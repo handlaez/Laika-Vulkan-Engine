@@ -6,12 +6,8 @@
 
 namespace se {
 
-    ExplorerPanel::ExplorerPanel(const std::filesystem::path& rootDirectory) : rootDirectory_(rootDirectory)
+    ExplorerPanel::ExplorerPanel(EditorContext& context) : context_(context)
     {
-        if (!std::filesystem::exists(rootDirectory_))
-        {
-            rootDirectory_ = std::filesystem::current_path();
-        }
     }
 
     void ExplorerPanel::onUpdate()
@@ -27,6 +23,17 @@ namespace se {
     {
         ImGui::Begin("Explorer");
 
+        const Project* project = context_.projects.getProject();
+
+        if (project == nullptr)
+        {
+            ImGui::TextUnformatted("No project loaded.");
+            ImGui::End();
+            return;
+        }
+
+        const std::filesystem::path rootDirectory = project->getRoot();
+
         // toolbar
         if (ImGui::Button("Refresh"))
         {
@@ -35,14 +42,14 @@ namespace se {
 
         ImGui::SameLine();
 
-        ImGui::TextUnformatted(rootDirectory_.string().c_str());
+        ImGui::TextUnformatted(rootDirectory.string().c_str());
 
         ImGui::Separator();
 
         // root dir
-        if (std::filesystem::exists(rootDirectory_))
+        if (std::filesystem::exists(rootDirectory))
         {
-            drawDirectory(rootDirectory_);
+            drawDirectory(rootDirectory);
         }
         else
         {
@@ -83,9 +90,7 @@ namespace se {
 
                 if (entry.is_directory())
                 {
-                    ImGuiTreeNodeFlags flags =
-                        ImGuiTreeNodeFlags_OpenOnArrow |
-                        ImGuiTreeNodeFlags_SpanAvailWidth;
+                    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
 
                     const bool isOpen = ImGui::TreeNodeEx(name.c_str(), flags);
 

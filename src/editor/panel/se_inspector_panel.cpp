@@ -1,16 +1,21 @@
 #include "se_inspector_panel.hpp"
+#include "src/scene/le_scene.hpp"
+#include "src/editor/se_editor_selection.hpp"
+#include "src/editor/se_mode_controller.hpp"
 
 #include "imgui.h"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include <algorithm>
 #include <string>
+#include <vector>
 
 namespace se {
 
-    InspectorPanel::InspectorPanel(le::LeScene& scene, EditorSelection& selection, ModeController& modeController)
-        : editorScene_(scene), selection_(selection), modeController_(modeController)
+    InspectorPanel::InspectorPanel(EditorContext& context)
+        : context_(context)
     {
     }
 
@@ -18,7 +23,18 @@ namespace se {
     {
         ImGui::Begin("Inspector");
 
-        const auto selectedId = selection_.getSelectedActor();
+        if (!context_.scene || !context_.modeController)
+        {
+            ImGui::TextUnformatted("No project loaded.");
+            ImGui::End();
+            return;
+        }
+
+        auto& editorScene = *context_.scene;
+        auto& selection = context_.selection;
+        auto& resources = context_.resources;
+
+        const auto selectedId = selection.getSelectedActor();
 
         if (!selectedId.has_value())
         {
@@ -27,17 +43,17 @@ namespace se {
             return;
         }
 
-        le::LeActor* actor = editorScene_.getActorById(*selectedId);
+        le::LeActor* actor = editorScene.getActorById(*selectedId);
 
         if (actor == nullptr)
         {
-            selection_.clear();
+            selection.clear();
             ImGui::TextUnformatted("No actor selected.");
             ImGui::End();
             return;
         }
 
-        const bool canEdit = modeController_.getState() == PlayState::Edit;
+        const bool canEdit = context_.modeController->getState() == PlayState::Edit;
 
         ImGui::Text("Actor %u", actor->getId());
         ImGui::Separator();
@@ -63,10 +79,9 @@ namespace se {
 
         if (ImGui::CollapsingHeader("Appearance", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            auto& resources = editorScene_.leResourceManager;
-
             // Model selector
             auto currentModel = resources.findModel(actor->modelID);
+
             std::string currentModelName = "Unknown Model";
 
             if (currentModel)
@@ -82,6 +97,7 @@ namespace se {
             if (ImGui::BeginCombo("Model", currentModelName.c_str()))
             {
                 std::vector<uint32_t> modelIds;
+                modelIds.reserve(resources.getModels().size());
 
                 for (const auto& [id, model] : resources.getModels())
                 {
@@ -108,10 +124,7 @@ namespace se {
                         modelName = "Unnamed Model";
                     }
 
-                    // Visible text = modelName
-                    // Internal ImGui ID = model_<resource ID>
-                    const std::string label =
-                        modelName + "##model_" + std::to_string(id);
+                    const std::string label = modelName + "##model_" + std::to_string(id);
 
                     if (ImGui::Selectable(label.c_str(), selected))
                     {
@@ -133,6 +146,7 @@ namespace se {
 
             // Texture selector
             auto currentTexture = resources.findTexture(actor->textureID);
+
             std::string currentTextureName = "Unknown Texture";
 
             if (currentTexture)
@@ -148,6 +162,7 @@ namespace se {
             if (ImGui::BeginCombo("Texture", currentTextureName.c_str()))
             {
                 std::vector<uint32_t> textureIds;
+                textureIds.reserve(resources.getTextures().size());
 
                 for (const auto& [id, texture] : resources.getTextures())
                 {
@@ -203,4 +218,5 @@ namespace se {
     void InspectorPanel::onUpdate()
     {
     }
+
 }
