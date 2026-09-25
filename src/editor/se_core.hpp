@@ -4,7 +4,7 @@
 #include "src/core/le_core.hpp"
 #include "src/scene/le_scene.hpp"
 #include "src/render/le_scene_render_target.hpp"
-#include "src/editor/i_editor_panel.hpp"
+#include "src/editor/panel/i_editor_panel.hpp"
 #include "src/logger/le_log_record.hpp"
 #include "src/editor/se_mode_controller.hpp"
 #include "src/laika_app.hpp"

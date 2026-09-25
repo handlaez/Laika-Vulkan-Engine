@@ -4,11 +4,11 @@
 #include "src/logger/le_console_sink.hpp"
 #include "src/logger/se_panel_sink.hpp"
 
-#include "src/editor/se_scene_panel.hpp"
-#include "src/editor/se_hierarchy_panel.hpp"
-#include "src/editor/se_console_panel.hpp"
-#include "src/editor/se_inspector_panel.hpp"
-#include "src/editor/se_explorer_panel.hpp"
+#include "src/editor/panel/se_scene_panel.hpp"
+#include "src/editor/panel/se_hierarchy_panel.hpp"
+#include "src/editor/panel/se_console_panel.hpp"
+#include "src/editor/panel/se_inspector_panel.hpp"
+#include "src/editor/panel/se_explorer_panel.hpp"
 
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
