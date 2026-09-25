@@ -213,66 +213,69 @@ namespace le {
         instancedRenderSystem->setTexture(0);
     }
 
-    void LeRenderSystemManager::render(LeScene& scene)
+    void LeRenderSystemManager::render(LeScene* scene)
     {
         if (auto commandBuffer = renderer_.beginFrame())
         {
             const uint32_t currentFrame = renderer_.getFrameIndex();
 
-            // COMPUTE PASS
-            if (scene.hasTerrain())
+            if (scene)
             {
-                glm::vec3 cameraWorldPos = scene.getCameraObject().transform.translation;
+                // COMPUTE PASS
+                if (scene->hasTerrain())
+                {
+                    glm::vec3 cameraWorldPos = scene->getCameraObject().transform.translation;
 
-                scene.getTerrain()->update(scene, cameraWorldPos, commandBuffer);
+                    scene->getTerrain()->update(*scene, cameraWorldPos, commandBuffer);
 
-                VkMemoryBarrier memoryBarrier{};
-                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-                memoryBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+                    VkMemoryBarrier memoryBarrier{};
+                    memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                    memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                    memoryBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
 
-                vkCmdPipelineBarrier(
+                    vkCmdPipelineBarrier(
+                        commandBuffer,
+                        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                        VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                        0,
+                        1,
+                        &memoryBarrier,
+                        0,
+                        nullptr,
+                        0,
+                        nullptr
+                    );
+                }
+
+                // SCENE RENDER TARGET
+                auto& sceneRenderTarget = renderer_.getSceneRenderTarget();
+
+                sceneRenderTarget.begin(commandBuffer);
+
+                updateFrameUBO(currentFrame, scene->getCamera());
+                updateLightingUBO(currentFrame, scene->getCameraObject());
+
+                RenderFrameData frameData{
                     commandBuffer,
-                    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-                    VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-                    0,
-                    1,
-                    &memoryBarrier,
-                    0,
-                    nullptr,
-                    0,
-                    nullptr
-                );
+                    scene->getCamera(),
+                    currentFrame,
+                    getFrameDescriptorSet(currentFrame)
+                };
+
+                const auto& actors = scene->getActors();
+
+                if (!actors.empty())
+                {
+                    basicRenderSystem->render(frameData, actors);
+                }
+
+                if (Utils::skyboxEnabled)
+                {
+                    skyboxRenderSystem->render(frameData);
+                }
+
+                sceneRenderTarget.end(commandBuffer);
             }
-
-            // SCENE RENDER TARGET
-            auto& sceneRenderTarget = renderer_.getSceneRenderTarget();
-
-            sceneRenderTarget.begin(commandBuffer);
-
-            updateFrameUBO(currentFrame, scene.getCamera());
-            updateLightingUBO(currentFrame, scene.getCameraObject());
-
-            RenderFrameData frameData{
-                commandBuffer,
-                scene.getCamera(),
-                currentFrame,
-                getFrameDescriptorSet(currentFrame)
-            };
-
-            const auto& actors = scene.getActors();
-
-            if (!actors.empty())
-            {
-                basicRenderSystem->render(frameData, actors);
-            }
-
-            if (Utils::skyboxEnabled)
-            {
-                skyboxRenderSystem->render(frameData);
-            }
-
-            sceneRenderTarget.end(commandBuffer);
 
             // SWAPCHAIN / EDITOR OVERLAY
             renderer_.beginSwapChainRenderPass(commandBuffer);

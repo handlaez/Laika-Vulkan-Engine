@@ -27,7 +27,7 @@ namespace le {
     {
     }
 
-    void LeCore::render(LeScene& scene)
+    void LeCore::render(LeScene* scene)
     {
         renderManager_->render(scene);
     }

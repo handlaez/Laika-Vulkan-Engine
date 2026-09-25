@@ -35,7 +35,7 @@ namespace le {
 
 		void beginFrame();
 		void update();
-		void render(LeScene& scene);
+		void render(LeScene* scene);
 		void endFrame();
 
 		LeWindow& getWindow();

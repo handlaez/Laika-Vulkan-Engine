@@ -12,6 +12,7 @@
 #include "src/editor/se_editor_selection.hpp"
 #include "src/editor/project/se_project_manager.hpp"
 #include "src/editor/se_editor_context.hpp"
+#include "src/editor/se_editor_session.hpp"
 
 #include <filesystem>
 
@@ -27,13 +28,12 @@ namespace se {
 
     private:
         le::LeCore leCore_;
-        std::unique_ptr<le::LeScene> editorScene_;
+
         EditorSelection editorSelection_;
         ProjectManager projectManager_;
         EditorContext editorContext_;
+        EditorSession editorSession_;
 
-        LaikaApp laikaApp_;
-        std::unique_ptr<ModeController> modeController_;
         le::KeyboardMovementController editorCameraController_;
 
         std::vector<std::unique_ptr<IEditorPanel>> editorPanels_;
@@ -54,14 +54,18 @@ namespace se {
         void renderEditor();
         void updateEditorCamera();
 
-        bool openProject(const std::filesystem::path& projectFile);
-        bool createProject(const std::filesystem::path& directory, const std::string& name);
-        void closeProject();
-
         void renderPlayToolbar();
+        void renderProjectPopups();
 
         bool dockspaceInitialized_{ false };
         bool sceneViewportHovered_{ false };
+
+        bool openNewProjectPopup_{ false };
+        bool openOpenProjectPopup_{ false };
+
+        std::array<char, 256> newProjectName_{};
+        std::array<char, 512> newProjectDirectory_{};
+        std::array<char, 512> openProjectFile_{};
     };
 }
 

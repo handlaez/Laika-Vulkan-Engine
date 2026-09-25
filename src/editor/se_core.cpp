@@ -21,13 +21,11 @@
 namespace se {
 
     SeCore::SeCore()
-        : leCore_{},
+      : leCore_{},
         projectManager_{},
         editorSelection_{},
-        editorContext_{ leCore_, projectManager_, leCore_.getResources(), editorSelection_},
-        editorScene_{ std::make_unique<le::LeScene>(leCore_.getDevice(), leCore_.getResources()) },
-        laikaApp_{},
-        modeController_{ std::make_unique<ModeController>(*editorScene_, laikaApp_) },
+        editorContext_{ leCore_, projectManager_, leCore_.getResources(), editorSelection_ },
+        editorSession_{ editorContext_ },
         consoleLogRecords_{ std::make_shared<std::vector<le::log::Record>>() }
     {
         initImGui();
@@ -58,14 +56,12 @@ namespace se {
         shutdownImGui();
     }
 
-    void se::SeCore::run()
-    {
-        laikaApp_.onLoad(*editorScene_);
 
+    void SeCore::run()
+    {
         ::le::log::Logger logger;
         logger.addSink(std::make_unique<::le::log::ConsoleSink>());
         logger.addSink(std::make_unique<::se::PanelSink>(consoleLogRecords_));
-
         logger.write(::le::log::Level::info, ::le::log::Category::editor, "Poyekhali!");
 
         while (!leCore_.getWindow().shouldClose())
@@ -74,20 +70,26 @@ namespace se {
 
             Utils::checkKeys(leCore_.getWindow().getGLFWwindow());
 
-            modeController_->update(leCore_.getFrameInfo(), sceneViewportHovered_);
+            editorSession_.processPendingAction();
+
+            if (editorContext_.modeController)
+            {
+                editorContext_.modeController->update(leCore_.getFrameInfo(), sceneViewportHovered_);
+            }
 
             updateEditorCamera();
             updateEditor();
 
-            leCore_.render(modeController_->getActiveScene());
+            leCore_.render(editorSession_.getActiveScene());
 
             renderEditor();
 
             leCore_.endFrame();
         }
 
-        modeController_->stop();
+        editorSession_.closeProject();
     }
+
 
     void SeCore::createImGuiDescriptorPool()
     {
@@ -112,6 +114,7 @@ namespace se {
             throw std::runtime_error("Failed to create ImGui descriptor pool");
         }
     }
+
 
     void SeCore::initImGui()
     {
@@ -161,6 +164,7 @@ namespace se {
         recreateSceneTexture(leCore_.getRenderer().getSceneRenderTarget());
     }
 
+
     void SeCore::shutdownImGui()
     {
         if (sceneTextureDescriptorSet_ != VK_NULL_HANDLE)
@@ -173,6 +177,7 @@ namespace se {
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
     }
+
 
     void SeCore::renderImGui(VkCommandBuffer commandBuffer)
     {
@@ -215,12 +220,40 @@ namespace se {
         }
 
         if (ImGui::BeginMenuBar()) {
-            if (ImGui::BeginMenu("File")) {
-                if (ImGui::MenuItem("Exit")) {
-                    glfwSetWindowShouldClose(
-                        leCore_.getWindow().getGLFWwindow(),
-                        GLFW_TRUE
-                    );
+            if (ImGui::BeginMenu("File"))
+            {
+                if (ImGui::MenuItem("New Project..."))
+                {
+                    std::fill(newProjectName_.begin(), newProjectName_.end(), '\0');
+                    std::fill(newProjectDirectory_.begin(), newProjectDirectory_.end(), '\0');
+
+                    const std::string currentDirectory = std::filesystem::current_path().string();
+
+                    std::snprintf(newProjectName_.data(), newProjectName_.size(), "%s", "MyGame");
+                    std::snprintf(newProjectDirectory_.data(), newProjectDirectory_.size(), "%s", currentDirectory.c_str());
+
+                    openNewProjectPopup_ = true;
+                }
+
+                if (ImGui::MenuItem("Open Project..."))
+                {
+                    std::fill(openProjectFile_.begin(), openProjectFile_.end(), '\0');
+
+                    openOpenProjectPopup_ = true;
+                }
+
+                ImGui::BeginDisabled(!editorSession_.hasProject());
+                if (ImGui::MenuItem("Close Project"))
+                {
+                    editorSession_.requestClose();
+                }
+                ImGui::EndDisabled();
+
+                ImGui::Separator();
+
+                if (ImGui::MenuItem("Exit"))
+                {
+                    glfwSetWindowShouldClose(leCore_.getWindow().getGLFWwindow(), GLFW_TRUE);
                 }
 
                 ImGui::EndMenu();
@@ -249,6 +282,20 @@ namespace se {
             ImGui::EndMenuBar();
         }
 
+        if (openNewProjectPopup_)
+        {
+            ImGui::OpenPopup("New Project");
+            openNewProjectPopup_ = false;
+        }
+
+        if (openOpenProjectPopup_)
+        {
+            ImGui::OpenPopup("Open Project");
+            openOpenProjectPopup_ = false;
+        }
+
+        renderProjectPopups();
+
         ImGui::End();
 
         renderEditorWindows();
@@ -257,6 +304,7 @@ namespace se {
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
     }
 
+
     void SeCore::renderEditorWindows()
     {
         for (auto& panel : editorPanels_) {
@@ -264,20 +312,19 @@ namespace se {
         }
     }
 
+
     void SeCore::renderPlayToolbar()
     {
-        const auto state = modeController_->getState();
+        if (!editorContext_.modeController)
+        {
+            ImGui::TextUnformatted("[No Project]");
+            return;
+        }
 
-        const char* primaryLabel =
-            state == PlayState::Edit ? "Run" :
-            state == PlayState::Run ? "Pause" :
-            "Resume";
+        const auto state = editorContext_.modeController->getState();
 
-        const char* statusLabel =
-            state == PlayState::Edit ? "[Editing]" :
-            state == PlayState::Run ? "[Running]" :
-            "[Paused]";
-
+        const char* primaryLabel = state == PlayState::Edit ? "Run" : state == PlayState::Run ? "Pause" : "Resume";
+        const char* statusLabel = state == PlayState::Edit ? "[Editing]" : state == PlayState::Run ? "[Running]" : "[Paused]";
         const bool showRestartStop = state != PlayState::Edit;
 
         const ImGuiStyle& style = ImGui::GetStyle();
@@ -306,21 +353,20 @@ namespace se {
 
         ImGui::SetCursorPosX(centeredX);
 
-        // Primary button
         if (ImGui::Button(primaryLabel))
         {
             switch (state)
             {
             case PlayState::Edit:
-                modeController_->run();
+                editorContext_.modeController->run();
                 break;
 
             case PlayState::Run:
-                modeController_->pause();
+                editorContext_.modeController->pause();
                 break;
 
             case PlayState::Pause:
-                modeController_->resume();
+                editorContext_.modeController->resume();
                 break;
             }
         }
@@ -331,20 +377,79 @@ namespace se {
 
             if (ImGui::Button("Restart"))
             {
-                modeController_->restart();
+                editorContext_.modeController->restart();
             }
 
             ImGui::SameLine();
 
             if (ImGui::Button("Stop"))
             {
-                modeController_->stop();
+                editorContext_.modeController->stop();
             }
         }
 
         ImGui::SameLine();
         ImGui::TextUnformatted(statusLabel);
     }
+
+    
+    void SeCore::renderProjectPopups()
+    {
+        if (ImGui::BeginPopupModal("New Project", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::InputText("Project Name", newProjectName_.data(), newProjectName_.size());
+            ImGui::InputText("Parent Directory", newProjectDirectory_.data(), newProjectDirectory_.size());
+            ImGui::Separator();
+
+            if (ImGui::Button("Create"))
+            {
+                const std::string name = newProjectName_.data();
+                const std::filesystem::path directory = newProjectDirectory_.data();
+
+                if (!name.empty() && !directory.empty())
+                {
+                    editorSession_.requestCreate(directory, name);
+                    ImGui::CloseCurrentPopup();
+                }
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Cancel"))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
+
+        if (ImGui::BeginPopupModal("Open Project", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::InputText("Project File", openProjectFile_.data(), openProjectFile_.size());
+            ImGui::Separator();
+
+            if (ImGui::Button("Open"))
+            {
+                const std::filesystem::path projectFile = openProjectFile_.data();
+
+                if (!projectFile.empty())
+                {
+                    editorSession_.requestOpen(projectFile);
+                    ImGui::CloseCurrentPopup();
+                }
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Cancel"))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
+    }
+
 
     void SeCore::initializeDockspace()
     {
@@ -360,29 +465,9 @@ namespace se {
         ImGuiID rightDock;
         ImGuiID bottomDock;
 
-        leftDock = ImGui::DockBuilderSplitNode(
-            mainDock,
-            ImGuiDir_Left,
-            0.20f,
-            nullptr,
-            &mainDock
-        );
-
-        rightDock = ImGui::DockBuilderSplitNode(
-            mainDock,
-            ImGuiDir_Right,
-            0.25f,
-            nullptr,
-            &mainDock
-        );
-
-        bottomDock = ImGui::DockBuilderSplitNode(
-            mainDock,
-            ImGuiDir_Down,
-            0.25f,
-            nullptr,
-            &mainDock
-        );
+        leftDock = ImGui::DockBuilderSplitNode(mainDock, ImGuiDir_Left, 0.20f, nullptr, &mainDock);
+        rightDock = ImGui::DockBuilderSplitNode(mainDock, ImGuiDir_Right, 0.25f, nullptr, &mainDock);
+        bottomDock = ImGui::DockBuilderSplitNode(mainDock, ImGuiDir_Down, 0.25f, nullptr, &mainDock);
 
         ImGui::DockBuilderDockWindow("Hierarchy", leftDock);
         ImGui::DockBuilderDockWindow("Inspector", rightDock);
@@ -420,83 +505,20 @@ namespace se {
 
     void SeCore::updateEditorCamera()
     {
-        if (modeController_->getState() != PlayState::Edit)
-        {
+        if (!editorContext_.scene || !editorContext_.modeController) {
+            return;
+        }
+
+        if (editorContext_.modeController->getState() != PlayState::Edit) {
             return;
         }
 
         auto& frameInfo = leCore_.getFrameInfo();
-        auto& cameraObject = editorScene_->getCameraObject();
-        auto& camera = editorScene_->getCamera();
+        auto& cameraObject = editorContext_.scene->getCameraObject();
+        auto& camera = editorContext_.scene->getCamera();
 
-        editorCameraController_.moveInPlaneXZ(
-            frameInfo.window,
-            frameInfo.deltaTime,
-            cameraObject,
-            sceneViewportHovered_
-        );
-
+        editorCameraController_.moveInPlaneXZ(frameInfo.window, frameInfo.deltaTime, cameraObject, sceneViewportHovered_);
         camera.setPerspectiveProjection(glm::radians(50.f), frameInfo.aspect, 0.1f, 100.f);
         camera.setView(cameraObject.transform.translation, cameraObject.transform.rotation);
-    }
-
-    bool SeCore::openProject(const std::filesystem::path& projectFile)
-    {
-        closeProject();
-
-        if (!projectManager_.loadProject(projectFile)) {
-            return false;
-        }
-
-        leCore_.getResources().reset();
-
-        editorScene_ = std::make_unique<le::LeScene>(leCore_.getDevice(), leCore_.getResources());
-        modeController_ = std::make_unique<ModeController>(*editorScene_, laikaApp_);
-
-        editorContext_.scene = editorScene_.get();
-        editorContext_.modeController = modeController_.get();
-
-        editorSelection_.clear();
-
-        laikaApp_.onLoad(*editorScene_);
-
-        return true;
-    }
-
-    bool SeCore::createProject(const std::filesystem::path& directory, const std::string& name)
-    {
-        closeProject();
-
-        if (!projectManager_.createProject(directory, name)) {
-            return false;
-        }
-
-        editorScene_ = std::make_unique<le::LeScene>(leCore_.getDevice(), leCore_.getResources());
-        modeController_ = std::make_unique<ModeController>(*editorScene_, laikaApp_);
-
-        editorSelection_.clear();
-
-        laikaApp_.onLoad(*editorScene_);
-
-        return true;
-    }
-
-    void SeCore::closeProject()
-    {
-        if (modeController_) {
-            modeController_->stop();
-        }
-
-        editorContext_.modeController = nullptr;
-        editorContext_.scene = nullptr;
-
-        editorSelection_.clear();
-
-        modeController_.reset();
-        editorScene_.reset();
-
-        leCore_.getResources().reset();
-
-        projectManager_.unloadProject();
     }
 } // se

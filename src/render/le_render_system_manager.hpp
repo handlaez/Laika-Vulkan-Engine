@@ -36,7 +36,7 @@ namespace le {
         ~LeRenderSystemManager();
 
         void sync(LeScene& scene);
-        void render(LeScene& scene);
+        void render(LeScene* scene);
         
         void createFrameResources();
         void updateFrameUBO(uint32_t frameIndex, const LeCamera& camera);

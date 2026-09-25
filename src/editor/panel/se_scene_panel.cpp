@@ -14,6 +14,13 @@ namespace se {
             *isHovered_ = ImGui::IsWindowHovered();
         }
 
+        if (!context_.scene)
+        {
+            ImGui::TextUnformatted("No project loaded.");
+            ImGui::End();
+            return;
+        }
+
         const ImVec2 availableSize = ImGui::GetContentRegionAvail();
         const VkExtent2D sceneExtent = context_.core.getRenderer().getSceneRenderTarget().getExtent();
 
