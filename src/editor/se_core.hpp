@@ -10,6 +10,9 @@
 #include "src/laika_app.hpp"
 #include "src/systems/keyboard_movement_controller.hpp"
 #include "src/editor/se_editor_selection.hpp"
+#include "src/editor/project/se_project_manager.hpp"
+
+#include <filesystem>
 
 namespace se {
 
@@ -25,6 +28,7 @@ namespace se {
         le::LeCore leCore_;
         std::unique_ptr<le::LeScene> editorScene_;
         EditorSelection editorSelection_;
+        ProjectManager projectManager_;
 
         LaikaApp laikaApp_;
         std::unique_ptr<ModeController> modeController_;
@@ -47,6 +51,9 @@ namespace se {
         void updateEditor();
         void renderEditor();
         void updateEditorCamera();
+
+        bool openProject(const std::filesystem::path& projectFile);
+        void closeProject();
 
         void renderPlayToolbar();
 

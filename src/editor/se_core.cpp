@@ -436,4 +436,40 @@ namespace se {
         camera.setPerspectiveProjection(glm::radians(50.f), frameInfo.aspect, 0.1f, 100.f);
         camera.setView(cameraObject.transform.translation, cameraObject.transform.rotation);
     }
+
+    bool SeCore::openProject(const std::filesystem::path& projectFile)
+    {
+        closeProject();
+
+        if (!projectManager_.loadProject(projectFile)) {
+            return false;
+        }
+
+        leCore_.getResources().reset();
+
+        editorScene_ = std::make_unique<le::LeScene>(leCore_.getDevice(), leCore_.getResources());
+        modeController_ = std::make_unique<ModeController>(*editorScene_, laikaApp_);
+
+        editorSelection_.clear();
+
+        laikaApp_.onLoad(*editorScene_);
+
+        return true;
+    }
+
+    void SeCore::closeProject()
+    {
+        if (modeController_) {
+            modeController_->stop();
+        }
+
+        editorSelection_.clear();
+
+        modeController_.reset();
+        editorScene_.reset();
+
+        leCore_.getResources().reset();
+
+        projectManager_.unloadProject();
+    }
 } // se
