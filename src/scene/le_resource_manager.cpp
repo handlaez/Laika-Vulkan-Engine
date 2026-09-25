@@ -24,6 +24,21 @@ namespace le {
 		loadFallbackModel();
 	}
 
+	void LeResourceManager::reset()
+	{
+		vkDeviceWaitIdle(device.device());
+
+		textures.clear();
+		models.clear();
+		textureDescriptorSets.clear();
+
+		nextTextureID = 0;
+		nextModelID = 0;
+
+		loadFallbackTexture();
+		loadFallbackModel();
+	}
+
 	void LeResourceManager::shutDown()
 	{
 		vkDestroySampler(device.device(), sharedSampler, nullptr);
