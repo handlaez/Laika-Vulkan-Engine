@@ -23,11 +23,11 @@ namespace se {
 
     private:
         le::LeCore leCore_;
-        le::LeScene editorScene_;
+        std::unique_ptr<le::LeScene> editorScene_;
         EditorSelection editorSelection_;
 
         LaikaApp laikaApp_;
-        ModeController modeController_;
+        std::unique_ptr<ModeController> modeController_;
         le::KeyboardMovementController editorCameraController_;
 
         std::vector<std::unique_ptr<IEditorPanel>> editorPanels_;

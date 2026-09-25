@@ -22,9 +22,9 @@ namespace se {
 
     SeCore::SeCore()
         : leCore_{},
-        editorScene_{ leCore_.getDevice(), leCore_.getResources() },
+        editorScene_{ std::make_unique<le::LeScene>(leCore_.getDevice(), leCore_.getResources()) },
         laikaApp_{},
-        modeController_{ editorScene_, laikaApp_ },
+        modeController_{ std::make_unique<ModeController>(*editorScene_, laikaApp_) },
         consoleLogRecords_{ std::make_shared<std::vector<le::log::Record>>() }
     {
         initImGui();
@@ -32,8 +32,8 @@ namespace se {
         editorPanels_.push_back(std::make_unique<ScenePanel>(leCore_, &sceneTextureDescriptorSet_, &sceneViewportHovered_));
         editorPanels_.push_back(std::make_unique<ConsolePanel>(consoleLogRecords_));
         editorPanels_.push_back(std::make_unique<ExplorerPanel>("."));
-        editorPanels_.push_back(std::make_unique<InspectorPanel>(editorScene_, editorSelection_, modeController_));
-        editorPanels_.push_back(std::make_unique<HierarchyPanel>(editorScene_, editorSelection_, modeController_));
+        editorPanels_.push_back(std::make_unique<InspectorPanel>(*editorScene_, editorSelection_, *modeController_));
+        editorPanels_.push_back(std::make_unique<HierarchyPanel>(*editorScene_, editorSelection_, *modeController_));
 
         leCore_.getRenderer().setSceneRenderTargetRecreatedCallback(
             [this](le::LeSceneRenderTarget& sceneTarget)
@@ -57,8 +57,7 @@ namespace se {
 
     void se::SeCore::run()
     {
-        laikaApp_.onLoad(editorScene_);
-        laikaApp_.onStart(editorScene_);
+        laikaApp_.onLoad(*editorScene_);
 
         ::le::log::Logger logger;
         logger.addSink(std::make_unique<::le::log::ConsoleSink>());
@@ -72,19 +71,19 @@ namespace se {
 
             Utils::checkKeys(leCore_.getWindow().getGLFWwindow());
 
-            modeController_.update(leCore_.getFrameInfo(), sceneViewportHovered_);
+            modeController_->update(leCore_.getFrameInfo(), sceneViewportHovered_);
 
             updateEditorCamera();
             updateEditor();
 
-            leCore_.render(modeController_.getActiveScene());
+            leCore_.render(modeController_->getActiveScene());
 
             renderEditor();
 
             leCore_.endFrame();
         }
 
-        modeController_.stop();
+        modeController_->stop();
     }
 
     void SeCore::createImGuiDescriptorPool()
@@ -264,7 +263,7 @@ namespace se {
 
     void SeCore::renderPlayToolbar()
     {
-        const auto state = modeController_.getState();
+        const auto state = modeController_->getState();
 
         const char* primaryLabel =
             state == PlayState::Edit ? "Run" :
@@ -310,15 +309,15 @@ namespace se {
             switch (state)
             {
             case PlayState::Edit:
-                modeController_.run();
+                modeController_->run();
                 break;
 
             case PlayState::Run:
-                modeController_.pause();
+                modeController_->pause();
                 break;
 
             case PlayState::Pause:
-                modeController_.resume();
+                modeController_->resume();
                 break;
             }
         }
@@ -329,14 +328,14 @@ namespace se {
 
             if (ImGui::Button("Restart"))
             {
-                modeController_.restart();
+                modeController_->restart();
             }
 
             ImGui::SameLine();
 
             if (ImGui::Button("Stop"))
             {
-                modeController_.stop();
+                modeController_->stop();
             }
         }
 
@@ -418,14 +417,14 @@ namespace se {
 
     void SeCore::updateEditorCamera()
     {
-        if (modeController_.getState() != PlayState::Edit)
+        if (modeController_->getState() != PlayState::Edit)
         {
             return;
         }
 
         auto& frameInfo = leCore_.getFrameInfo();
-        auto& cameraObject = editorScene_.getCameraObject();
-        auto& camera = editorScene_.getCamera();
+        auto& cameraObject = editorScene_->getCameraObject();
+        auto& camera = editorScene_->getCamera();
 
         editorCameraController_.moveInPlaneXZ(
             frameInfo.window,
