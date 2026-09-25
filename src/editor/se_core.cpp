@@ -457,6 +457,24 @@ namespace se {
         return true;
     }
 
+    bool SeCore::createProject(const std::filesystem::path& directory, const std::string& name)
+    {
+        closeProject();
+
+        if (!projectManager_.createProject(directory, name)) {
+            return false;
+        }
+
+        editorScene_ = std::make_unique<le::LeScene>(leCore_.getDevice(), leCore_.getResources());
+        modeController_ = std::make_unique<ModeController>(*editorScene_, laikaApp_);
+
+        editorSelection_.clear();
+
+        laikaApp_.onLoad(*editorScene_);
+
+        return true;
+    }
+
     void SeCore::closeProject()
     {
         if (modeController_) {

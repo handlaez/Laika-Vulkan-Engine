@@ -6,7 +6,17 @@ namespace se {
 	{
 	}
 
-	const std::filesystem::path Project::getRoot() const
+	const std::string& Project::getName() const
+	{
+		return name_;
+	}
+
+	const std::filesystem::path& Project::getRoot() const
+	{
+		return root_;
+	}
+
+	std::filesystem::path Project::getProjectFile() const
 	{
 		return root_ / (name_ + ".laika");
 	}

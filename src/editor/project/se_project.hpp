@@ -8,9 +8,11 @@ namespace se {
     class Project
     {
     public:
-        explicit Project(std::filesystem::path root, std::string name);
+        Project(std::filesystem::path root, std::string name);
 
-        const std::filesystem::path getRoot() const;
+        const std::string& getName() const;
+        const std::filesystem::path& getRoot() const;
+        std::filesystem::path getProjectFile() const;
         const std::filesystem::path getAssetDirectory() const;
         const std::filesystem::path getSceneDirectory() const;
         const std::filesystem::path getScriptDirectory() const;

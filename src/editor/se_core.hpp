@@ -53,6 +53,7 @@ namespace se {
         void updateEditorCamera();
 
         bool openProject(const std::filesystem::path& projectFile);
+        bool createProject(const std::filesystem::path& directory, const std::string& name);
         void closeProject();
 
         void renderPlayToolbar();
