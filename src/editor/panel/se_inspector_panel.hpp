@@ -16,7 +16,7 @@ namespace se {
         void onUpdate() override;
 
     private:
-        EditorContext context_;
+        EditorContext& context_;
     };
 }
 
