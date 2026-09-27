@@ -78,17 +78,23 @@ namespace le {
 
     bool LeScene::removeActorById(LeActor::id_t id)
     {
-        const auto it = std::find_if(
-            actors.begin(),
-            actors.end(),
-            [id](const LeActor& actor)
+        auto it = std::find_if(actors.begin(), actors.end(), [id](const LeActor& actor)
             {
                 return actor.getId() == id;
-            });
+            }
+        );
 
         if (it == actors.end())
         {
             return false;
+        }
+
+        for (auto& actor : actors)
+        {
+            if (actor.getParentId() == id)
+            {
+                actor.clearParent();
+            }
         }
 
         actors.erase(it);
