@@ -133,6 +133,103 @@ namespace le {
         return result;
     }
 
+    bool LeScene::setParent(LeActor::id_t child, LeActor::id_t parent)
+    {
+        auto* childActor = getActorById(child);
+        auto* parentActor = getActorById(parent);
+
+        if (!childActor || !parentActor)
+        {
+            return false;
+        }
+
+        if (child == parent)
+        {
+            return false;
+        }
+
+        if (isDescendant(parent, child))
+        {
+            return false;
+        }
+
+        childActor->setParentId(parent);
+        return true;
+    }
+
+    void LeScene::clearParent(LeActor::id_t child)
+    {
+        auto* actor = getActorById(child);
+
+        if (!actor)
+        {
+            return;
+        }
+
+        actor->clearParent();
+    }
+
+    std::vector<LeActor::id_t> LeScene::getRootActors() const
+    {
+        std::vector<LeActor::id_t> result;
+        result.reserve(actors.size());
+
+        for (const auto& actor : actors)
+        {
+            if (!actor.getParentId().has_value())
+            {
+                result.push_back(actor.getId());
+            }
+        }
+
+        return result;
+    }
+
+    std::vector<LeActor::id_t> LeScene::getChildren(LeActor::id_t parent) const
+    {
+        std::vector<LeActor::id_t> result;
+
+        for (const auto& actor : actors)
+        {
+            const auto actorParent = actor.getParentId();
+
+            if (actorParent.has_value() && *actorParent == parent)
+            {
+                result.push_back(actor.getId());
+            }
+        }
+
+        return result;
+    }
+
+    bool LeScene::isDescendant(LeActor::id_t actor, LeActor::id_t potentialAncestor) const {
+        const auto* current = getActorById(actor);
+
+        if (!current)
+        {
+            return false;
+        }
+
+        while (current->getParentId().has_value())
+        {
+            const auto parentId = *current->getParentId();
+
+            if (parentId == potentialAncestor)
+            {
+                return true;
+            }
+
+            current = getActorById(parentId);
+
+            if (!current)
+            {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
     void LeScene::createDefaultCamera() {
         cameraObject = std::make_unique<LeActor>();
         cameraObject->transform.translation = { 0.f, 128.f, 0.f };
