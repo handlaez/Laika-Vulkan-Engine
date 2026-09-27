@@ -49,6 +49,14 @@ namespace le {
             instanceDataPtr = &data;
         }
 
+        bool setParent(LeActor::id_t child, LeActor::id_t parent);
+        void clearParent(LeActor::id_t child);
+
+        std::vector<LeActor::id_t> getRootActors() const;
+        std::vector<LeActor::id_t> getChildren(LeActor::id_t parent) const;
+
+        bool isDescendant(LeActor::id_t actor, LeActor::id_t potentialAncestor) const;
+
         //terrain
         void setTerrain(std::unique_ptr<ProceduralTerrain> terrain) {
             terrain_ = std::move(terrain);

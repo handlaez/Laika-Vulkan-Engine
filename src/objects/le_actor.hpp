@@ -10,6 +10,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
 #include <vector>
+#include <optional>
 
 namespace le {
 
@@ -43,6 +44,13 @@ namespace le {
         LeActor& operator=(const LeActor&) = delete;
         LeActor(LeActor&&) = default;
         LeActor& operator=(LeActor&&) = default;
+
+        std::optional<id_t> parentId;
+
+        bool hasParent() const;
+        std::optional<id_t> getParentId() const { return parentId; }
+        void setParentId(id_t id);
+        void clearParent();
 
         const id_t getId() const { return id; }
         LeActor clone() const;

@@ -5,6 +5,21 @@
 
 namespace le {
 
+    bool LeActor::hasParent() const
+    {
+        return parentId.has_value();
+    }
+
+    void LeActor::setParentId(id_t id)
+    {
+        parentId = id;
+    }
+
+    void LeActor::clearParent()
+    {
+        parentId.reset();
+    }
+
     // clone for a runtime scene;
     LeActor LeActor::clone() const
     {
