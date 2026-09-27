@@ -15,8 +15,9 @@ namespace se {
         void onUpdate() override;
 
     private:
-        EditorContext& context_;
+        void drawActorTree(le::LeActor::id_t id);
 
+        EditorContext& context_;
         bool canEdit_ = true;
     };
 }
