@@ -13,6 +13,16 @@ namespace le {
         createDefaultCamera();
     }
 
+    const std::string& LeScene::getName() const
+    {
+        return name_;
+    }
+
+    void LeScene::setName(std::string name)
+    {
+        name_ = std::move(name);
+    }
+
     LeDevice& LeScene::getDevice() {
         return leDevice;
     }

@@ -19,6 +19,9 @@ namespace le {
     public:
         explicit LeScene(LeDevice& device, LeResourceManager& resourceManager);
 
+        const std::string& getName() const;
+        void setName(std::string name);
+
         LeDevice& getDevice();
         LeResourceManager& leResourceManager;
 
@@ -80,6 +83,8 @@ namespace le {
         std::vector<LeActor> actors;
         std::unique_ptr<LeActor> cameraObject;
         LeCamera camera;
+
+        std::string name_;
     };
 
 } // namespace le
