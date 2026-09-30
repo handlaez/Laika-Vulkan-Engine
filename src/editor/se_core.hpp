@@ -59,10 +59,14 @@ namespace se {
 
         bool openNewProjectPopup_{ false };
         bool openOpenProjectPopup_{ false };
-
         std::array<char, 256> newProjectName_{};
         std::array<char, 512> newProjectDirectory_{};
         std::array<char, 512> openProjectFile_{};
+
+        bool openNewScenePopup_{ false };
+        bool openSaveAsPopup_{ false };
+        std::array<char, 256> newSceneName_{};
+        std::array<char, 512> saveAsPath_{};
     };
 }
 

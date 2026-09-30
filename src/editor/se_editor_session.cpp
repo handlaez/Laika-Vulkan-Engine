@@ -209,6 +209,13 @@ namespace se {
         pendingName_ = name;
     }
 
+    void EditorSession::requestCreateScene(const std::string& name)
+    {
+        pendingAction_ = PendingAction::CreateScene;
+        pendingPath_.clear();
+        pendingName_ = name;
+    }
+
     void EditorSession::requestClose()
     {
         pendingAction_ = PendingAction::Close;
@@ -229,6 +236,10 @@ namespace se {
 
         case PendingAction::Create:
             createProject(pendingPath_, pendingName_);
+            break;
+
+        case PendingAction::CreateScene:
+            createScene(pendingName_);
             break;
 
         case PendingAction::Close:

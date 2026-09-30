@@ -12,6 +12,7 @@ namespace le {
 
 namespace se {
     class ModeController;
+    class EditorSession;
 
     class EditorContext
     {
@@ -21,9 +22,10 @@ namespace se {
         le::LeResourceManager& resources;
         EditorSelection& selection;
 
+        EditorSession* session = nullptr;
         le::LeScene* scene = nullptr;
         ModeController* modeController = nullptr;
     };
-}
+} 
 
 #endif

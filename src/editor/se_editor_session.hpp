@@ -28,6 +28,7 @@ namespace se {
 
         void requestOpen(const std::filesystem::path& projectFile);
         void requestCreate(const std::filesystem::path& directory, const std::string& name);
+        void requestCreateScene(const std::string& name);
         void requestClose();
 
         void processPendingAction();
@@ -47,6 +48,7 @@ namespace se {
             None,
             Open,
             Create,
+            CreateScene,
             Close
         };
 
