@@ -13,6 +13,16 @@ namespace le {
         createDefaultCamera();
     }
 
+    const std::string& LeScene::getName() const
+    {
+        return name_;
+    }
+
+    void LeScene::setName(std::string name)
+    {
+        name_ = std::move(name);
+    }
+
     LeDevice& LeScene::getDevice() {
         return leDevice;
     }
@@ -113,10 +123,15 @@ namespace le {
         return *cameraObject;
     }
 
+    const LeActor& LeScene::getCameraObject() const    {
+        return *cameraObject;
+    }
+
     std::unique_ptr<LeScene> LeScene::clone() const
     {
         auto result = std::make_unique<LeScene>(leDevice, leResourceManager);
 
+        result->name_ = name_;
         result->renderHitboxes_ = renderHitboxes_;
         result->actors.reserve(actors.size());
 
@@ -208,7 +223,8 @@ namespace le {
         return result;
     }
 
-    bool LeScene::isDescendant(LeActor::id_t actor, LeActor::id_t potentialAncestor) const {
+    bool LeScene::isDescendant(LeActor::id_t actor, LeActor::id_t potentialAncestor) const 
+    {
         const auto* current = getActorById(actor);
 
         if (!current)
@@ -238,7 +254,7 @@ namespace le {
 
     void LeScene::createDefaultCamera() {
         cameraObject = std::make_unique<LeActor>();
-        cameraObject->transform.translation = { 0.f, 128.f, 0.f };
+        cameraObject->transform.translation = { 0.f, 2.f, -5.f };
         cameraObject->transform.rotation = glm::quat(1.f, 0.f, 0.f, 0.f);
 
         camera.setPerspectiveProjection(glm::radians(50.f), 1.f, 0.1f, 100.f);

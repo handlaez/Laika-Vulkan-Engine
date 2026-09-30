@@ -3,6 +3,7 @@
 #include "src/scene/le_scene.hpp"
 #include "src/editor/se_editor_selection.hpp"
 #include "src/editor/se_mode_controller.hpp"
+#include "src/editor/se_editor_session.hpp"
 
 namespace se {
     HierarchyPanel::HierarchyPanel(EditorContext& context)
@@ -33,6 +34,8 @@ namespace se {
         {
             const auto id = scene.addActor(0, 0);
             selection.select(id);
+
+            context_.session->setSceneModified();
         }
 
         ImGui::SameLine();
@@ -51,6 +54,7 @@ namespace se {
             if (id && scene.removeActorById(*id))
             {
                 selection.clear();
+                context_.session->setSceneModified();
             }
         }
 
@@ -139,7 +143,10 @@ namespace se {
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ACTOR_ID"))
             {
                 const auto draggedId = *static_cast<const le::LeActor::id_t*>(payload->Data);
-                scene.setParent(draggedId, id);
+                if (scene.setParent(draggedId, id))
+                {
+                    context_.session->setSceneModified();
+                }
             }
 
             ImGui::EndDragDropTarget();
@@ -158,6 +165,7 @@ namespace se {
                 if (ImGui::MenuItem("Unparent"))
                 {
                     scene.clearParent(id);
+                    context_.session->setSceneModified();
                 }
             }
 

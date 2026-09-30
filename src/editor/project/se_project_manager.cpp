@@ -1,70 +1,102 @@
 #include "se_project_manager.hpp"
 
+#include <nlohmann/json.hpp>
 #include <fstream>
 
 namespace se {
 
     bool ProjectManager::createProject(const std::filesystem::path& directory, const std::string& name)
     {
-        if (name.empty()) {
-            return false;
-        }
-
-        if (std::filesystem::exists(directory) && !std::filesystem::is_directory(directory))
+        if (name.empty())
         {
             return false;
         }
 
-        try {
-            std::filesystem::create_directories(directory);
+        const std::filesystem::path projectRoot = directory / name;
 
-            Project project(directory, name);
+        if (std::filesystem::exists(projectRoot))
+        {
+            return false;
+        }
+
+        try
+        {
+            std::filesystem::create_directories(projectRoot);
+
+            Project project(projectRoot, name);
 
             std::filesystem::create_directories(project.getAssetDirectory());
             std::filesystem::create_directories(project.getSceneDirectory());
             std::filesystem::create_directories(project.getScriptDirectory());
 
+            nlohmann::json data;
+
+            data["name"] = name;
+            data["version"] = 1;
+            data["startupScene"] = "Scenes/Main.scene";
+
             std::ofstream projectFile(project.getProjectFile());
 
-            if (!projectFile) {
+            if (!projectFile)
+            {
                 return false;
             }
 
-            projectFile << "{\n";
-            projectFile << "  \"name\": \"" << name << "\",\n";
-            projectFile << "  \"version\": 1,\n";
-            projectFile << "  \"startupScene\": \"Scenes/Main.scene\"\n";
-            projectFile << "}\n";
+            projectFile << data.dump(4);
+
+            if (!projectFile.good())
+            {
+                return false;
+            }
 
             project_ = std::make_unique<Project>(std::move(project));
 
             return true;
         }
-        catch (const std::filesystem::filesystem_error&) {
+        catch (const std::filesystem::filesystem_error&)
+        {
             return false;
         }
     }
 
     bool ProjectManager::loadProject(const std::filesystem::path& projectFile)
     {
-        if (!std::filesystem::exists(projectFile)) {
+        if (!std::filesystem::exists(projectFile) || !std::filesystem::is_regular_file(projectFile))
+        {
             return false;
         }
 
-        if (!std::filesystem::is_regular_file(projectFile)) {
+        std::ifstream file(projectFile);
+
+        if (!file.is_open())
+        {
+            return false;
+        }
+
+        nlohmann::json data;
+
+        try
+        {
+            file >> data;
+        }
+        catch (const nlohmann::json::exception&)
+        {
             return false;
         }
 
         const auto root = projectFile.parent_path();
-        const auto name = projectFile.stem().string();
+        const std::string name = data.value("name", projectFile.stem().string());
 
-        try {
-            project_ = std::make_unique<Project>(root, name);
-            return true;
+        auto project = std::make_unique<Project>(root, name);
+
+        if (data.contains("startupScene") && data["startupScene"].is_string())
+        {
+            project->setStartupScene(data["startupScene"].get<std::string>());
         }
-        catch (...) {
-            return false;
-        }
+
+        project_ = std::move(project);
+
+        return true;
     }
 
     void ProjectManager::unloadProject()

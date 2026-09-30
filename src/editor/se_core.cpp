@@ -21,13 +21,15 @@
 namespace se {
 
     SeCore::SeCore()
-      : leCore_{},
+        : leCore_{},
         projectManager_{},
         editorSelection_{},
         editorContext_{ leCore_, projectManager_, leCore_.getResources(), editorSelection_ },
         editorSession_{ editorContext_ },
         consoleLogRecords_{ std::make_shared<std::vector<le::log::Record>>() }
     {
+        editorContext_.session = &editorSession_;
+
         initImGui();
 
         editorPanels_.push_back(std::make_unique<ScenePanel>(editorContext_, &sceneTextureDescriptorSet_, &sceneViewportHovered_));
@@ -185,6 +187,9 @@ namespace se {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        if (ImGui::GetIO().KeyCtrl && ImGui::IsKeyPressed(ImGuiKey_S) && editorSession_.hasProject())
+            editorSession_.saveScene();
+
         ImGuiIO& io = ImGui::GetIO();
 
         ImGuiWindowFlags windowFlags =
@@ -251,6 +256,32 @@ namespace se {
 
                 ImGui::Separator();
 
+                if (ImGui::MenuItem("New Scene...", nullptr, false, editorSession_.hasProject()))
+                {
+                    std::fill(newSceneName_.begin(), newSceneName_.end(), '\0');
+                    std::snprintf(newSceneName_.data(), newSceneName_.size(), "%s", "NewScene");
+                    openNewScenePopup_ = true;
+                }
+
+                if (ImGui::MenuItem("Save", "Ctrl+S", false, editorSession_.hasProject()))
+                {
+                    editorSession_.saveScene();
+                }
+
+                if (ImGui::MenuItem("Save As...", nullptr, false, editorSession_.hasProject()))
+                {
+                    std::fill(saveAsPath_.begin(), saveAsPath_.end(), '\0');
+
+                    if (!editorSession_.getScenePath().empty())
+                    {
+                        std::snprintf(saveAsPath_.data(), saveAsPath_.size(), "%s", editorSession_.getScenePath().string().c_str());
+                    }
+
+                    openSaveAsPopup_ = true;
+                }
+
+                ImGui::Separator();
+
                 if (ImGui::MenuItem("Exit"))
                 {
                     glfwSetWindowShouldClose(leCore_.getWindow().getGLFWwindow(), GLFW_TRUE);
@@ -278,8 +309,38 @@ namespace se {
                 ImGui::EndMenu();
             }
 
+            if (!editorSession_.getScenePath().empty())
+            {
+                const auto filename = editorSession_.getScenePath().filename().string();
+                ImGui::Text("%s%s", filename.c_str(), editorSession_.isSceneModified() ? " *" : "");
+            }
+
             renderPlayToolbar();
             ImGui::EndMenuBar();
+        }
+
+        if (openNewProjectPopup_)
+        {
+            ImGui::OpenPopup("New Project");
+            openNewProjectPopup_ = false;
+        }
+
+        if (openOpenProjectPopup_)
+        {
+            ImGui::OpenPopup("Open Project");
+            openOpenProjectPopup_ = false;
+        }
+
+        if (openNewScenePopup_)
+        {
+            ImGui::OpenPopup("New Scene");
+            openNewScenePopup_ = false;
+        }
+
+        if (openSaveAsPopup_)
+        {
+            ImGui::OpenPopup("Save Scene As");
+            openSaveAsPopup_ = false;
         }
 
         if (openNewProjectPopup_)
@@ -436,6 +497,62 @@ namespace se {
                 {
                     editorSession_.requestOpen(projectFile);
                     ImGui::CloseCurrentPopup();
+                }
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Cancel"))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
+
+        if (ImGui::BeginPopupModal("New Scene", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::InputText("Scene Name", newSceneName_.data(), newSceneName_.size());
+
+            ImGui::Separator();
+
+            if (ImGui::Button("Create"))
+            {
+                const std::string name = newSceneName_.data();
+
+                if (!name.empty())
+                {
+                    editorSession_.requestCreateScene(name);
+                    ImGui::CloseCurrentPopup();
+                }
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Cancel"))
+            {
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
+
+        if (ImGui::BeginPopupModal("Save Scene As", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::InputText("Scene Path", saveAsPath_.data(), saveAsPath_.size());
+
+            ImGui::Separator();
+
+            if (ImGui::Button("Save"))
+            {
+                const std::filesystem::path path = saveAsPath_.data();
+
+                if (!path.empty())
+                {
+                    if (editorSession_.saveSceneAs(path))
+                    {
+                        ImGui::CloseCurrentPopup();
+                    }
                 }
             }
 

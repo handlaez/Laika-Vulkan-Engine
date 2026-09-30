@@ -26,6 +26,17 @@ find_library(GLFW_LIB
 # Vulkan 
 find_package(Vulkan REQUIRED)
 
+# json
+include(FetchContent)
+FetchContent_Declare(nlohmann_json URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
+
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+set(JSON_Install OFF CACHE INTERNAL "")
+
+FetchContent_MakeAvailable(nlohmann_json)
+
+# GLSLC
+
 find_program(GLSLC_EXECUTABLE 
     NAMES glslc 
     PATHS "$ENV{VULKAN_SDK}/Bin"
@@ -101,6 +112,7 @@ target_include_directories(VulkanTest PRIVATE
 target_link_libraries(VulkanTest PRIVATE 
     Vulkan::Vulkan
     ${GLFW_LIB}
+    nlohmann_json::nlohmann_json
 )
 
 # Post-build

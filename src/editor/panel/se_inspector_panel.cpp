@@ -2,6 +2,7 @@
 #include "src/scene/le_scene.hpp"
 #include "src/editor/se_editor_selection.hpp"
 #include "src/editor/se_mode_controller.hpp"
+#include "src/editor/se_editor_session.hpp"
 
 #include "imgui.h"
 
@@ -65,16 +66,23 @@ namespace se {
 
         if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            ImGui::DragFloat3("Position", glm::value_ptr(actor->transform.translation), 0.05f);
+            if (ImGui::DragFloat3("Position", glm::value_ptr(actor->transform.translation), 0.05f))
+            {
+                context_.session->setSceneModified();
+            }
+
 
             glm::vec3 eulerDegrees = glm::degrees(glm::eulerAngles(actor->transform.rotation));
-
             if (ImGui::DragFloat3("Rotation", glm::value_ptr(eulerDegrees), 1.0f))
             {
                 actor->transform.rotation = glm::quat(glm::radians(eulerDegrees));
+                context_.session->setSceneModified();
             }
 
-            ImGui::DragFloat3("Scale", glm::value_ptr(actor->transform.scale), 0.05f);
+            if (ImGui::DragFloat3("Scale", glm::value_ptr(actor->transform.scale), 0.05f))
+            {
+                context_.session->setSceneModified();
+            }
         }
 
         if (ImGui::CollapsingHeader("Appearance", ImGuiTreeNodeFlags_DefaultOpen))
@@ -132,6 +140,8 @@ namespace se {
                         {
                             actor->modelID = id;
                             actor->clearBVH();
+
+                            context_.session->setSceneModified();
                         }
                     }
 
@@ -189,12 +199,13 @@ namespace se {
                         textureName = "Unnamed Texture";
                     }
 
-                    const std::string label =
-                        textureName + "##texture_" + std::to_string(id);
+                    const std::string label = textureName + "##texture_" + std::to_string(id);
 
                     if (ImGui::Selectable(label.c_str(), selected))
                     {
                         actor->textureID = id;
+
+                        context_.session->setSceneModified();
                     }
 
                     if (selected)
