@@ -1,4 +1,6 @@
 #include "se_explorer_panel.hpp"
+#include "src/editor/se_editor_context.hpp"
+#include "src/editor/se_editor_session.hpp"
 
 #include <imgui.h>
 
@@ -118,6 +120,11 @@ namespace se {
                     if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
                     {
                         // AssetManager::open(entryPath);
+
+                        if (entryPath.extension() == ".scene")
+                        {
+                            context_.session->requestOpenScene(entryPath);
+                        }
                     }
                 }
             }

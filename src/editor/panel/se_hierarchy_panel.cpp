@@ -41,7 +41,7 @@ namespace se {
         ImGui::SameLine();
 
         const bool hasSelection = selection.hasSelection();
-        
+
         if (!hasSelection)
         {
             ImGui::BeginDisabled();
