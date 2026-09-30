@@ -14,7 +14,7 @@ namespace se {
 
     class SceneSerializer {
     public:
-        static bool save(const le::LeScene& scene, const Project& project, const std::filesystem::path& scenePath);
+        static bool save(const le::LeScene& scene, const Project& project, const le::LeResourceManager& resources, const std::filesystem::path& scenePath);
         static bool load(le::LeScene& scene, const Project& project, le::LeResourceManager& resources, const std::filesystem::path& scenePath);
     };
 

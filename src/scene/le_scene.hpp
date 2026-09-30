@@ -41,8 +41,8 @@ namespace le {
 
         LeCamera& getCamera();
         const LeCamera& getCamera() const;
-
         LeActor& getCameraObject();
+        const LeActor& getCameraObject() const;
 
         const std::vector<InstanceData>* instanceDataPtr = nullptr;
 

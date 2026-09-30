@@ -1,10 +1,11 @@
 #ifndef LE_TEXTURE_HPP
 #define LE_TEXTURE_HPP
 
+#include "src/core/le_device.hpp"
+
 #include <string>
 #include <stb_image.h>
-
-#include "src/core/le_device.hpp"
+#include <filesystem>
 
 namespace le {
 	struct TextureDescriptor {
@@ -18,6 +19,7 @@ namespace le {
 
 		void setName(const std::string name);
 		void setPath(const std::string path);
+		const std::filesystem::path& getPath() const;
 		const std::string& getName() const;
 
 		VkImageView getImageView() const { return imageView; }

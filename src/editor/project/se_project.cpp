@@ -2,7 +2,7 @@
 
 namespace se {
 	Project::Project(std::filesystem::path root, std::string name)
-		: root_(std::move(root)), name_(std::move(name))
+		: root_(std::move(root)), name_(std::move(name)), startupScene_("Scenes/Main.scene")
 	{
 	}
 
@@ -21,18 +21,28 @@ namespace se {
 		return root_ / (name_ + ".laika");
 	}
 
-	const std::filesystem::path Project::getAssetDirectory() const
+	std::filesystem::path Project::getAssetDirectory() const
 	{
 		return root_ / "Assets";
 	}
 
-	const std::filesystem::path Project::getSceneDirectory() const
+	std::filesystem::path Project::getSceneDirectory() const
 	{
 		return root_ / "Scenes";
 	}
 
-	const std::filesystem::path Project::getScriptDirectory() const
+	std::filesystem::path Project::getScriptDirectory() const
 	{
 		return root_ / "Scripts";
+	}
+
+	const std::filesystem::path& Project::getStartupScene() const
+	{
+		return startupScene_;
+	}
+
+	void Project::setStartupScene(std::filesystem::path path)
+	{
+		startupScene_ = std::move(path);
 	}
 }

@@ -37,6 +37,11 @@ namespace le {
 		path_ = path;
 	}
 
+	const std::filesystem::path& LeTexture::getPath() const
+	{
+		return path_;
+	}
+
 	void LeTexture::createTextureImage(std::string path)
 	{
 		int texWidth, texHeight, texChannels;

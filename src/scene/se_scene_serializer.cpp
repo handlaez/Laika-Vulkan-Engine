@@ -58,12 +58,21 @@ namespace se {
 
     }
 
-    bool SceneSerializer::save(const le::LeScene& scene, const Project& project, const std::filesystem::path& scenePath)
+    bool SceneSerializer::save(const le::LeScene& scene, const Project& project, const le::LeResourceManager& resources, const std::filesystem::path& scenePath)
     {
         json root;
 
         root["version"] = 1;
         root["name"] = scene.getName();
+
+        const auto& cameraObject = scene.getCameraObject();
+
+        json cameraJson;
+        cameraJson["position"] = serializeVec3(cameraObject.transform.translation);
+        cameraJson["rotation"] = serializeQuat(cameraObject.transform.rotation);
+        root["camera"] = cameraJson;
+
+
         root["actors"] = json::array();
 
         for (const auto& actor : scene.getActors())
@@ -81,10 +90,37 @@ namespace se {
                 actorJson["parent"] = nullptr;
             }
 
-            auto model = project.getRoot(); // placeholder removed below
+            auto model = resources.findModel(actor.modelID);
 
-            actorJson["model"] = "";
-            actorJson["texture"] = "";
+            if (model)
+            {
+                auto staticModel = std::dynamic_pointer_cast<le::LeModel>(model);
+
+                if (staticModel && !staticModel->getPath().empty())
+                {
+                    actorJson["model"] = makeRelativeAssetPath(project, staticModel->getPath()).generic_string();
+                }
+                else
+                {
+                    actorJson["model"] = "";
+                }
+            }
+            else
+            {
+                actorJson["model"] = "";
+            }
+
+            auto texture = resources.findTexture(actor.textureID);
+
+            if (texture && !texture->getPath().empty())
+            {
+                actorJson["texture"] = makeRelativeAssetPath(project, texture->getPath()).generic_string();
+            }
+            else
+            {
+                actorJson["texture"] = "";
+            }
+
             actorJson["color"] = serializeVec3(actor.color);
             actorJson["position"] = serializeVec3(actor.transform.translation);
             actorJson["rotation"] = serializeQuat(actor.transform.rotation);
@@ -105,11 +141,7 @@ namespace se {
         return file.good();
     }
 
-    bool SceneSerializer::load(
-        le::LeScene& scene,
-        const Project& project,
-        le::LeResourceManager& resources,
-        const std::filesystem::path& scenePath)
+    bool SceneSerializer::load(le::LeScene& scene, const Project& project, le::LeResourceManager& resources, const std::filesystem::path& scenePath)
     {
         std::ifstream file(scenePath);
 
@@ -136,13 +168,28 @@ namespace se {
 
         scene.setName(root.value("name", scenePath.stem().string()));
 
+        if (root.contains("camera") && root["camera"].is_object())
+        {
+            const auto& cameraJson = root["camera"];
+            auto& cameraObject = scene.getCameraObject();
+
+            if (cameraJson.contains("position"))
+            {
+                cameraObject.transform.translation = deserializeVec3(cameraJson["position"]);
+            }
+
+            if (cameraJson.contains("rotation"))
+            {
+                cameraObject.transform.rotation = deserializeQuat(cameraJson["rotation"]);
+            }
+        }
+
         std::unordered_map<le::LeActor::id_t, le::LeActor::id_t> idRemap;
 
         struct PendingParent { le::LeActor::id_t newId; le::LeActor::id_t oldParentId; };
-
         std::vector<PendingParent> pendingParents;
 
-        if (!root.contains("actors"))
+        if (!root.contains("actors") || !root["actors"].is_array())
         {
             return true;
         }
@@ -157,12 +204,12 @@ namespace se {
 
             if (!modelPath.empty())
             {
-                modelId = resources.loadModel(makeAbsoluteAssetPath(project, modelPath).string(), "tempMod");
+                modelId = resources.loadModel(makeAbsoluteAssetPath(project, modelPath).string());
             }
 
             if (!texturePath.empty())
             {
-                textureId = resources.loadTexture(makeAbsoluteAssetPath(project, texturePath).string(), "tempTex");
+                textureId = resources.loadTexture(makeAbsoluteAssetPath(project, texturePath).string());
             }
 
             const auto newId = scene.addActor(modelId, textureId);
@@ -183,7 +230,7 @@ namespace se {
 
             idRemap[oldId] = newId;
 
-            if (!actorJson["parent"].is_null())
+            if (actorJson.contains("parent") && !actorJson["parent"].is_null())
             {
                 pendingParents.push_back({newId, actorJson["parent"].get<le::LeActor::id_t>()});
             }

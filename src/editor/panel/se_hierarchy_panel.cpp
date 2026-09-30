@@ -33,6 +33,18 @@ namespace se {
         {
             const auto id = scene.addActor(0, 0);
             selection.select(id);
+
+            auto model = context_.resources.findModel(0);
+            auto texture = context_.resources.findTexture(0);
+
+            std::printf(
+                "Added actor %u | model 0: %s | texture 0: %s\n",
+                id,
+                model ? model->getName().c_str() : "MISSING",
+                texture ? texture->getName().c_str() : "MISSING"
+            );
+
+            //context_.session->setSceneModified();
         }
 
         ImGui::SameLine();

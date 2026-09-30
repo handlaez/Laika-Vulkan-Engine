@@ -14,6 +14,7 @@
 // std
 #include <vector>
 #include <memory>
+#include <filesystem>
 
 namespace le {
 	class BVH;
@@ -56,6 +57,7 @@ namespace le {
 		}
 
 		void setPath(std::string path);
+		const std::filesystem::path& getPath() const;
 
 		// disabling move assignment (because leDevice& cannot be reassigned)
 		LeModel& operator=(LeModel&&) = delete;
