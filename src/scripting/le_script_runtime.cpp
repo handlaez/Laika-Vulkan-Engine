@@ -128,4 +128,31 @@ namespace le {
         return entryPoint(nullptr, 0);
     }
 
+    void* LeScriptRuntime::getFunctionPointer(const std::filesystem::path& assemblyPath, const std::wstring& typeName, const std::wstring& methodName)
+    {
+        if (!loadAssemblyAndGetFunctionPointer_)
+        {
+            return nullptr;
+        }
+
+        void* functionPointer = nullptr;
+
+        const int rc = loadAssemblyAndGetFunctionPointer_(
+                assemblyPath.c_str(),
+                typeName.c_str(),
+                methodName.c_str(),
+                UNMANAGEDCALLERSONLY_METHOD,
+                nullptr,
+                &functionPointer
+            );
+
+        if (rc != 0 || !functionPointer)
+        {
+            std::cerr << "Failed to get managed function pointer: 0x" << std::hex << rc << '\n';
+            return nullptr;
+        }
+
+        return functionPointer;
+    }
+
 }

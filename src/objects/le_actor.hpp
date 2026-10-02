@@ -59,6 +59,7 @@ namespace le {
         uint32_t textureID = 0;      // assuming texture 0 is "missing texture"
         glm::vec3 color{};
         TransformComponent transform{};
+
         std::vector<AABBHitbox> hitboxes;    // used for drawing or brute-force collision
         std::shared_ptr<BVH> bvh = nullptr;  // one bvh per actor at most
 
@@ -68,8 +69,13 @@ namespace le {
         void clearBVH();
         bool hasBVH() const { return bvh != nullptr; }
 
+        const std::string& getScriptClassName() const;
+        void setScriptClassName(std::string name);
+        bool hasScript() const;
+
     private:
         id_t id;
+        std::string scriptClassName_;
     };
 
 }

@@ -117,7 +117,7 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
 list(FILTER SOURCES EXCLUDE REGEX ".*/third-party/imgui/.*")
 list(FILTER HEADERS EXCLUDE REGEX ".*/third-party/imgui/.*")
 
-set(LAIKA_MANAGED_PROJECT "${CMAKE_CURRENT_SOURCE_DIR}/managed/Laika.ScriptTest/Laika.ScriptTest.csproj")
+set(LAIKA_MANAGED_PROJECT "${CMAKE_CURRENT_SOURCE_DIR}/managed/Laika.GameTest/Laika.GameTest.csproj")
 
 add_custom_target(LaikaManagedScripts ALL
     COMMAND
@@ -127,7 +127,7 @@ add_custom_target(LaikaManagedScripts ALL
         --configuration $<CONFIG>
         --nologo
     WORKING_DIRECTORY
-        "${CMAKE_CURRENT_SOURCE_DIR}/managed/Laika.ScriptTest"
+        "${CMAKE_CURRENT_SOURCE_DIR}/managed/Laika.GameTest"
     VERBATIM
 )
 
@@ -191,7 +191,7 @@ add_custom_command(
         "$<TARGET_FILE_DIR:VulkanTest>/managed"
 
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/managed/Laika.ScriptTest/bin/$<CONFIG>/net10.0"
+        "${CMAKE_CURRENT_SOURCE_DIR}/managed/Laika.GameTest/bin/$<CONFIG>/net10.0"
         "$<TARGET_FILE_DIR:VulkanTest>/managed"
 
     COMMAND ${CMAKE_COMMAND} -E copy_if_different

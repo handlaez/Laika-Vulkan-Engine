@@ -125,6 +125,7 @@ namespace se {
             actorJson["position"] = serializeVec3(actor.transform.translation);
             actorJson["rotation"] = serializeQuat(actor.transform.rotation);
             actorJson["scale"] = serializeVec3(actor.transform.scale);
+            actorJson["script"] = actor.getScriptClassName();
 
             root["actors"].push_back(actorJson);
         }
@@ -229,6 +230,11 @@ namespace se {
             const auto oldId = actorJson.value<le::LeActor::id_t>("id", newId);
 
             idRemap[oldId] = newId;
+
+            if (actorJson.contains("script") && actorJson["script"].is_string())
+            {
+                actor->setScriptClassName(actorJson["script"].get<std::string>());
+            }
 
             if (actorJson.contains("parent") && !actorJson["parent"].is_null())
             {

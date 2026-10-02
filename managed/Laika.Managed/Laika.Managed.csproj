@@ -4,11 +4,9 @@
     <TargetFramework>net10.0</TargetFramework>
     <OutputType>Library</OutputType>
 
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-
-    <AssemblyName>Laika.ScriptTest</AssemblyName>
-    <RootNamespace>Laika.ScriptTest</RootNamespace>
 
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
   </PropertyGroup>

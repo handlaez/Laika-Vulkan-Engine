@@ -28,6 +28,7 @@ namespace le {
         result.id = id;
         result.hitboxes = hitboxes;
         result.bvh = bvh;
+        result.scriptClassName_ = scriptClassName_;
 
         return result;
     }
@@ -111,4 +112,20 @@ namespace le {
     {
         bvh.reset();
     }
+
+    const std::string& LeActor::getScriptClassName() const
+    {
+        return scriptClassName_;
+    }
+
+    void LeActor::setScriptClassName(std::string name)
+    {
+        scriptClassName_ = std::move(name);
+    }
+
+    bool LeActor::hasScript() const
+    {
+        return !scriptClassName_.empty();
+    }
+
 }

@@ -10,11 +10,6 @@
 #include "src/editor/panel/se_inspector_panel.hpp"
 #include "src/editor/panel/se_explorer_panel.hpp"
 
-// test
-#include "src/scripting/le_script_runtime.hpp"
-#include <iostream>
-// end
-
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_vulkan.h"
@@ -70,22 +65,6 @@ namespace se {
         logger.addSink(std::make_unique<::le::log::ConsoleSink>());
         logger.addSink(std::make_unique<::se::PanelSink>(consoleLogRecords_));
         logger.write(::le::log::Level::info, ::le::log::Category::editor, "Poyekhali!");
-
-        le::LeScriptRuntime scriptRuntime;
-
-        const auto managedDirectory = std::filesystem::current_path() / "managed";
-        const auto runtimeConfig = managedDirectory / "Laika.ScriptTest.runtimeconfig.json";
-        const auto assembly = managedDirectory / "Laika.ScriptTest.dll";
-
-        if (!scriptRuntime.initialize(runtimeConfig))
-        {
-            std::cerr << "Failed to initialize C# runtime\n";
-        }
-        else
-        {
-            const int result = scriptRuntime.invoke(assembly, L"Laika.ScriptTest.TestEntry, Laika.ScriptTest", L"Run");
-            std::cout << "Managed result: " << result << '\n';
-        }
 
         while (!leCore_.getWindow().shouldClose())
         {

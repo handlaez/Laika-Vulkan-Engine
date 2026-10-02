@@ -5,16 +5,19 @@
 #include "src/systems/keyboard_movement_controller.hpp"
 #include "src/core/le_frame_info.hpp"
 #include "src/scene/le_scene.hpp"
+#include "src/scripting/le_script_system.hpp"
 
 class LaikaApp : public le::ILaikaEngineApp {
 public:
-    void onLoad(le::LeScene& scene) override;
+    LaikaApp();
+
     void onStart(le::LeScene& scene) override;
     void onUpdate(le::LeScene& scene, le::FrameInfo fi, bool viewportActive) override;
     void onShutdown(le::LeScene&) override;
 
 private:
-    le::KeyboardMovementController controller{};
+    le::KeyboardMovementController controller_{};
+    le::LeScriptSystem scriptSystem_;
 };
 
 #endif

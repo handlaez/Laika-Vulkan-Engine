@@ -218,6 +218,20 @@ namespace se {
             }
         }
 
+        if (ImGui::CollapsingHeader("Script", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            char scriptBuffer[256]{};
+            std::snprintf(scriptBuffer, sizeof(scriptBuffer), "%s", actor->getScriptClassName().c_str());
+
+            if (ImGui::InputText("Class", scriptBuffer, sizeof(scriptBuffer)))
+            {
+                actor->setScriptClassName(scriptBuffer);
+                context_.session->setSceneModified();
+            }
+
+            ImGui::TextDisabled("Example: Laika.GameTest.TestMover");
+        }
+
         if (!canEdit)
         {
             ImGui::EndDisabled();

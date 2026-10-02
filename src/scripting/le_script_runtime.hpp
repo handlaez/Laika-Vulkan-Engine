@@ -25,6 +25,8 @@ namespace le {
         bool initialize(const std::filesystem::path& runtimeConfigPath);
         int invoke(const std::filesystem::path& assemblyPath, const std::wstring& typeName, const std::wstring& methodName);
 
+        void* getFunctionPointer(const std::filesystem::path& assemblyPath, const std::wstring& typeName, const std::wstring& methodName);
+
     private:
         bool loadHostFxr();
 
