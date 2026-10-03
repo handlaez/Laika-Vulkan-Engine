@@ -9,10 +9,19 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
+#include <string>
+#include <filesystem>
 #include <vector>
 #include <optional>
 
 namespace le {
+
+    struct LeScript
+    {
+        std::filesystem::path path;
+        std::string className;
+        bool enabled = true;
+    };
 
     struct TransformComponent {
         glm::vec3 translation{};
@@ -69,13 +78,15 @@ namespace le {
         void clearBVH();
         bool hasBVH() const { return bvh != nullptr; }
 
-        const std::string& getScriptClassName() const;
-        void setScriptClassName(std::string name);
-        bool hasScript() const;
+        const std::vector<LeScript>& getScripts() const;
+        std::vector<LeScript>& getScripts();
+        void addScript(LeScript script);
+        bool removeScript(size_t index);
+        bool hasScripts() const;
 
     private:
         id_t id;
-        std::string scriptClassName_;
+        std::vector<LeScript> scripts_;
     };
 
 }

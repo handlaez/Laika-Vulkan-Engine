@@ -28,7 +28,7 @@ namespace le {
         result.id = id;
         result.hitboxes = hitboxes;
         result.bvh = bvh;
-        result.scriptClassName_ = scriptClassName_;
+        result.scripts_ = scripts_;
 
         return result;
     }
@@ -113,19 +113,36 @@ namespace le {
         bvh.reset();
     }
 
-    const std::string& LeActor::getScriptClassName() const
+    const std::vector<LeScript>& LeActor::getScripts() const
     {
-        return scriptClassName_;
+        return scripts_;
     }
 
-    void LeActor::setScriptClassName(std::string name)
+    std::vector<LeScript>& LeActor::getScripts()
     {
-        scriptClassName_ = std::move(name);
+        return scripts_;
     }
 
-    bool LeActor::hasScript() const
+    void LeActor::addScript(LeScript script)
     {
-        return !scriptClassName_.empty();
+        scripts_.push_back(std::move(script));
     }
+
+    bool LeActor::removeScript(size_t index)
+    {
+        if (index >= scripts_.size())
+        {
+            return false;
+        }
+
+        scripts_.erase(scripts_.begin() + static_cast<std::ptrdiff_t>(index));
+        return true;
+    }
+
+    bool LeActor::hasScripts() const
+    {
+        return !scripts_.empty();
+    }
+
 
 }
