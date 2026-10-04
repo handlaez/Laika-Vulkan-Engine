@@ -125,7 +125,18 @@ namespace se {
             actorJson["position"] = serializeVec3(actor.transform.translation);
             actorJson["rotation"] = serializeQuat(actor.transform.rotation);
             actorJson["scale"] = serializeVec3(actor.transform.scale);
-            actorJson["script"] = actor.getScriptClassName();
+            json scriptsJson = json::array();
+
+            for (const auto& script : actor.getScripts())
+            {
+                json scriptJson;
+                scriptJson["path"] = script.path.generic_string();
+                scriptJson["class"] = script.className;
+                scriptJson["enabled"] = script.enabled;
+
+                scriptsJson.push_back(std::move(scriptJson));
+            }
+            actorJson["scripts"] = std::move(scriptsJson);
 
             root["actors"].push_back(actorJson);
         }
@@ -231,9 +242,29 @@ namespace se {
 
             idRemap[oldId] = newId;
 
-            if (actorJson.contains("script") && actorJson["script"].is_string())
+            if (actorJson.contains("script") && actorJson["script"].is_array())
             {
-                actor->setScriptClassName(actorJson["script"].get<std::string>());
+                for (const auto& scriptJson : actorJson["scripts"])
+                {
+                    le::LeScript script;
+
+                    if (scriptJson.contains("path"))
+                    {
+                        script.path = scriptJson["path"].get<std::string>();
+                    }
+
+                    if (scriptJson.contains("class"))
+                    {
+                        script.className = scriptJson["class"].get<std::string>();
+                    }
+
+                    if (scriptJson.contains("enabled"))
+                    {
+                        script.enabled = scriptJson["enabled"].get<bool>();
+                    }
+
+                    actor->addScript(std::move(script));
+                }
             }
 
             if (actorJson.contains("parent") && !actorJson["parent"].is_null())

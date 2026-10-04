@@ -33,6 +33,7 @@ namespace le {
 
         LeActor& getActor(size_t index);
         const LeActor& getActor(size_t index) const;
+        std::vector<LeActor>& getActors();
         const std::vector<LeActor>& getActors() const;
 
         LeActor* getActorById(LeActor::id_t id);

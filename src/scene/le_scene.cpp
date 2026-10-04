@@ -56,6 +56,11 @@ namespace le {
         return actors.at(index);
     }
 
+    std::vector<LeActor>& LeScene::getActors()
+    {
+        return actors;
+    }
+
     const std::vector<LeActor>& LeScene::getActors() const {
         return actors;
     }

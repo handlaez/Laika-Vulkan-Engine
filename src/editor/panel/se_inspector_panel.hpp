@@ -17,6 +17,11 @@ namespace se {
 
     private:
         EditorContext& context_;
+
+        bool addScriptPopupOpen_ = false;
+        char addScriptName_[256]{};
+
+        void createScript(le::LeActor& actor);
     };
 }
 

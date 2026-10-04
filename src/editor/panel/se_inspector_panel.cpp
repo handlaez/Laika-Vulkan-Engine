@@ -13,6 +13,25 @@
 #include <string>
 #include <vector>
 
+#ifdef _WIN32
+#include <Windows.h>
+#include <shellapi.h>
+#endif
+#include <fstream>
+#include <cctype>
+
+namespace {
+    void openWithDefaultApplication(const std::filesystem::path& path)
+    {
+#ifdef _WIN32
+        ShellExecuteW(nullptr, L"open", path.wstring().c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+#else
+        // Linux handling here
+        (void)path;
+#endif
+    }
+}
+
 namespace se {
 
     InspectorPanel::InspectorPanel(EditorContext& context)
@@ -218,18 +237,55 @@ namespace se {
             }
         }
 
-        if (ImGui::CollapsingHeader("Script", ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::CollapsingHeader("Scripts", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            char scriptBuffer[256]{};
-            std::snprintf(scriptBuffer, sizeof(scriptBuffer), "%s", actor->getScriptClassName().c_str());
-
-            if (ImGui::InputText("Class", scriptBuffer, sizeof(scriptBuffer)))
+            for (size_t i = 0; i < actor->getScripts().size(); ++i)
             {
-                actor->setScriptClassName(scriptBuffer);
-                context_.session->setSceneModified();
+                auto& script = actor->getScripts()[i];
+                ImGui::PushID(static_cast<int>(i));
+
+                bool enabled = script.enabled;
+
+                if (ImGui::Checkbox("##Enabled", &enabled))
+                {
+                    script.enabled = enabled;
+                    context_.session->setSceneModified();
+                }
+
+                ImGui::SameLine();
+                ImGui::TextUnformatted(script.path.empty() ? script.className.c_str() : script.path.generic_string().c_str());
+
+                ImGui::PopID();
             }
 
-            ImGui::TextDisabled("Example: Laika.GameTest.TestMover");
+            if (ImGui::Button("+ Add Script"))
+            {
+                addScriptPopupOpen_ = true;
+                addScriptName_[0] = '\0';
+                ImGui::OpenPopup("Add Script");
+            }
+
+            if (ImGui::BeginPopupModal("Add Script", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::InputText("Name", addScriptName_, sizeof(addScriptName_));
+
+                ImGui::Spacing();
+
+                if (ImGui::Button("Create"))
+                {
+                    createScript(*actor);
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::SameLine();
+
+                if (ImGui::Button("Cancel"))
+                {
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::EndPopup();
+            }
         }
 
         if (!canEdit)
@@ -244,4 +300,86 @@ namespace se {
     {
     }
 
+    void InspectorPanel::createScript(le::LeActor& actor)
+    {
+        if (context_.session == nullptr)
+        {
+            return;
+        }
+
+        auto* project = context_.projects.getProject();
+
+        if (project == nullptr)
+        {
+            return;
+        }
+
+        std::string scriptName = addScriptName_;
+
+        if (scriptName.empty())
+        {
+            return;
+        }
+
+        // Very simple first-pass sanitization.
+        for (const char character : scriptName)
+        {
+            if (!std::isalnum(static_cast<unsigned char>(character)) && character != '_')
+            {
+                return;
+            }
+        }
+
+        const auto scriptDirectory = project->getScriptDirectory();
+        const auto scriptPath = scriptDirectory / (scriptName + ".cs");
+
+        if (std::filesystem::exists(scriptPath))
+        {
+            return;
+        }
+
+        std::filesystem::create_directories(scriptDirectory);
+
+        const std::string className = project->getName() + "." + scriptName;
+
+        std::ofstream file(scriptPath);
+
+        if (!file)
+        {
+            return;
+        }
+
+        file
+            << "using Laika;\n"
+            << "\n"
+            << "namespace " << project->getName() << ";\n"
+            << "\n"
+            << "public sealed class " << scriptName << " : MonoBehaviour\n"
+            << "{\n"
+            << "    public override void OnStart()\n"
+            << "    {\n"
+            << "    }\n"
+            << "\n"
+            << "    public override void OnUpdate(float deltaTime)\n"
+            << "    {\n"
+            << "    }\n"
+            << "\n"
+            << "    public override void OnDestroy()\n"
+            << "    {\n"
+            << "    }\n"
+            << "}\n";
+
+        file.close();
+
+        le::LeScript script;
+        script.path = std::filesystem::relative(scriptPath, project->getRoot()).lexically_normal();
+
+        script.className = className;
+        script.enabled = true;
+
+        actor.addScript(std::move(script));
+        context_.session->setSceneModified();
+
+        openWithDefaultApplication(scriptPath);
+    }
 }

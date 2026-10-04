@@ -54,16 +54,19 @@ namespace le {
 
         for (const auto& actor : scene.getActors())
         {
-            if (!actor.hasScript())
+            for (const auto& script : actor.getScripts())
             {
-                continue;
-            }
+                if (!script.enabled || script.className.empty())
+                {
+                    continue;
+                }
 
-            const int result = createFn_(actor.getId(), actor.getScriptClassName().c_str());
+                const int result = createFn_(actor.getId(), script.className.c_str());
 
-            if (result != 0)
-            {
-                std::cerr << "Failed to create script '" << actor.getScriptClassName() << "' for actor " << actor.getId() << '\n';
+                if (result != 0)
+                {
+                    std::cout << "Failed to create script '" << script.className << "' for actor " << actor.getId() << '\n';
+                }
             }
         }
     }
@@ -75,9 +78,9 @@ namespace le {
             return;
         }
 
-        for (const auto& actor : scene.getActors())
+        for (auto& actor : scene.getActors())
         {
-            if (!actor.hasScript())
+            if (!actor.hasScripts())
             {
                 continue;
             }
@@ -93,18 +96,7 @@ namespace le {
                 continue;
             }
 
-            auto* mutableActor = scene.getActorById(actor.getId());
-
-            if (!mutableActor)
-            {
-                continue;
-            }
-
-            mutableActor->transform.translation = {
-                position[0],
-                position[1],
-                position[2]
-            };
+            actor.transform.translation = { position[0], position[1], position[2] };
         }
     }
 

@@ -9,7 +9,7 @@ public static unsafe class ScriptHost
 {
     private static Assembly? gameAssembly;
 
-    private static readonly Dictionary<uint, MonoBehaviour> instances = new();
+    private static readonly Dictionary<uint, List<MonoBehaviour>> instances = new();
 
     [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
     public static int Initialize(nint assemblyPathUtf8)
@@ -71,8 +71,8 @@ public static unsafe class ScriptHost
             if (type == null)
             {
                 Console.WriteLine($"Script type not found: {typeName}");
-                Console.WriteLine("Available types:");
 
+                Console.WriteLine("Available types:");
                 foreach (var availableType in gameAssembly.GetTypes())
                 {
                     Console.WriteLine($"  {availableType.FullName}");
@@ -95,8 +95,17 @@ public static unsafe class ScriptHost
             }
 
             instance.Entity = new Entity(actorId);
-            instances[actorId] = instance;
+
+            if (!instances.TryGetValue(actorId, out var actorInstances))
+            {
+                actorInstances = new List<MonoBehaviour>();
+                instances[actorId] = actorInstances;
+            }
+
+            actorInstances.Add(instance);
+
             instance.OnStart();
+
 
             return 0;
         }
@@ -112,15 +121,22 @@ public static unsafe class ScriptHost
     {
         try
         {
-            if (!instances.TryGetValue(actorId, out var instance))
+            if (!instances.TryGetValue(actorId, out var actorInstances))
             {
                 return -1;
             }
 
-            instance.Entity.Transform.Position = new Vector3(position[0], position[1], position[2]);
-            instance.OnUpdate(deltaTime);
+            var entity = new Entity(actorId);
 
-            var result = instance.Entity.Transform.Position;
+            entity.Transform.Position = new Vector3(position[0], position[1], position[2]);
+
+            foreach (var instance in actorInstances)
+            {
+                instance.Entity = entity;
+                instance.OnUpdate(deltaTime);
+            }
+
+            var result = entity.Transform.Position;
 
             position[0] = result.X;
             position[1] = result.Y;
@@ -138,15 +154,18 @@ public static unsafe class ScriptHost
     [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
     public static void DestroyAll()
     {
-        foreach (var instance in instances.Values)
+        foreach (var actorInstances in instances.Values)
         {
-            try
+            foreach (var instance in actorInstances)
             {
-                instance.OnDestroy();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
+                try
+                {
+                    instance.OnDestroy();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
             }
         }
 
