@@ -22,12 +22,16 @@ namespace se {
 
     SeCore::SeCore()
         : leCore_{},
+        logger_{},
         projectManager_{},
         editorSelection_{},
         editorContext_{ leCore_, projectManager_, leCore_.getResources(), editorSelection_ },
-        editorSession_{ editorContext_ },
+        editorSession_{ editorContext_, logger_ },
         consoleLogRecords_{ std::make_shared<std::vector<le::log::Record>>() }
     {
+        logger_.addSink(std::make_unique<::le::log::ConsoleSink>());
+        logger_.addSink(std::make_unique<::se::PanelSink>(consoleLogRecords_));
+
         editorContext_.session = &editorSession_;
 
         initImGui();
@@ -61,10 +65,7 @@ namespace se {
 
     void SeCore::run()
     {
-        ::le::log::Logger logger;
-        logger.addSink(std::make_unique<::le::log::ConsoleSink>());
-        logger.addSink(std::make_unique<::se::PanelSink>(consoleLogRecords_));
-        logger.write(::le::log::Level::info, ::le::log::Category::editor, "Poyekhali!");
+        logger_.write(::le::log::Level::info, ::le::log::Category::editor, "Poyekhali!");
 
         while (!leCore_.getWindow().shouldClose())
         {

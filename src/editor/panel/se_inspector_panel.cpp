@@ -3,6 +3,7 @@
 #include "src/editor/se_editor_selection.hpp"
 #include "src/editor/se_mode_controller.hpp"
 #include "src/editor/se_editor_session.hpp"
+#include "src/core/le_utils.hpp"
 
 #include "imgui.h"
 
@@ -19,18 +20,6 @@
 #endif
 #include <fstream>
 #include <cctype>
-
-namespace {
-    void openWithDefaultApplication(const std::filesystem::path& path)
-    {
-#ifdef _WIN32
-        ShellExecuteW(nullptr, L"open", path.wstring().c_str(), nullptr, nullptr, SW_SHOWNORMAL);
-#else
-        // Linux handling here
-        (void)path;
-#endif
-    }
-}
 
 namespace se {
 
@@ -380,6 +369,6 @@ namespace se {
         actor.addScript(std::move(script));
         context_.session->setSceneModified();
 
-        openWithDefaultApplication(scriptPath);
+        Utils::openDefaultApplication(scriptPath);
     }
 }

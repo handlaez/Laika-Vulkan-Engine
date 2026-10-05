@@ -7,7 +7,81 @@ namespace Laika;
 
 public static unsafe class ScriptHost
 {
+    private sealed class GameLoadContext : AssemblyLoadContext
+    {
+        private readonly AssemblyDependencyResolver resolver;
+        private readonly Assembly managedAssembly;
+
+        public GameLoadContext(
+            string assemblyPath,
+            Assembly managedAssembly)
+            : base(
+                $"Laika.Game.{Guid.NewGuid()}",
+                isCollectible: true)
+        {
+            resolver = new AssemblyDependencyResolver(assemblyPath);
+            this.managedAssembly = managedAssembly;
+
+            Resolving += OnResolving;
+        }
+
+        protected override Assembly? Load(AssemblyName assemblyName)
+        {
+            Console.WriteLine(
+                $"[Managed] Load requested: {assemblyName.FullName}");
+
+            if (string.Equals(
+                    assemblyName.Name,
+                    managedAssembly.GetName().Name,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine(
+                    $"[Managed] Sharing: {managedAssembly.FullName}");
+
+                return managedAssembly;
+            }
+
+            string? resolvedPath =
+                resolver.ResolveAssemblyToPath(assemblyName);
+
+            if (resolvedPath == null)
+            {
+                Console.WriteLine(
+                    $"[Managed] Resolver could not find: {assemblyName.FullName}");
+
+                return null;
+            }
+
+            Console.WriteLine(
+                $"[Managed] Resolver found: {resolvedPath}");
+
+            return LoadFromAssemblyPath(resolvedPath);
+        }
+
+        private Assembly? OnResolving(
+            AssemblyLoadContext context,
+            AssemblyName assemblyName)
+        {
+            Console.WriteLine(
+                $"[Managed] Resolving event: {assemblyName.FullName}");
+
+            if (string.Equals(
+                    assemblyName.Name,
+                    managedAssembly.GetName().Name,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine(
+                    $"[Managed] Resolving -> shared Laika.Managed");
+
+                return managedAssembly;
+            }
+
+            return null;
+        }
+    }
+
     private static Assembly? gameAssembly;
+    private static GameLoadContext? gameLoadContext;
 
     private static readonly Dictionary<uint, List<MonoBehaviour>> instances = new();
 
@@ -26,19 +100,46 @@ public static unsafe class ScriptHost
             assemblyPath = Path.GetFullPath(assemblyPath);
 
             Console.WriteLine($"Loading game assembly: {assemblyPath}");
-            Console.WriteLine($"Laika.Managed loaded from: " + $"{typeof(ScriptHost).Assembly.Location}");
+            Console.WriteLine(
+                $"Laika.Managed loaded from: {typeof(ScriptHost).Assembly.Location}");
 
-            AssemblyLoadContext.Default.Resolving += (context, assemblyName) =>
-                {
-                    if (assemblyName.Name == "Laika.Managed")
-                    {
-                        return typeof(ScriptHost).Assembly;
-                    }
-                    return null;
-                };
+            var managedAssembly = typeof(ScriptHost).Assembly;
 
-            gameAssembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyPath);
-            Console.WriteLine($"Loaded game assembly: {gameAssembly.FullName}");
+            Console.WriteLine(
+                $"[Managed] API assembly: {managedAssembly.FullName}");
+
+            Console.WriteLine(
+                $"[Managed] API location: {managedAssembly.Location}");
+
+            Console.WriteLine(
+                $"[Managed] API context: " +
+                $"{AssemblyLoadContext.GetLoadContext(managedAssembly)?.Name}");
+
+            DestroyAllInstances();
+
+            gameAssembly = null;
+
+            gameLoadContext?.Unload();
+            gameLoadContext = null;
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+
+            gameLoadContext = new GameLoadContext(
+                assemblyPath,
+                managedAssembly
+            );
+
+            gameAssembly =
+                gameLoadContext.LoadFromAssemblyPath(assemblyPath);
+
+            Console.WriteLine(
+                $"[Managed] Game assembly: {gameAssembly.FullName}");
+
+            Console.WriteLine(
+                $"[Managed] Game context: " +
+                $"{AssemblyLoadContext.GetLoadContext(gameAssembly)?.Name}");
 
             return 0;
         }
@@ -149,6 +250,26 @@ public static unsafe class ScriptHost
             Console.WriteLine(ex);
             return -1;
         }
+    }
+
+    private static void DestroyAllInstances()
+    {
+        foreach (var actorInstances in instances.Values)
+        {
+            foreach (var instance in actorInstances)
+            {
+                try
+                {
+                    instance.OnDestroy();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+            }
+        }
+
+        instances.Clear();
     }
 
     [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]

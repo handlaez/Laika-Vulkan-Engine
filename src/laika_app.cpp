@@ -5,18 +5,11 @@
 
 #include <iostream>
 
-LaikaApp::LaikaApp()
+LaikaApp::LaikaApp(le::log::Logger& logger) : scriptSystem_(logger)
 {
-    if (!scriptSystem_.initialize(
-        "managed/Laika.GameTest.runtimeconfig.json",
-        "managed/Laika.Managed.dll",
-        "managed/Laika.GameTest.dll"))
-    {
-        std::cerr << "Failed to initialize Laika C# scripting\n";
-    }
 }
 
-void LaikaApp::onStart(le::LeScene& scene) 
+void LaikaApp::onStart(le::LeScene& scene)
 {
     scriptSystem_.start(scene);
 }
@@ -37,4 +30,16 @@ void LaikaApp::onUpdate(le::LeScene& scene, le::FrameInfo fi, bool viewportActiv
 void LaikaApp::onShutdown(le::LeScene&)
 {
     scriptSystem_.shutdown();
+}
+
+void LaikaApp::configureScriptProject(
+    const std::filesystem::path& scriptProject, const std::filesystem::path& managedAssembly,
+    const std::filesystem::path& gameAssembly, const std::filesystem::path& runtimeConfig)
+{
+    scriptSystem_.configureProject(scriptProject, managedAssembly, gameAssembly, runtimeConfig);
+}
+
+void LaikaApp::clearScriptProject()
+{
+    scriptSystem_.clearProject();
 }

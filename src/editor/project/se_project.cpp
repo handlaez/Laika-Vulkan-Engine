@@ -36,6 +36,26 @@ namespace se {
 		return root_ / "Scripts";
 	}
 
+	std::filesystem::path Project::getScriptProjectFile() const
+	{
+		return getScriptDirectory() / (name_ + ".csproj");
+	}
+
+	std::filesystem::path Project::getScriptBuildDirectory() const
+	{
+		return getScriptDirectory() / "bin" / "Debug" / "net10.0";
+	}
+
+	std::filesystem::path Project::getScriptAssembly() const
+	{
+		return getScriptBuildDirectory() / (name_ + ".dll");
+	}
+
+	std::filesystem::path Project::getScriptRuntimeConfig() const
+	{
+		return getScriptBuildDirectory() / (name_ + ".runtimeconfig.json");
+	}
+
 	const std::filesystem::path& Project::getStartupScene() const
 	{
 		return startupScene_;

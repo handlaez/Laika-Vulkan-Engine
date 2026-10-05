@@ -9,11 +9,16 @@
 
 class LaikaApp : public le::ILaikaEngineApp {
 public:
-    LaikaApp();
+    explicit LaikaApp(le::log::Logger& logger);
 
     void onStart(le::LeScene& scene) override;
     void onUpdate(le::LeScene& scene, le::FrameInfo fi, bool viewportActive) override;
     void onShutdown(le::LeScene&) override;
+
+    void configureScriptProject(
+        const std::filesystem::path& scriptProject, const std::filesystem::path& managedAssembly,
+        const std::filesystem::path& gameAssembly, const std::filesystem::path& runtimeConfig);
+    void clearScriptProject();
 
 private:
     le::KeyboardMovementController controller_{};
