@@ -110,16 +110,24 @@ set(IMGUI_HEADERS
 )
 
 # Target config
-
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
 
 list(FILTER SOURCES EXCLUDE REGEX ".*/third-party/imgui/.*")
 list(FILTER HEADERS EXCLUDE REGEX ".*/third-party/imgui/.*")
 
-set(LAIKA_MANAGED_PROJECT "${CMAKE_CURRENT_SOURCE_DIR}/managed/Laika.GameTest/Laika.GameTest.csproj")
+# .NET managed API
+set(LAIKA_MANAGED_PROJECT
+    "${CMAKE_CURRENT_SOURCE_DIR}/managed/Laika.Managed/Laika.Managed.csproj"
+)
 
-add_custom_target(LaikaManagedScripts ALL
+if (NOT EXISTS "${LAIKA_MANAGED_PROJECT}")
+    message(FATAL_ERROR
+        "Laika.Managed project not found: ${LAIKA_MANAGED_PROJECT}"
+    )
+endif()
+
+add_custom_target(LaikaManaged ALL
     COMMAND
         "${DOTNET_EXECUTABLE}"
         build
@@ -127,7 +135,7 @@ add_custom_target(LaikaManagedScripts ALL
         --configuration $<CONFIG>
         --nologo
     WORKING_DIRECTORY
-        "${CMAKE_CURRENT_SOURCE_DIR}/managed/Laika.GameTest"
+        "${CMAKE_CURRENT_SOURCE_DIR}/managed/Laika.Managed"
     VERBATIM
 )
 
@@ -140,7 +148,7 @@ add_executable(VulkanTest
 
 add_dependencies(
     VulkanTest
-    LaikaManagedScripts
+    LaikaManaged
 )
 
 compile_shader(VulkanTest "${CMAKE_CURRENT_SOURCE_DIR}/shaders/vert_shader.vert" 		 "${CMAKE_CURRENT_SOURCE_DIR}/shaders/vert_shader.spv")
@@ -169,7 +177,7 @@ target_link_libraries(VulkanTest PRIVATE
 # Post-build
 add_custom_command(
     TARGET VulkanTest POST_BUILD
-        # Directories
+        # Resources
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_CURRENT_SOURCE_DIR}/models"
             "$<TARGET_FILE_DIR:VulkanTest>/models"
@@ -186,14 +194,15 @@ add_custom_command(
             "${CMAKE_CURRENT_SOURCE_DIR}/skybox"
             "$<TARGET_FILE_DIR:VulkanTest>/skybox"
 
-        # Scripts
+        # Managed engine API
     COMMAND ${CMAKE_COMMAND} -E make_directory
         "$<TARGET_FILE_DIR:VulkanTest>/managed"
 
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/managed/Laika.GameTest/bin/$<CONFIG>/net10.0"
-        "$<TARGET_FILE_DIR:VulkanTest>/managed"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/managed/Laika.Managed/bin/$<CONFIG>/net10.0/Laika.Managed.dll"
+        "$<TARGET_FILE_DIR:VulkanTest>/managed/Laika.Managed.dll"
 
+        # .NET native host
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${DOTNET_NATIVE_DIR}/nethost.dll"
         "$<TARGET_FILE_DIR:VulkanTest>/nethost.dll"
