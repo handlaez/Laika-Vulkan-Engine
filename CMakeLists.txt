@@ -26,6 +26,37 @@ find_library(GLFW_LIB
 # Vulkan 
 find_package(Vulkan REQUIRED)
 
+#.NET
+find_program(DOTNET_EXECUTABLE
+    NAMES dotnet
+    REQUIRED
+)
+
+if(WIN32)
+    if (DEFINED ENV{DOTNET_ROOT})
+        set(DOTNET_ROOT "$ENV{DOTNET_ROOT}")
+    else()
+        set(DOTNET_ROOT "C:/Program Files/dotnet")
+    endif()
+    
+    file(GLOB DOTNET_NATIVE_PACKS
+        "${DOTNET_ROOT}/packs/Microsoft.NETCore.App.Host.win-x64/*/runtimes/win-x64/native"
+    )
+
+    if (NOT DOTNET_NATIVE_PACKS)
+        message(FATAL_ERROR "Could not find the .NET x64 native hosting pack.")
+    endif()
+
+    list(SORT DOTNET_NATIVE_PACKS COMPARE NATURAL ORDER DESCENDING)
+    list(GET DOTNET_NATIVE_PACKS 0 DOTNET_NATIVE_DIR)
+
+    set(DOTNET_NETHOST_LIBRARY "${DOTNET_NATIVE_DIR}/nethost.lib")
+
+    if (NOT EXISTS "${DOTNET_NETHOST_LIBRARY}")
+        message(FATAL_ERROR "Could not find libnethost.lib in ${DOTNET_NATIVE_DIR}")
+    endif()
+endif()
+
 # json
 include(FetchContent)
 FetchContent_Declare(nlohmann_json URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
@@ -36,7 +67,6 @@ set(JSON_Install OFF CACHE INTERNAL "")
 FetchContent_MakeAvailable(nlohmann_json)
 
 # GLSLC
-
 find_program(GLSLC_EXECUTABLE 
     NAMES glslc 
     PATHS "$ENV{VULKAN_SDK}/Bin"
@@ -80,18 +110,45 @@ set(IMGUI_HEADERS
 )
 
 # Target config
-
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
 
 list(FILTER SOURCES EXCLUDE REGEX ".*/third-party/imgui/.*")
 list(FILTER HEADERS EXCLUDE REGEX ".*/third-party/imgui/.*")
 
+# .NET managed API
+set(LAIKA_MANAGED_PROJECT
+    "${CMAKE_CURRENT_SOURCE_DIR}/managed/Laika.Managed/Laika.Managed.csproj"
+)
+
+if (NOT EXISTS "${LAIKA_MANAGED_PROJECT}")
+    message(FATAL_ERROR
+        "Laika.Managed project not found: ${LAIKA_MANAGED_PROJECT}"
+    )
+endif()
+
+add_custom_target(LaikaManaged ALL
+    COMMAND
+        "${DOTNET_EXECUTABLE}"
+        build
+        "${LAIKA_MANAGED_PROJECT}"
+        --configuration $<CONFIG>
+        --nologo
+    WORKING_DIRECTORY
+        "${CMAKE_CURRENT_SOURCE_DIR}/managed/Laika.Managed"
+    VERBATIM
+)
+
 add_executable(VulkanTest
     ${SOURCES}
     ${HEADERS}
     ${IMGUI_SOURCES}
     ${IMGUI_HEADERS}
+)
+
+add_dependencies(
+    VulkanTest
+    LaikaManaged
 )
 
 compile_shader(VulkanTest "${CMAKE_CURRENT_SOURCE_DIR}/shaders/vert_shader.vert" 		 "${CMAKE_CURRENT_SOURCE_DIR}/shaders/vert_shader.spv")
@@ -107,18 +164,20 @@ target_include_directories(VulkanTest PRIVATE
     ${LOCAL_THIRD_PARTY_INCLUDES}
     ${IMGUI_DIR}
     "${IMGUI_DIR}/backends"
+    "${DOTNET_NATIVE_DIR}"
 )
 
 target_link_libraries(VulkanTest PRIVATE 
     Vulkan::Vulkan
     ${GLFW_LIB}
     nlohmann_json::nlohmann_json
+    "${DOTNET_NETHOST_LIBRARY}"
 )
 
 # Post-build
-
 add_custom_command(
     TARGET VulkanTest POST_BUILD
+        # Resources
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_CURRENT_SOURCE_DIR}/models"
             "$<TARGET_FILE_DIR:VulkanTest>/models"
@@ -134,4 +193,17 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_CURRENT_SOURCE_DIR}/skybox"
             "$<TARGET_FILE_DIR:VulkanTest>/skybox"
+
+        # Managed engine API
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        "$<TARGET_FILE_DIR:VulkanTest>/managed"
+
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/managed/Laika.Managed/bin/$<CONFIG>/net10.0/Laika.Managed.dll"
+        "$<TARGET_FILE_DIR:VulkanTest>/managed/Laika.Managed.dll"
+
+        # .NET native host
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${DOTNET_NATIVE_DIR}/nethost.dll"
+        "$<TARGET_FILE_DIR:VulkanTest>/nethost.dll"
 )

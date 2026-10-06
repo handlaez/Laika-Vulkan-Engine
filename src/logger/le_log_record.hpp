@@ -23,7 +23,8 @@ namespace le::log
         asset,
         physics,
         audio,
-        editor
+        editor,
+        script
     };
 
     struct Record

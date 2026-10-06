@@ -119,12 +119,13 @@ namespace se {
                     // fouble-click hook.
                     if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
                     {
-                        // AssetManager::open(entryPath);
-
-                        if (entryPath.extension() == ".scene")
+                        if (entryPath.extension() == ".scene" || entryPath.extension() == ".Scene")
                         {
                             context_.session->requestOpenScene(entryPath);
+                            continue;
                         }
+
+                        Utils::openDefaultApplication(entryPath);
                     }
                 }
             }

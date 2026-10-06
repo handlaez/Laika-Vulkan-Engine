@@ -28,6 +28,7 @@ namespace le {
         result.id = id;
         result.hitboxes = hitboxes;
         result.bvh = bvh;
+        result.scripts_ = scripts_;
 
         return result;
     }
@@ -111,4 +112,37 @@ namespace le {
     {
         bvh.reset();
     }
+
+    const std::vector<LeScript>& LeActor::getScripts() const
+    {
+        return scripts_;
+    }
+
+    std::vector<LeScript>& LeActor::getScripts()
+    {
+        return scripts_;
+    }
+
+    void LeActor::addScript(LeScript script)
+    {
+        scripts_.push_back(std::move(script));
+    }
+
+    bool LeActor::removeScript(size_t index)
+    {
+        if (index >= scripts_.size())
+        {
+            return false;
+        }
+
+        scripts_.erase(scripts_.begin() + static_cast<std::ptrdiff_t>(index));
+        return true;
+    }
+
+    bool LeActor::hasScripts() const
+    {
+        return !scripts_.empty();
+    }
+
+
 }

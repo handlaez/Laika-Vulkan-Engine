@@ -7,6 +7,16 @@
 
 #include <random>
 #include <atomic>
+#include <filesystem>
+#include <cstdint>
+
+#ifdef _WIN32
+    #ifndef NOMINMAX
+    #define NOMINMAX
+    #endif
+#include <Windows.h>
+#include <shellapi.h>
+#endif
 
 class Utils
 {
@@ -89,6 +99,16 @@ public:
         thread_local static std::uniform_real_distribution<float> dist(-1.0f, 1.0f);
 
         return dist(rng);
+    }
+
+    static bool openDefaultApplication(const std::filesystem::path& path)
+    {
+#ifdef _WIN32
+        const auto result = ShellExecuteW(nullptr, L"open", path.wstring().c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+        return reinterpret_cast<std::intptr_t>(result) > 32;
+#else
+        return false;
+#endif
     }
 };
 

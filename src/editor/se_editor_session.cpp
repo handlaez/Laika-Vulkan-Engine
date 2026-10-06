@@ -5,8 +5,8 @@
 
 namespace se {
 
-    EditorSession::EditorSession(EditorContext& context)
-        : context_(context)
+    EditorSession::EditorSession(EditorContext& context, le::log::Logger& logger)
+        : context_(context), laikaApp_(logger)
     {
     }
 
@@ -24,12 +24,20 @@ namespace se {
             return false;
         }
 
-        const auto* project = context_.projects.getProject();
+        auto* project = context_.projects.getProject();
 
         if (!project)
         {
+            closeProject();
             return false;
         }
+
+        laikaApp_.configureScriptProject(
+            project->getScriptProjectFile(),
+            "managed/Laika.Managed.dll",
+            project->getScriptAssembly(),
+            project->getScriptRuntimeConfig()
+        );
 
         const auto scenePath = project->getRoot() / project->getStartupScene();
 
@@ -50,6 +58,17 @@ namespace se {
         {
             return false;
         }
+
+        auto* project = context_.projects.getProject();
+
+        if (!project)
+        {
+            closeProject();
+            return false;
+        }
+
+        laikaApp_.configureScriptProject(
+            project->getScriptProjectFile(), "managed/Laika.Managed.dll", project->getScriptAssembly(), project->getScriptRuntimeConfig());
 
         return createScene("Main");
     }

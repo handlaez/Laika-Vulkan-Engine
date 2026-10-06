@@ -4,6 +4,7 @@
 #include "src/editor/se_editor_context.hpp"
 #include "src/editor/se_mode_controller.hpp"
 #include "src/scene/se_scene_serializer.hpp"
+#include "src/logger/le_logger.hpp"
 #include "src/laika_app.hpp"
 
 #include <filesystem>
@@ -14,7 +15,7 @@ namespace se {
 
     class EditorSession {
     public:
-        explicit EditorSession(EditorContext& context);
+        explicit EditorSession(EditorContext& context, le::log::Logger& logger);
         ~EditorSession();
 
         bool openProject(const std::filesystem::path& projectFile);

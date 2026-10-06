@@ -17,6 +17,11 @@ namespace se {
         std::filesystem::path getAssetDirectory() const;
         std::filesystem::path getSceneDirectory() const;
         std::filesystem::path getScriptDirectory() const;
+
+        std::filesystem::path getScriptProjectFile() const;
+        std::filesystem::path getScriptBuildDirectory() const;
+        std::filesystem::path getScriptAssembly() const;
+        std::filesystem::path getScriptRuntimeConfig() const;
         
         const std::filesystem::path& getStartupScene() const;
         void setStartupScene(std::filesystem::path path);
