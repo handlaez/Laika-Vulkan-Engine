@@ -112,7 +112,13 @@ namespace le {
             }
         }
 
+        for (auto& [type, pool] : componentPools_)
+        {
+            pool->remove(id);
+        }
+
         actors.erase(it);
+
         return true;
     }
 
@@ -155,6 +161,11 @@ namespace le {
         // This is external state and must not be blindly copied.
         result->instanceDataPtr = nullptr;
         result->terrain_ = nullptr;
+
+        for (const auto& [type, pool] : componentPools_)
+        {
+            result->componentPools_[type] = pool->clone();
+        }
 
         return result;
     }

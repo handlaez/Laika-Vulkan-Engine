@@ -12,6 +12,10 @@ LaikaApp::LaikaApp(le::log::Logger& logger) : scriptSystem_(logger)
 void LaikaApp::onStart(le::LeScene& scene)
 {
     scriptSystem_.start(scene);
+
+    const auto entity = scene.getActor(0).getId();
+    auto& component = scene.addComponent<le::TestComponent>(entity);
+    std::cout << component.value << "\n";
 }
 
 void LaikaApp::onUpdate(le::LeScene& scene, le::FrameInfo fi, bool viewportActive) 

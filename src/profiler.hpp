@@ -1,5 +1,7 @@
 #pragma once
 
+#include "src/render/le_swapchain.hpp"
+
 #include <vector>
 #include <string>
 #include <fstream>
@@ -8,8 +10,6 @@
 #include <array>
 
 #include <vulkan/vulkan.h>
-
-#include "src/render/le_swapchain.hpp"
 
 struct FrameMetrics {
     double cpuBoidUpdateTimeMs = 0.0;
@@ -26,11 +26,7 @@ struct TimestampQueryResult {
 
 namespace Profiler {
 
-    void Initialize(
-        VkDevice device,
-        VkPhysicalDevice physicalDevice,
-        size_t expectedFrames = 10000
-    );
+    void Initialize(VkDevice device, VkPhysicalDevice physicalDevice, size_t expectedFrames = 10000);
 
     void Shutdown();
 
