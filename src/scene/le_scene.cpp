@@ -29,14 +29,30 @@ namespace le {
 
     uint32_t LeScene::addActor(LeActor actor) {
         const uint32_t id = actor.getId();
+
+        const auto translation = actor.transform.translation;
+        const auto rotation = actor.transform.rotation;
+        const auto scale = actor.transform.scale;
+
         actors.push_back(std::move(actor));
+
+        addComponent<TransformComponent>(id, translation, rotation, scale);
+
         return id;
     }
 
     uint32_t LeScene::addActor(int32_t model, int32_t texture) {
         LeActor actor(model, texture);
         const uint32_t id = actor.getId();
+
+        const auto translation = actor.transform.translation;
+        const auto rotation = actor.transform.rotation;
+        const auto scale = actor.transform.scale;
+
         actors.push_back(std::move(actor));
+
+        addComponent<TransformComponent>(id, translation, rotation, scale);
+
         return id;
     }
 

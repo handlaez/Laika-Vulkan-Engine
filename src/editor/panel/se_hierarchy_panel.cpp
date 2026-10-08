@@ -4,6 +4,7 @@
 #include "src/editor/se_editor_selection.hpp"
 #include "src/editor/se_mode_controller.hpp"
 #include "src/editor/se_editor_session.hpp"
+#include <src/ecs/components/le_transform_component.hpp>
 
 namespace se {
     HierarchyPanel::HierarchyPanel(EditorContext& context)
@@ -33,6 +34,7 @@ namespace se {
         if (ImGui::Button("Add Cube"))
         {
             const auto id = scene.addActor(0, 0);
+
             selection.select(id);
 
             context_.session->setSceneModified();

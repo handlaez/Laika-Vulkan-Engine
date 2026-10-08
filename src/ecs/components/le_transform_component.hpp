@@ -1,3 +1,5 @@
+#include <glm/ext/quaternion_float.hpp>
+
 struct TransformComponent
 {
     glm::vec3 translation{};

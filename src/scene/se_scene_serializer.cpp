@@ -9,6 +9,7 @@
 
 #include <fstream>
 #include <unordered_map>
+#include <src/ecs/components/le_transform_component.hpp>
 
 namespace se {
 
@@ -242,7 +243,7 @@ namespace se {
 
             idRemap[oldId] = newId;
 
-            if (actorJson.contains("script") && actorJson["script"].is_array())
+            if (actorJson.contains("scripts") && actorJson["scripts"].is_array())
             {
                 for (const auto& scriptJson : actorJson["scripts"])
                 {
